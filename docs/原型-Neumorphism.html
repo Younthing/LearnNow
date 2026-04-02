@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearnNow - Neumorphism Prototype</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    /* 
+     * AESTHETIC: Neumorphism (Soft UI) + Pastel Palette
+     * Gentle gradients, light/dark paired shadows for extrusion/inset, soft rounded corners, low-contrast pastel accents.
+     */
+    :root {
+      /* Soft pastel base */
+      --bg-base: #E8F0FE; /* Very soft pastel blue/grey */
+      
+      /* Pastel Accents */
+      --brand-blue: #A1C4FD;
+      --brand-blue-dark: #8AACEC;
+      --brand-pink: #FFCCD5;
+      --brand-pink-dark: #FFAAC3;
+      --brand-mint: #C2E9D2;
+      --brand-purple: #DBCDF0;
+      
+      /* Text Colors */
+      --text-main: #5C6B89;
+      --text-h: #3B4A6B;
+      --text-muted: #8E9EBC;
+      --text-light: #A4B2CD;
+      
+      /* Shadows for Neumorphism on #E8F0FE */
+      /* Dark shadow: down and right; Light shadow: up and left */
+      --shadow-dark: #CDD9ED;
+      --shadow-light: #FFFFFF;
+      
+      /* Neumorphic shadow templates */
+      --neu-out: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+      --neu-out-sm: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+      --neu-out-lg: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+      
+      --neu-in: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+      --neu-in-sm: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+      
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Nunito', -apple-system, sans-serif;
+      background: #DCE5F5; /* Slightly darker than device to pop */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-main);
+      padding: 20px;
+    }
+
+    /* Device Mockup */
+    .device {
+      width: 390px;
+      height: 844px;
+      background: var(--bg-base);
+      border-radius: 44px;
+      box-shadow: 20px 20px 60px #B8C6DF, -20px -20px 60px #FFFFFF;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      border: 8px solid var(--bg-base); /* Faux bezel */
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 54px;
+      padding: 0 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-h);
+      z-index: 50;
+      flex-shrink: 0;
+      background: transparent;
+    }
+    .status-icons { display: flex; gap: 6px; align-items: center;}
+
+    /* Navigation Bar (Bottom) */
+    .nav-bar {
+      position: absolute;
+      bottom: 24px;
+      left: 20px;
+      right: 20px;
+      height: 70px;
+      background: var(--bg-base);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--neu-out-lg);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 8px;
+      z-index: 50;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-item.active {
+      color: var(--brand-blue-dark);
+      box-shadow: var(--neu-in);
+    }
+    
+    .nav-icon { transition: transform 0.3s ease; }
+    .nav-item.active .nav-icon { transform: scale(0.9); }
+
+    /* Screen Views */
+    .screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      background: var(--bg-base);
+      overflow: hidden;
+    }
+    .screen.active {
+      display: flex;
+      animation: softFade 0.4s ease;
+    }
+    @keyframes softFade {
+      from { opacity: 0; filter: blur(4px); }
+      to { opacity: 1; filter: blur(0); }
+    }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px 120px; /* Space for floating nav bar */
+      scroll-behavior: smooth;
+    }
+    .scroll-area::-webkit-scrollbar { display: none; }
+
+    /* Header */
+    .header {
+      padding: 24px 24px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-base);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-title { font-size: 26px; font-weight: 800; color: var(--text-h); letter-spacing: -0.5px;}
+    .header-subtitle { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-top: 2px;}
+    .avatar { 
+        width: 48px; height: 48px; 
+        border-radius: 50%; 
+        object-fit: cover; 
+        box-shadow: var(--neu-out-sm); 
+        padding: 2px;
+        background: var(--bg-base);
+    }
+
+    /* Neu Card */
+    .neu-card {
+      background: var(--bg-base);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--neu-out);
+      margin-bottom: 24px;
+      transition: all 0.2s ease;
+    }
+
+    /* Button */
+    .neu-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 16px 24px;
+      border-radius: var(--radius-pill);
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-h);
+      background: var(--bg-base);
+      box-shadow: var(--neu-out);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .neu-btn:active { box-shadow: var(--neu-in); color: var(--brand-blue-dark); transform: scale(0.98); }
+    .neu-btn.primary { color: var(--brand-blue-dark); }
+    
+    .neu-btn-icon {
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--bg-base);
+        box-shadow: var(--neu-out-sm);
+        border: none; cursor: pointer; color: var(--text-h);
+        transition: all 0.2s ease;
+    }
+    .neu-btn-icon:active { box-shadow: var(--neu-in-sm); transform: scale(0.95); }
+
+    /* Progress Track */
+    .neu-progress {
+      height: 12px;
+      background: var(--bg-base);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--neu-in);
+      overflow: hidden;
+      margin: 16px 0;
+      position: relative;
+    }
+    .neu-progress-fill {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      transition: width 1s ease-out;
+      background: linear-gradient(90deg, var(--brand-blue), #B5D2FC);
+      box-shadow: 2px 0 4px rgba(161,196,253,0.5);
+    }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .stat-box {
+      background: var(--bg-base);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--neu-in);
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px;
+    }
+    .stat-val { font-size: 28px; font-weight: 900; color: var(--text-h); }
+    .stat-label { font-size: 13px; font-weight: 700; color: var(--text-muted); }
+
+    /* Heatmap */
+    .heatmap { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 16px; padding: 12px; border-radius: var(--radius-lg); box-shadow: var(--neu-in);}
+    .heat-cell { 
+        aspect-ratio: 1; 
+        border-radius: 50%; 
+        background: var(--bg-base); 
+        box-shadow: var(--neu-out-sm);
+    }
+    .heat-cell.lvl-1 { background: var(--brand-mint); box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1); } 
+    .heat-cell.lvl-2 { background: var(--brand-blue); box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1); }
+    .heat-cell.lvl-3 { background: var(--brand-pink); box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1); }
+
+    /* Path Node Timeline */
+    .path-container { position: relative; padding-left: 36px; margin-top: 24px; }
+    .path-line { position: absolute; left: 52px; top: 20px; bottom: 40px; width: 6px; border-radius: 3px; background: var(--bg-base); box-shadow: var(--neu-in); z-index: 1;}
+    .path-node { position: relative; display: flex; gap: 24px; margin-bottom: 36px; z-index: 2; transition: opacity 0.3s; opacity: 0.5;}
+    .path-node.done, .path-node.current { opacity: 1; }
+    
+    .node-icon-wrap { 
+        width: 40px; height: 40px; 
+        border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        background: var(--bg-base); 
+        box-shadow: var(--neu-out);
+        flex-shrink: 0; color: var(--text-muted);
+    }
+    .path-node.done .node-icon-wrap { color: var(--brand-mint); box-shadow: var(--neu-in); }
+    .path-node.current .node-icon-wrap { 
+        color: var(--brand-blue-dark); 
+        box-shadow: var(--neu-out);
+        border: 2px solid var(--brand-blue);
+    }
+    
+    .node-content { flex: 1; padding-top: 4px; }
+    .node-title { font-size: 17px; font-weight: 800; color: var(--text-h); margin-bottom: 6px; }
+    .node-desc { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
+    /* Pill Tags */
+    .pill { padding: 6px 12px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 800; background: var(--bg-base); box-shadow: var(--neu-out-sm); display: inline-flex;}
+    .pill.mint { color: #64A881; }
+    .pill.pink { color: #D77B90; }
+    .pill.blue { color: #6F98E2; }
+    .pill.purple { color: #9A77CB; }
+
+    /* Lesson Quiz */
+    .quiz-option { 
+        padding: 16px 20px; 
+        border-radius: var(--radius-md); 
+        margin-bottom: 16px; 
+        display: flex; align-items: center; gap: 16px; 
+        cursor: pointer; font-weight: 700; font-size: 15px; 
+        background: var(--bg-base);
+        box-shadow: var(--neu-out);
+        color: var(--text-main);
+        transition: all 0.2s ease;
+    }
+    .quiz-option:hover { color: var(--text-h); }
+    .quiz-option.selected { box-shadow: var(--neu-in); color: var(--brand-blue-dark); }
+    .quiz-option.correct { box-shadow: var(--neu-in); color: #439665; }
+    .quiz-option.wrong { box-shadow: var(--neu-in); color: #D77B90; }
+    
+    .opt-letter { 
+        width: 32px; height: 32px; 
+        border-radius: 50%; 
+        background: var(--bg-base);
+        box-shadow: var(--neu-out-sm);
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 14px; font-weight: 800; color: var(--text-muted);
+    }
+    .quiz-option.selected .opt-letter, .quiz-option.correct .opt-letter { box-shadow: var(--neu-in-sm); }
+
+    /* Code Block inside Neumorphism */
+    .neu-code {
+        background: var(--bg-base);
+        box-shadow: var(--neu-in);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text-h);
+        margin: 20px 0;
+        overflow-x: auto;
+    }
+
+    /* Flashcards Container */
+    .flashcard-wrap { perspective: 1000px; margin: 30px 0; height: 340px; position: relative;}
+    .flashcard { 
+        width: 100%; height: 100%; 
+        position: relative; 
+        transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); 
+        transform-style: preserve-3d; cursor: pointer;
+    }
+    .flashcard.flipped { transform: rotateY(180deg); }
+    .card-face { 
+        position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+        border-radius: var(--radius-xl); padding: 40px 24px; 
+        display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; 
+        background: var(--bg-base);
+        box-shadow: var(--neu-out-lg); 
+    }
+    .card-back { transform: rotateY(180deg); }
+    
+    /* Anki Rating Buttons */
+    .rating-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px; opacity: 0; transition: opacity 0.4s; pointer-events: none;}
+    .rating-grid.show { opacity: 1; pointer-events: auto;}
+    .rate-btn { font-size: 13px; padding: 12px 0; flex-direction: column; display: flex; gap: 4px; border-radius: var(--radius-md); }
+    .rate-btn:active { box-shadow: var(--neu-in); }
+
+    /* Horizontal Tabs */
+    .tabs-scroll { display: flex; gap: 16px; overflow-x: auto; padding: 8px 24px 24px; scrollbar-width: none; }
+    .tabs-scroll::-webkit-scrollbar { display: none;}
+    .tab { 
+        padding: 10px 20px; border-radius: var(--radius-pill); font-size: 14px; font-weight: 800; white-space: nowrap; 
+        background: var(--bg-base); box-shadow: var(--neu-out); color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+    }
+    .tab.active { box-shadow: var(--neu-in); color: var(--brand-blue-dark); }
+  </style>
+</head>
+<body>
+
+  <div class="device">
+    <!-- Top Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <i data-lucide="signal" stroke-width="2.5" size="16"></i>
+        <i data-lucide="wifi" stroke-width="2.5" size="16"></i>
+        <i data-lucide="battery-full" stroke-width="2.5" size="20"></i>
+      </div>
+    </div>
+
+    <!-- ☁️ HOME SCREEN -->
+    <div class="screen active" id="view-home">
+      <div class="header">
+        <div>
+          <h1 class="header-title">学习概览</h1>
+          <div class="header-subtitle">星期一 · 三月三十日</div>
+        </div>
+        <img src="https://i.pravatar.cc/150?u=a04258" alt="User" class="avatar">
+      </div>
+      
+      <div class="scroll-area">
+        <!-- Streak Card in Neu Style -->
+        <div class="neu-card" style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 800; color: var(--text-h); margin-bottom: 6px;">绝佳状态</h2>
+            <p style="font-size: 13px; color: var(--text-muted); font-weight: 700;">累计获得 1,240 XP</p>
+          </div>
+          <div style="text-align: center; width: 64px; height: 64px; border-radius: 50%; box-shadow: var(--neu-in); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <div style="font-size: 20px; font-weight: 900; color: #D77B90;">12</div>
+            <div style="font-size: 10px; font-weight: 800; color: var(--text-muted);">天连胜</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">今日待复习</div>
+            <div class="stat-val" style="color: var(--brand-blue-dark);">25<span style="font-size:14px; color:var(--text-muted)">卡</span></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">掌握度</div>
+            <div class="stat-val" style="color: #64A881;">61%</div>
+          </div>
+        </div>
+
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-h); margin: 32px 0 16px;">继续学习</h3>
+        
+        <div class="neu-card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span class="pill blue" style="margin-bottom: 12px;">第3单元 · 课时4</span>
+                <h4 style="font-size: 18px; font-weight: 800; color: var(--text-h); margin-bottom: 4px;">假设检验：均值比较</h4>
+              </div>
+              <button class="neu-btn-icon" onclick="switchTab('view-lesson')">
+                <i data-lucide="play" fill="currentColor" size="18" style="margin-left: 2px;"></i>
+              </button>
+            </div>
+            
+            <div class="neu-progress">
+              <div class="neu-progress-fill" style="width: 40%;"></div>
+            </div>
+            <div style="text-align: right; font-size: 12px; font-weight: 800; color: var(--text-muted);">完成 40%</div>
+        </div>
+
+        <div class="neu-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-size: 15px; font-weight: 800; color: var(--text-h);">本月学习记录</div>
+            <i data-lucide="chevron-right" size="18" color="var(--text-muted)"></i>
+          </div>
+          <div class="heatmap" id="home-heatmap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ☁️ PATH SCREEN -->
+    <div class="screen" id="view-path">
+      <div class="header" style="padding-bottom: 12px;">
+        <div>
+          <h1 class="header-title">学习路径</h1>
+          <div class="header-subtitle">数据科学与人工智能</div>
+        </div>
+      </div>
+      
+      <div class="tabs-scroll">
+        <div class="tab active">统计基础</div>
+        <div class="tab">机器学习</div>
+        <div class="tab">深度学习</div>
+      </div>
+
+      <div class="scroll-area" style="padding-top: 16px;">
+        <div class="path-container">
+          <div class="path-line"></div>
+          
+          <div class="path-node done">
+            <div class="node-icon-wrap"><i data-lucide="check" stroke-width="3" size="18"></i></div>
+            <div class="node-content">
+              <div class="node-title">描述统计与数据探索</div>
+              <div class="node-desc">6课时 · 已掌握</div>
+            </div>
+          </div>
+
+          <div class="path-node done">
+            <div class="node-icon-wrap"><i data-lucide="check" stroke-width="3" size="18"></i></div>
+            <div class="node-content">
+              <div class="node-title">概率论基础</div>
+              <div class="node-desc">8课时 · 已掌握</div>
+            </div>
+          </div>
+
+          <div class="path-node current" onclick="switchTab('view-lesson')" style="cursor:pointer;">
+            <div class="node-icon-wrap"><i data-lucide="loader" size="18" class="spin-anim" style="animation: spin 3s linear infinite;"></i></div>
+            <div class="node-content">
+              <div class="neu-card" style="padding: 20px; box-shadow: var(--neu-out-lg);">
+                <div class="node-title" style="color: var(--brand-blue-dark);">假设检验</div>
+                <div class="node-desc" style="margin-bottom: 16px;">10课时 · 进行中</div>
+                <div class="neu-progress" style="height: 8px; margin: 0;"><div class="neu-progress-fill" style="width: 40%;"></div></div>
+              </div>
+            </div>
+          </div>
+          
+          <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+
+           <div class="path-node" style="opacity: 0.3;">
+            <div class="node-icon-wrap" style="box-shadow: var(--neu-in);"><i data-lucide="lock" size="16"></i></div>
+            <div class="node-content">
+              <div class="node-title">线性回归模型</div>
+              <div class="node-desc">12课时 · 未解锁</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ☁️ LESSON SCREEN -->
+    <div class="screen" id="view-lesson">
+      <div class="header" style="align-items: center;">
+        <button class="neu-btn-icon" onclick="switchTab('view-path')"><i data-lucide="arrow-left" size="20"></i></button>
+        <div style="flex: 1; text-align: center;">
+          <h2 style="font-size: 16px; font-weight: 800; color: var(--text-h);">假设检验</h2>
+        </div>
+        <div style="width: 44px;"></div> <!-- Spacer -->
+      </div>
+      
+      <div class="neu-progress" style="margin:0 24px; height: 6px; border-radius:3px;"><div class="neu-progress-fill" style="width: 40%; border-radius:3px;"></div></div>
+      
+      <div class="scroll-area" style="padding-top: 32px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span class="pill blue">单元 3</span>
+            <h1 style="font-size: 26px; font-weight: 900; color: var(--text-h); margin-top: 16px;">t检验：均值比较</h1>
+        </div>
+        
+        <p style="font-size: 16px; line-height: 1.6; font-weight: 600; text-align: justify; margin-bottom: 24px; padding: 0 8px;">
+          t检验是比较两组数据均值差异的核心工具。它基于 <strong style="color:var(--brand-blue-dark)">t 分布</strong>，专为 <strong style="color:#D77B90">小样本</strong> (n &lt; 30) 且发散度未知的场景而设计。
+        </p>
+
+        <div class="neu-code">
+          <span style="color:#8E9EBC;">// 独立样本检验 - Python</span><br>
+          <span style="color:#9A77CB;">from</span> scipy <span style="color:#9A77CB;">import</span> stats<br><br>
+          t, p = stats.<span style="color:#6F98E2;">ttest_ind</span>(<br>
+          &nbsp;&nbsp;a, b, equal_var=<span style="color:#9A77CB;">False</span><br>
+          )<br>
+          <span style="color:#6F98E2;">print</span>(<span style="color:#64A881;">f"P值: {p:.4f}"</span>)
+        </div>
+
+        <!-- Quiz Section -->
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-h); margin: 40px 0 20px;">互动练习</h3>
+        <p style="font-weight: 700; font-size: 15px; margin-bottom: 24px;">样本少于30且未知的总体方差时，你应该使用什么检验方法？</p>
+        
+        <div class="quiz-option" onclick="handleQuiz(this, false)">
+          <div class="opt-letter">A</div> Z 检验 (正态分布)
+        </div>
+        <div class="quiz-option" onclick="handleQuiz(this, true)">
+          <div class="opt-letter">B</div> t 检验 (t 分布)
+        </div>
+        <div class="quiz-option" onclick="handleQuiz(this, false)">
+          <div class="opt-letter">C</div> 卡方检验
+        </div>
+        
+        <div id="quiz-feedback" style="display: none; padding: 20px; border-radius: var(--radius-md); box-shadow: var(--neu-in); margin-top: 24px; font-size: 15px; font-weight: 700; line-height: 1.5;"></div>
+        
+        <button id="btn-next-lesson" class="neu-btn primary" style="margin-top: 32px; display: none;">继续下一课</button>
+      </div>
+    </div>
+
+    <!-- ☁️ ANKI SCREEN -->
+    <div class="screen" id="view-anki">
+      <div class="header">
+        <h1 class="header-title" style="width: 100%; text-align: center;">复习卡片</h1>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 16px; margin-bottom: 10px;">
+        <span class="pill blue">新卡 8</span>
+        <span class="pill mint">巩固 12</span>
+        <span class="pill pink">待复习 5</span>
+      </div>
+
+      <div class="scroll-area" style="padding-top: 10px;">
+        <div class="flashcard-wrap" id="anki-card-container">
+          <div class="flashcard" onclick="flipCard()">
+            <!-- Front -->
+            <div class="card-face card-front">
+              <div style="font-size: 12px; font-weight: 800; color: var(--brand-blue-dark); text-transform: uppercase; margin-bottom: 30px;">假设检验</div>
+              <div style="font-size: 32px; font-weight: 900; color: var(--text-h); margin-bottom: auto;">P值 <br><span style="font-size:20px; font-weight: 700; color: var(--text-muted)">(p-value)</span></div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); display:flex; align-items:center; gap:6px;"><i data-lucide="hand" size="14"></i> 点击卡片翻转</div>
+            </div>
+            <!-- Back -->
+            <div class="card-face card-back">
+              <div style="font-size: 12px; font-weight: 800; color: var(--brand-pink-dark); text-transform: uppercase; margin-bottom: 24px;">解析</div>
+              <div style="font-size: 16px; font-weight: 700; line-height: 1.6; color: var(--text-h);">
+                在原假设为真时，观测到当前统计结果的概率。<br><br>
+                <div style="padding: 16px; background: var(--bg-base); box-shadow: var(--neu-in); border-radius: var(--radius-sm); margin-top: 20px; color: #D77B90;">
+                    <strong style="font-size:18px;">p &lt; 0.05</strong> → 拒绝原假设
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rating-grid" id="anki-rating">
+          <button class="neu-btn rate-btn" style="color: #D77B90;" onclick="nextCard()">重来<br><span style="font-size:11px; font-weight:600; opacity:0.7">&lt;1分钟</span></button>
+          <button class="neu-btn rate-btn" style="color: #DDA15E;" onclick="nextCard()">困难<br><span style="font-size:11px; font-weight:600; opacity:0.7">6分钟</span></button>
+          <button class="neu-btn rate-btn" style="color: #64A881;" onclick="nextCard()">良好<br><span style="font-size:11px; font-weight:600; opacity:0.7">1天</span></button>
+          <button class="neu-btn rate-btn" style="color: var(--brand-blue-dark);" onclick="nextCard()">简单<br><span style="font-size:11px; font-weight:600; opacity:0.7">4天</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ☁️ DASHBOARD SCREEN -->
+    <div class="screen" id="view-dash">
+      <div class="header">
+        <div>
+          <h1 class="header-title">学习数据</h1>
+          <div class="header-subtitle">你的进步雷达</div>
+        </div>
+      </div>
+      
+      <div class="scroll-area" style="padding-top: 20px;">
+        
+        <div class="neu-card" style="padding: 24px 20px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--text-h); margin-bottom: 20px; text-align:center;">艾宾浩斯记忆曲线</h3>
+          <div style="height: 180px; width: 100%; position: relative; padding: 12px; background: var(--bg-base); border-radius: var(--radius-md); box-shadow: var(--neu-in);">
+            <canvas id="chart-forget"></canvas>
+          </div>
+        </div>
+
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-h); margin: 32px 0 16px; padding: 0 8px;">知识图谱</h3>
+        
+        <div class="neu-card" style="padding: 24px 20px;">
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 800; margin-bottom: 12px; color: var(--text-h);">
+              <span>描述统计</span><span style="color: #64A881;">92%</span>
+            </div>
+            <div class="neu-progress" style="margin: 0; height: 8px;"><div class="neu-progress-fill" style="width: 92%; background: linear-gradient(90deg, #C2E9D2, #64A881);"></div></div>
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 800; margin-bottom: 12px; color: var(--text-h);">
+              <span>假设检验</span><span style="color: var(--brand-blue-dark);">61%</span>
+            </div>
+            <div class="neu-progress" style="margin: 0; height: 8px;"><div class="neu-progress-fill" style="width: 61%;"></div></div>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 800; margin-bottom: 12px; color: var(--text-h);">
+              <span>回归算法</span><span style="color: #D77B90;">25%</span>
+            </div>
+            <div class="neu-progress" style="margin: 0; height: 8px;"><div class="neu-progress-fill" style="width: 25%; background: linear-gradient(90deg, #FFCCD5, #D77B90);"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="nav-bar">
+      <div class="nav-item active" data-target="view-home" onclick="switchTab('view-home')">
+        <i data-lucide="home" class="nav-icon" size="24" stroke-width="2.5"></i>
+      </div>
+      <div class="nav-item" data-target="view-path" onclick="switchTab('view-path')">
+        <i data-lucide="map" class="nav-icon" size="24" stroke-width="2.5"></i>
+      </div>
+      <div class="nav-item" data-target="view-anki" onclick="switchTab('view-anki')">
+        <i data-lucide="layers" class="nav-icon" size="24" stroke-width="2.5"></i>
+      </div>
+      <div class="nav-item" data-target="view-dash" onclick="switchTab('view-dash')">
+        <i data-lucide="pie-chart" class="nav-icon" size="24" stroke-width="2.5"></i>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(targetId) {
+      document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      
+      const targetScreen = document.getElementById(targetId);
+      if(targetScreen) targetScreen.classList.add('active');
+      
+      const navItem = document.querySelector(`.nav-item[data-target="${targetId}"]`);
+      if (navItem) {
+        navItem.classList.add('active');
+      } else if (targetId === 'view-lesson') {
+        document.querySelector(`.nav-item[data-target="view-path"]`).classList.add('active');
+      }
+    }
+
+    // Home Heatmap
+    const heatmapEl = document.getElementById('home-heatmap');
+    const activeDays = [2,3,4,6,7,9,10,11,12,14,15,16,18,19,20,21,23,24,25,26,27,28,29,30];
+    for (let i = 1; i <= 35; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'heat-cell';
+      if(i > 31) { cell.style.opacity = '0'; } 
+      else if(activeDays.includes(i)) {
+          cell.classList.add(i > 25 ? 'lvl-3' : (i % 2 === 0 ? 'lvl-1' : 'lvl-2'));
+      }
+      heatmapEl.appendChild(cell);
+    }
+
+    // Quiz Logic
+    let quizAnswered = false;
+    function handleQuiz(el, isCorrect) {
+      if (quizAnswered) return;
+      quizAnswered = true;
+      
+      const feedback = document.getElementById('quiz-feedback');
+      feedback.style.display = 'block';
+      const nextBtn = document.getElementById('btn-next-lesson');
+      
+      document.querySelectorAll('.quiz-option').forEach(opt => opt.style.pointerEvents = 'none');
+      
+      if (isCorrect) {
+        el.classList.add('correct');
+        feedback.style.color = '#439665';
+        feedback.innerHTML = '<i data-lucide="check-circle" size="20" style="vertical-align:middle; margin-right:8px"></i> 回答正确！对于缺乏总体参数的小样本，t分布有着更稳健的基础。';
+        nextBtn.style.display = 'flex';
+        
+        confetti({
+          particleCount: 100, spread: 70, origin: { y: 0.6 },
+          colors: ['#A1C4FD', '#FFCCD5', '#C2E9D2', '#DBCDF0'] // Pastel confetti !
+        });
+      } else {
+        el.classList.add('wrong');
+        feedback.style.color = '#D77B90';
+        feedback.innerHTML = '<i data-lucide="x-circle" size="20" style="vertical-align:middle; margin-right:8px"></i> 思考一下！Z检验必须在已知方差或大样本的情况下使用。';
+        
+        nextBtn.style.display = 'flex';
+        nextBtn.textContent = '重试本题';
+        nextBtn.onclick = () => {
+          quizAnswered = false;
+          el.classList.remove('wrong');
+          feedback.style.display = 'none';
+          nextBtn.style.display = 'none';
+          document.querySelectorAll('.quiz-option').forEach(opt => opt.style.pointerEvents = 'auto');
+        };
+      }
+      lucide.createIcons();
+    }
+
+    // Anki logic
+    let isFlipped = false;
+    function flipCard() {
+      if (isFlipped) return;
+      document.querySelector('.flashcard').classList.add('flipped');
+      document.getElementById('anki-rating').classList.add('show');
+      isFlipped = true;
+    }
+    
+    function nextCard() {
+      const card = document.querySelector('.flashcard');
+      const rating = document.getElementById('anki-rating');
+      
+      // Slide out gently
+      card.style.transform = 'rotateY(180deg) translateX(100%)';
+      card.style.opacity = '0';
+      rating.classList.remove('show');
+      
+      setTimeout(() => {
+        card.style.transition = 'none';
+        card.classList.remove('flipped');
+        card.style.transform = 'translateY(10%)';
+        card.style.opacity = '0';
+        
+        document.querySelector('.card-front').children[1].innerHTML = "Type I Error";
+        document.querySelector('.card-back').children[1].innerHTML = "弃真错误。<br><br><div style='padding:16px; background:var(--bg-base); box-shadow:var(--neu-in); border-radius:8px; margin-top:20px; color:#D77B90;'>原假设为真，但被错误地拒绝了。</div>";
+        
+        setTimeout(() => {
+          card.style.transition = 'all 0.6s ease';
+          card.style.transform = 'translateY(0)';
+          card.style.opacity = '1';
+          isFlipped = false;
+        }, 50);
+      }, 400);
+    }
+
+    // Chart.js Neo styling
+    Chart.defaults.font.family = "'Nunito', sans-serif";
+    Chart.defaults.font.weight = 'bold';
+    Chart.defaults.color = '#8E9EBC';
+    
+    setTimeout(() => {
+      const ctx = document.getElementById('chart-forget');
+      if (ctx && window.Chart) {
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7'],
+            datasets: [
+              {
+                data: [100, 85, 78, 82, 75, 80, 78],
+                borderColor: '#8AACEC',
+                backgroundColor: 'rgba(161, 196, 253, 0.4)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#E8F0FE',
+                pointBorderColor: '#8AACEC',
+                pointBorderWidth: 2,
+                pointRadius: 4
+              },
+              {
+                data: [100, 33, 28, 25, 23, 21, 20],
+                borderColor: '#CDD9ED',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.4,
+                pointRadius: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: {
+              x: { grid: { display:false }, border: { display: false } },
+              y: { 
+                min: 0, max: 100,
+                grid: { color: 'rgba(205, 217, 237, 0.5)', lineWidth: 1 },
+                border: { display: false },
+                ticks: { stepSize: 50 }
+              }
+            }
+          }
+        });
+      }
+    }, 500);
+
+  </script>
+</body>
+</html>

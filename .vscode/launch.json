@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:LearnNow}/.agents/skills/macos-spm-app-packaging/assets/templates/bootstrap",
+      "name": "Debug MyApp (.agents/skills/macos-spm-app-packaging/assets/templates/bootstrap)",
+      "target": "MyApp",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug MyApp (.agents/skills/macos-spm-app-packaging/assets/templates/bootstrap)"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:LearnNow}/.agents/skills/macos-spm-app-packaging/assets/templates/bootstrap",
+      "name": "Release MyApp (.agents/skills/macos-spm-app-packaging/assets/templates/bootstrap)",
+      "target": "MyApp",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release MyApp (.agents/skills/macos-spm-app-packaging/assets/templates/bootstrap)"
+    }
+  ]
+}
