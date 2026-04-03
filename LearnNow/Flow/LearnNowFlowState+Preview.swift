@@ -58,9 +58,9 @@ extension LearnNowFlowState {
         return flow
     }
 
-    static var dashboardPreview: Self {
+    static var profilePreview: Self {
         var flow = Self()
-        flow.selectTab(.dash)
+        flow.selectTab(.profile)
         return flow
     }
 }

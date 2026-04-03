@@ -6,6 +6,17 @@ extension LearnNowFlowState {
         normalizeReviewState()
     }
 
+    mutating func openFavoritedReviewBoard() {
+        appliedReviewFilters = .empty
+        appliedReviewFilters.favorite = .favoritedOnly
+        draftReviewFilters = appliedReviewFilters
+        activeReviewSheet = nil
+        currentReviewCardIndex = 0
+        isCurrentReviewCardFlipped = false
+        selectTab(.anki)
+        normalizeReviewState()
+    }
+
     mutating func openReviewCardPool() {
         draftReviewFilters = appliedReviewFilters
         activeReviewSheet = .cardPool

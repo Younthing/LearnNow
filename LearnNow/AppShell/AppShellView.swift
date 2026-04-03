@@ -20,7 +20,11 @@ struct AppShellView: View {
                 tabStage(tab: .home) {
                     HomeScreen(
                         model: flow.homeScreenModel,
-                        onContinueLearning: { flow.openLesson() }
+                        onContinueLearning: { flow.openLesson() },
+                        onOpenReviewBoard: { flow.openReviewBoard() },
+                        onOpenRoutes: { flow.showRoutes() },
+                        onOpenFavorites: { flow.openFavoritedReviewBoard() },
+                        onOpenProfile: { flow.selectTab(.profile) }
                     )
                 }
 
@@ -32,8 +36,24 @@ struct AppShellView: View {
                     ReviewBoardContainer(flow: $flow)
                 }
 
-                tabStage(tab: .dash) {
-                    DashboardScreen(model: flow.dashboardScreenModel)
+                tabStage(tab: .profile) {
+                    ProfileScreen(
+                        model: flow.profileScreenModel,
+                        reminderTime: Binding(
+                            get: { flow.reminderTime },
+                            set: { flow.setReminderTime($0) }
+                        ),
+                        remindersEnabled: Binding(
+                            get: { flow.remindersEnabled },
+                            set: { flow.setRemindersEnabled($0) }
+                        ),
+                        isNightModeEnabled: Binding(
+                            get: { flow.isNightModeEnabled },
+                            set: { flow.setNightModeEnabled($0) }
+                        ),
+                        onContinueLearning: { flow.openLesson() },
+                        onOpenFavorites: { flow.openFavoritedReviewBoard() }
+                    )
                 }
             }
             .padding(.bottom, 112)
@@ -67,8 +87,8 @@ struct AppShellView: View {
             .routes
         case .anki:
             .anki
-        case .dash:
-            .dash
+        case .profile:
+            .profile
         }
     }
 }

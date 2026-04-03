@@ -3,6 +3,10 @@ import SwiftUI
 struct HomeScreen: View {
     let model: HomeScreenModel
     let onContinueLearning: () -> Void
+    let onOpenReviewBoard: () -> Void
+    let onOpenRoutes: () -> Void
+    let onOpenFavorites: () -> Void
+    let onOpenProfile: () -> Void
 
     var body: some View {
         ScreenScaffold {
@@ -12,14 +16,11 @@ struct HomeScreen: View {
                 trailing: { AvatarBadge() }
             )
 
-            HomeHeroCard(
-                totalXPText: model.totalXPText,
-                streakDays: model.streakDays
+            TodaySpotlightCard(
+                badge: model.spotlightBadge,
+                title: model.spotlightTitle,
+                detail: model.spotlightBody
             )
-
-            MetricGridSection(items: model.metrics) { metric in
-                HomeMetricCard(metric: metric)
-            }
 
             SectionHeader(title: model.continueSectionTitle)
 
@@ -32,79 +33,148 @@ struct HomeScreen: View {
                 action: onContinueLearning
             )
 
-            InsightCard(
-                title: model.studyRecordTitle,
-                accessory: {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(LearnNowPalette.textMuted)
+            SectionHeader(title: model.quickActionSectionTitle)
+
+            MetricGridSection(items: model.quickActions) { action in
+                HomeQuickActionCard(action: action) {
+                    handleQuickAction(action.id)
                 }
-            ) {
-                HeatmapGrid(cells: model.heatmap)
+            }
+
+            InsightCard(title: model.rhythmTitle) {
+                VStack(spacing: 14) {
+                    ForEach(Array(model.rhythmItems.enumerated()), id: \.element.id) { index, item in
+                        HomeRhythmRow(item: item)
+
+                        if index < model.rhythmItems.count - 1 {
+                            Divider()
+                                .overlay(LearnNowPalette.shadowDark.opacity(0.18))
+                        }
+                    }
+                }
             }
         }
         .accessibilityIdentifier("screen.home")
     }
+
+    private func handleQuickAction(_ id: String) {
+        switch id {
+        case "review":
+            onOpenReviewBoard()
+        case "routes":
+            onOpenRoutes()
+        case "favorites":
+            onOpenFavorites()
+        case "profile":
+            onOpenProfile()
+        default:
+            break
+        }
+    }
 }
 
-private struct HomeHeroCard: View {
-    let totalXPText: String
-    let streakDays: Int
+private struct TodaySpotlightCard: View {
+    let badge: String
+    let title: String
+    let detail: String
 
     var body: some View {
         SoftCard {
-            HStack(alignment: .center, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("绝佳状态")
+            HStack(alignment: .top, spacing: 18) {
+                VStack(alignment: .leading, spacing: 12) {
+                    NeumorphicPill(text: badge, accent: .amber)
+
+                    Text(title)
                         .font(LearnNowTypography.cardHeadline)
                         .foregroundStyle(LearnNowPalette.textPrimary)
 
-                    Text(totalXPText)
-                        .font(LearnNowTypography.screenSubtitle)
-                        .foregroundStyle(LearnNowPalette.textMuted)
+                    Text(detail)
+                        .font(LearnNowTypography.body)
+                        .foregroundStyle(LearnNowPalette.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Spacer()
+                Spacer(minLength: 0)
 
                 InsetCircle(size: 72) {
-                    VStack(spacing: 2) {
-                        Text("\(streakDays)")
-                            .font(.system(size: 22, weight: .black, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.color(for: .pink))
-
-                        Text("天连胜")
-                            .font(.system(size: 10, weight: .heavy, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
+                    Image(systemName: "target")
+                        .font(.system(size: 26, weight: .black))
+                        .foregroundStyle(LearnNowPalette.color(for: .amber))
                 }
             }
         }
     }
 }
 
-private struct HomeMetricCard: View {
-    let metric: LearnNowHeaderMetric
+private struct HomeQuickActionCard: View {
+    let action: HomeScreenModel.QuickAction
+    let onTap: () -> Void
 
     var body: some View {
-        InsetCard {
-            VStack(spacing: 10) {
-                Text(metric.title)
+        Button(action: onTap) {
+            InsetCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(alignment: .center) {
+                        Image(systemName: action.systemImage)
+                            .font(.system(size: 16, weight: .black))
+                            .foregroundStyle(LearnNowPalette.color(for: action.accent))
+
+                        Spacer()
+
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 12, weight: .black))
+                            .foregroundStyle(LearnNowPalette.textMuted)
+                    }
+
+                    Text(action.title)
+                        .font(LearnNowTypography.screenSubtitle)
+                        .foregroundStyle(LearnNowPalette.textMuted)
+
+                    Text(action.value)
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundStyle(LearnNowPalette.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+
+                    Text(action.subtitle)
+                        .font(LearnNowTypography.body)
+                        .foregroundStyle(LearnNowPalette.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct HomeRhythmRow: View {
+    let item: HomeScreenModel.RhythmItem
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(LearnNowPalette.base)
+                    .frame(width: 40, height: 40)
+                    .modifier(InsetSurface(cornerRadius: 20))
+
+                Image(systemName: item.systemImage)
+                    .font(.system(size: 14, weight: .black))
+                    .foregroundStyle(LearnNowPalette.color(for: item.accent))
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.title)
                     .font(LearnNowTypography.screenSubtitle)
                     .foregroundStyle(LearnNowPalette.textMuted)
 
-                HStack(alignment: .lastTextBaseline, spacing: 4) {
-                    Text(metric.value)
-                        .font(LearnNowTypography.metricValue)
-                        .foregroundStyle(LearnNowPalette.color(for: metric.accent))
-
-                    if let unit = metric.unit {
-                        Text(unit)
-                            .font(LearnNowTypography.metricUnit)
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
-                }
+                Text(item.value)
+                    .font(.system(size: 15, weight: .heavy, design: .rounded))
+                    .foregroundStyle(LearnNowPalette.textPrimary)
             }
-            .frame(maxWidth: .infinity)
+
+            Spacer()
         }
     }
 }
@@ -130,50 +200,16 @@ private struct AvatarBadge: View {
     }
 }
 
-private struct HeatmapGrid: View {
-    let cells: [LearnNowHeatCell]
-
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
-
-    var body: some View {
-        LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(cells) { cell in
-                Group {
-                    if cell.level == 0 {
-                        Circle()
-                            .fill(fillColor(for: cell.level))
-                            .modifier(OuterSurface(cornerRadius: 11))
-                    } else {
-                        Circle()
-                            .fill(fillColor(for: cell.level))
-                            .modifier(InsetSurface(cornerRadius: 11))
-                    }
-                }
-                .frame(height: 22)
-                .opacity(cell.level == nil ? 0 : 1)
-            }
-        }
-    }
-
-    private func fillColor(for level: Int?) -> Color {
-        switch level {
-        case nil:
-            .clear
-        case 0:
-            LearnNowPalette.base
-        case 1:
-            LearnNowPalette.color(for: .mint)
-        case 2:
-            LearnNowPalette.color(for: .blue)
-        default:
-            LearnNowPalette.color(for: .pink)
-        }
-    }
-}
-
 #Preview("Home") {
     ZStack {
         LearnNowPalette.canvas.ignoresSafeArea()
-        HomeScreen(model: LearnNowFlowState.homePreview.homeScreenModel, onContinueLearning: {})
+        HomeScreen(
+            model: LearnNowFlowState.homePreview.homeScreenModel,
+            onContinueLearning: {},
+            onOpenReviewBoard: {},
+            onOpenRoutes: {},
+            onOpenFavorites: {},
+            onOpenProfile: {}
+        )
     }
 }

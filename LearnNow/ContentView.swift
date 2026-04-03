@@ -12,6 +12,7 @@ struct ContentView: View {
 
     var body: some View {
         AppShellView(flow: $flow)
+            .preferredColorScheme(flow.isNightModeEnabled ? .dark : .light)
     }
 }
 

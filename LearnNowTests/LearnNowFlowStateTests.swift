@@ -8,6 +8,7 @@
 import Testing
 @testable import LearnNow
 
+@MainActor
 struct LearnNowFlowStateTests {
 
     @Test
@@ -22,9 +23,9 @@ struct LearnNowFlowStateTests {
         #expect(sut.selectedTab == .anki)
         #expect(sut.currentScreen == .anki)
 
-        sut.selectTab(.dash)
-        #expect(sut.selectedTab == .dash)
-        #expect(sut.currentScreen == .dash)
+        sut.selectTab(.profile)
+        #expect(sut.selectedTab == .profile)
+        #expect(sut.currentScreen == .profile)
 
         sut.selectTab(.home)
         #expect(sut.selectedTab == .home)
@@ -52,7 +53,10 @@ struct LearnNowFlowStateTests {
         sut.openPath()
 
         #expect(sut.selectedRouteTrack == .statistics)
-        #expect(sut.visiblePathNodes.map(\.id) == ["stats", "probability", "hypothesis"])
+        #expect(
+            sut.visiblePathNodes.map(\.id) ==
+            ["stats", "probability", "hypothesis", "confidence-intervals", "anova", "experiment-design", "modeling-hypothesis"]
+        )
 
         sut.selectRouteTrack(.machineLearning)
         #expect(sut.visiblePathNodes.map(\.id) == ["regression"])

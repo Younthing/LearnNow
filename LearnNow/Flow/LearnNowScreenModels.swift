@@ -8,15 +8,34 @@ struct HomeScreenModel: Equatable {
         let progressText: String
     }
 
+    struct QuickAction: Identifiable, Equatable {
+        let id: String
+        let title: String
+        let value: String
+        let subtitle: String
+        let systemImage: String
+        let accent: LearnNowAccent
+    }
+
+    struct RhythmItem: Identifiable, Equatable {
+        let id: String
+        let title: String
+        let value: String
+        let systemImage: String
+        let accent: LearnNowAccent
+    }
+
     let title: String
     let subtitle: String
-    let totalXPText: String
-    let streakDays: Int
-    let metrics: [LearnNowHeaderMetric]
+    let spotlightBadge: String
+    let spotlightTitle: String
+    let spotlightBody: String
     let continueSectionTitle: String
     let continueCard: ContinueCard
-    let studyRecordTitle: String
-    let heatmap: [LearnNowHeatCell]
+    let quickActionSectionTitle: String
+    let quickActions: [QuickAction]
+    let rhythmTitle: String
+    let rhythmItems: [RhythmItem]
 }
 
 struct RoutesOverviewModel: Equatable {
@@ -232,14 +251,48 @@ struct ReviewFiltersSheetModel: Equatable {
     let canApply: Bool
 }
 
-struct DashboardScreenModel: Equatable {
+struct ProfileScreenModel: Equatable {
+    struct OverviewCTA: Equatable {
+        let badge: String
+        let title: String
+        let subtitle: String
+        let progress: Double
+        let progressText: String
+        let xpText: String
+        let heatmap: [LearnNowHeatCell]
+        let metrics: [LearnNowHeaderMetric]
+    }
+
+    struct FavoriteSummary: Equatable {
+        let countText: String
+        let masteredText: String
+        let highlights: [LearnNowProfileFavoriteHighlight]
+        let actionTitle: String
+    }
+
     let title: String
     let subtitle: String
+    let profileName: String
+    let profileHeadline: String
+    let profileLevel: String
+    let overviewCTA: OverviewCTA
+    let favoritesTitle: String
+    let favoritesSubtitle: String
+    let favoriteSummary: FavoriteSummary
     let retentionTitle: String
     let primarySeries: [Double]
     let baselineSeries: [Double]
     let knowledgeTitle: String
     let knowledgeMetrics: [LearnNowKnowledgeMetric]
+    let settingsTitle: String
+    let settingsSubtitle: String
+    let reminderTitle: String
+    let reminderSubtitle: String
+    let reminderTimeText: String
+    let remindersEnabled: Bool
+    let appearanceTitle: String
+    let appearanceSubtitle: String
+    let isNightModeEnabled: Bool
 }
 
 extension LearnNowFlowState {
@@ -249,11 +302,11 @@ extension LearnNowFlowState {
         let currentLessonTitle = lessonPages.isEmpty ? self.currentLessonTitle : lessonPages[safePageIndex].title
 
         return HomeScreenModel(
-            title: "学习概览",
+            title: "今日学习",
             subtitle: todayLabel,
-            totalXPText: "累计获得 \(totalXP) XP",
-            streakDays: streakDays,
-            metrics: homeMetrics,
+            spotlightBadge: remindersEnabled ? "提醒时间 \(reminderTimeText)" : "提醒已关闭",
+            spotlightTitle: "先推进主线，再处理 \(reviewCardsDueTodayCount) 张待复习卡片",
+            spotlightBody: "当前在 \(selectedRouteTrackTitle) 路线上，保持 \(streakDays) 天连续学习，节奏已经很稳。",
             continueSectionTitle: "继续学习",
             continueCard: .init(
                 badge: currentLessonBadge,
@@ -261,8 +314,65 @@ extension LearnNowFlowState {
                 progress: 0.40,
                 progressText: "完成 40%"
             ),
-            studyRecordTitle: "本月学习记录",
-            heatmap: heatmap
+            quickActionSectionTitle: "快捷入口",
+            quickActions: [
+                .init(
+                    id: "review",
+                    title: "今日复习",
+                    value: "\(reviewCardsDueTodayCount) 张",
+                    subtitle: "处理今天到期的卡片",
+                    systemImage: "bolt.fill",
+                    accent: .blue
+                ),
+                .init(
+                    id: "routes",
+                    title: "学习路线",
+                    value: selectedRouteTrackTitle,
+                    subtitle: "返回课程路径",
+                    systemImage: "map.fill",
+                    accent: .mint
+                ),
+                .init(
+                    id: "favorites",
+                    title: "我的收藏",
+                    value: "\(favoritedReviewCardsCount) 张",
+                    subtitle: "快速回看重点内容",
+                    systemImage: "bookmark.fill",
+                    accent: .pink
+                ),
+                .init(
+                    id: "profile",
+                    title: "个人中心",
+                    value: remindersEnabled ? reminderTimeText : "已关闭",
+                    subtitle: "提醒与外观设置",
+                    systemImage: "person.crop.circle.fill",
+                    accent: .purple
+                ),
+            ],
+            rhythmTitle: "今天的节奏",
+            rhythmItems: [
+                .init(
+                    id: "route",
+                    title: "当前主线",
+                    value: selectedRouteTrackTitle,
+                    systemImage: "point.topleft.down.curvedto.point.bottomright.up",
+                    accent: .mint
+                ),
+                .init(
+                    id: "streak",
+                    title: "连续学习",
+                    value: "\(streakDays) 天",
+                    systemImage: "flame.fill",
+                    accent: .amber
+                ),
+                .init(
+                    id: "reminder",
+                    title: "晚间提醒",
+                    value: remindersEnabled ? reminderTimeText : "已关闭",
+                    systemImage: "bell.fill",
+                    accent: .blue
+                ),
+            ]
         )
     }
 
@@ -473,15 +583,72 @@ extension LearnNowFlowState {
         )
     }
 
-    var dashboardScreenModel: DashboardScreenModel {
-        DashboardScreenModel(
-            title: "学习数据",
-            subtitle: "你的进步雷达",
+    var profileScreenModel: ProfileScreenModel {
+        let safePageIndex = min(currentLessonPageIndex, max(lessonPages.count - 1, 0))
+        let currentLessonBadge = "第\(loadedLessonModuleIndex + 1)单元 · 课时\(safePageIndex + 1)"
+        let currentLessonTitle = lessonPages.isEmpty ? self.currentLessonTitle : lessonPages[safePageIndex].title
+        let level = max(1, totalXP / 200)
+
+        return ProfileScreenModel(
+            title: "我的",
+            subtitle: "学习概览、收藏与偏好设置",
+            profileName: "数据科学学徒",
+            profileHeadline: "\(streakDays) 天连续学习 · 累计 \(totalXP) XP",
+            profileLevel: "Lv.\(level)",
+            overviewCTA: .init(
+                badge: currentLessonBadge,
+                title: currentLessonTitle,
+                subtitle: "把原来的学习概览收进这里，作为你的个人学习驾驶舱。",
+                progress: 0.40,
+                progressText: "主线完成 40%",
+                xpText: "累计获得 \(totalXP) XP",
+                heatmap: heatmap,
+                metrics: [
+                    LearnNowHeaderMetric(
+                        id: "review",
+                        title: "今日待复习",
+                        value: "\(reviewCardsDueTodayCount)",
+                        unit: "卡",
+                        accent: .blue
+                    ),
+                    LearnNowHeaderMetric(
+                        id: "mastery",
+                        title: "掌握度",
+                        value: "\(Int(mastery * 100))%",
+                        unit: nil,
+                        accent: .mint
+                    ),
+                    LearnNowHeaderMetric(
+                        id: "favorites",
+                        title: "已收藏",
+                        value: "\(favoritedReviewCardsCount)",
+                        unit: "张",
+                        accent: .pink
+                    ),
+                ]
+            ),
+            favoritesTitle: "收藏",
+            favoritesSubtitle: "把重点卡片固定在一个入口，随时回看。",
+            favoriteSummary: .init(
+                countText: "\(favoritedReviewCardsCount) 张已收藏",
+                masteredText: "\(masteredFavoritedReviewCardsCount) 张已掌握",
+                highlights: profileFavoriteHighlights,
+                actionTitle: "进入收藏复习"
+            ),
             retentionTitle: "艾宾浩斯记忆曲线",
             primarySeries: retentionSeries,
             baselineSeries: baselineSeries,
-            knowledgeTitle: "知识图谱",
-            knowledgeMetrics: knowledgeMetrics
+            knowledgeTitle: "知识掌握",
+            knowledgeMetrics: knowledgeMetrics,
+            settingsTitle: "设置",
+            settingsSubtitle: "提醒节奏和外观偏好都在这里统一管理。",
+            reminderTitle: "提醒时间",
+            reminderSubtitle: "每天固定一个轻提醒，把学习重新拉回你的日程里。",
+            reminderTimeText: reminderTimeText,
+            remindersEnabled: remindersEnabled,
+            appearanceTitle: "外观模式",
+            appearanceSubtitle: "一键切换白天 / 夜间模式，保持阅读舒适度。",
+            isNightModeEnabled: isNightModeEnabled
         )
     }
 

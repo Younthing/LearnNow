@@ -11,16 +11,16 @@ enum LearnNowTab: String, CaseIterable, Equatable, Identifiable {
     case home
     case routes
     case anki
-    case dash
+    case profile
 
     var id: Self { self }
 
     var title: String {
         switch self {
-        case .home: "概览"
+        case .home: "首页"
         case .routes: "路线"
         case .anki: "复习"
-        case .dash: "数据"
+        case .profile: "我的"
         }
     }
 
@@ -29,7 +29,7 @@ enum LearnNowTab: String, CaseIterable, Equatable, Identifiable {
         case .home: "house"
         case .routes: "map"
         case .anki: "square.stack.3d.up"
-        case .dash: "chart.pie"
+        case .profile: "person.crop.circle"
         }
     }
 }
@@ -38,7 +38,7 @@ enum LearnNowScreen: Equatable {
     case home
     case routes
     case anki
-    case dash
+    case profile
 }
 
 enum LearnNowRoutesDestination: Equatable {
@@ -347,6 +347,13 @@ struct LearnNowKnowledgeMetric: Identifiable, Equatable {
     let accent: LearnNowAccent
 }
 
+struct LearnNowProfileFavoriteHighlight: Identifiable, Equatable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let accent: LearnNowAccent
+}
+
 struct LearnNowModuleDefinition: Identifiable, Equatable {
     let id: String
     let track: LearnNowRouteTrack
@@ -389,6 +396,9 @@ struct LearnNowFlowState: Equatable {
     var draftReviewFilters: LearnNowReviewFilters = .empty
     var activeReviewSheet: LearnNowReviewSheet?
     var didAwardCompletionXP = false
+    var reminderTime = Self.defaultReminderTime()
+    var remindersEnabled = true
+    var isNightModeEnabled = false
 
     var homeMetrics: [LearnNowHeaderMetric] {
         [
@@ -501,12 +511,39 @@ struct LearnNowFlowState: Equatable {
         ]
     }
 
+    var favoritedReviewCardsCount: Int {
+        reviewCards.filter(\.isFavorited).count
+    }
+
+    var masteredFavoritedReviewCardsCount: Int {
+        reviewCards.filter { $0.isFavorited && $0.isMastered }.count
+    }
+
+    var profileFavoriteHighlights: [LearnNowProfileFavoriteHighlight] {
+        reviewCards
+            .filter(\.isFavorited)
+            .sorted(by: Self.reviewSort)
+            .prefix(3)
+            .map {
+                LearnNowProfileFavoriteHighlight(
+                    id: $0.id,
+                    title: $0.frontTitle,
+                    subtitle: $0.moduleTitle,
+                    accent: $0.accent
+                )
+            }
+    }
+
     var retentionSeries: [Double] {
         [1.0, 0.85, 0.78, 0.82, 0.75, 0.80, 0.78]
     }
 
     var baselineSeries: [Double] {
         [1.0, 0.33, 0.28, 0.25, 0.23, 0.21, 0.20]
+    }
+
+    var reminderTimeText: String {
+        Self.timeFormatter.string(from: reminderTime)
     }
 
     var currentLessonPage: LearnNowLessonPage {
@@ -635,4 +672,24 @@ struct LearnNowFlowState: Equatable {
     var applyFiltersCTA: String {
         stagedReviewCards.isEmpty ? "当前范围暂无可复习卡片" : "按当前筛选开始复习"
     }
+}
+
+private extension LearnNowFlowState {
+    static func defaultReminderTime() -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+        return calendar.date(
+            bySettingHour: 20,
+            minute: 30,
+            second: 0,
+            of: now
+        ) ?? now
+    }
+
+    static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "HH:mm"
+        return formatter
+    }()
 }

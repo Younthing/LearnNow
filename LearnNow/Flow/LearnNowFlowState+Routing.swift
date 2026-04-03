@@ -12,8 +12,8 @@ extension LearnNowFlowState {
         case .anki:
             currentScreen = .anki
             normalizeReviewState()
-        case .dash:
-            currentScreen = .dash
+        case .profile:
+            currentScreen = .profile
         }
     }
 
@@ -168,6 +168,20 @@ extension LearnNowFlowState {
     func trackForModuleIndex(_ moduleIndex: Int) -> LearnNowRouteTrack? {
         guard Self.modules.indices.contains(moduleIndex) else { return nil }
         return Self.modules[moduleIndex].track
+    }
+}
+
+extension LearnNowFlowState {
+    mutating func setReminderTime(_ date: Date) {
+        reminderTime = date
+    }
+
+    mutating func setRemindersEnabled(_ enabled: Bool) {
+        remindersEnabled = enabled
+    }
+
+    mutating func setNightModeEnabled(_ enabled: Bool) {
+        isNightModeEnabled = enabled
     }
 }
 
