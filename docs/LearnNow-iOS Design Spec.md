@@ -1,11 +1,11 @@
 # LearnNow iOS Design Spec（SwiftUI 实现规格文档）
 
-- 文档版本：v1.1
+- 文档版本：v2.0
 - 文档状态：Draft / 可交接修订版
 - 适用端：iOS（SwiftUI）
 - 最低部署目标：iOS 26.2（与当前工程配置一致，默认采用现代 SwiftUI / Observation）
-- 设计来源：`原型-Neumorphism.html`
-- 目标用途：从原型迁移到 SwiftUI，实现页面拆分、组件复用、状态定义与导航落地
+- 文档性质：LearnNow iOS 设计与 SwiftUI 实现的唯一事实来源
+- 目标用途：统一产品、设计、开发与测试的实现口径
 
 ---
 
@@ -13,7 +13,7 @@
 
 ### 0.1 文档目标
 
-本文档用于将 LearnNow 原型转化为可交付给 iOS 客户端开发的实现规格，重点覆盖以下内容：
+本文档是 LearnNow iOS 客户端的唯一事实来源，重点覆盖以下内容：
 
 1. 定义 App 的页面结构与主流程。
 2. 定义全局导航、页面入口与页面出口。
@@ -23,7 +23,7 @@
 
 ### 0.2 适用范围
 
-本文档覆盖原型中已出现的 7 个核心视图：
+本文档覆盖 LearnNow iOS 当前确认的 7 个核心视图：
 
 - Home
 - Routes
@@ -64,6 +64,7 @@
 - 组件行为冲突时，以第 4 章为准。
 - 页面流转冲突时，以第 2 章为准。
 - 页面内示意文案与规则冲突时，以正文规则为准。
+- 若代码实现、demo、口头约定或评审结论与本文档冲突，以本文档为准。
 
 ### 0.5 命名规范
 
@@ -264,14 +265,12 @@ Dashboard
 3. `Completion` 没有顶部返回按钮，主出口由 CTA 决定。
 4. Tab 切换应保留各自独立的栈历史，不因切换而清空 `NavigationPath`。
 
-### 2.6 导航实现建议
+### 2.6 导航实现规范
 
 #### App Shell
 
-建议采用：
-
 - 根层由 `AppShellView` 持有 `TabView(selection:)`
-- 底部导航视觉上可保持原型中的浮动新拟态样式，但应由 App Shell 统一提供 `FloatingTabBar`
+- 底部导航视觉上采用浮动玻璃胶囊样式，但应由 App Shell 统一提供 `FloatingTabBar`
 - `FloatingTabBar` 只负责展示与切换 `selectedTab`，不直接持有页面业务状态
 
 #### NavigationStack
@@ -281,7 +280,7 @@ Dashboard
 - `Routes` 的栈统一承载 `RoutesView → PathView → LessonView → CompletionView`
 - `Home` 的 Continue Learning 通过切换到 `Routes` Tab，并恢复或构造对应的路由链进入 `Lesson`
 
-#### 路由与 Tab 建议
+#### 路由与 Tab 定义
 
 ```swift
 enum AppTab: Hashable {
@@ -298,15 +297,15 @@ enum RoutesRoute: Hashable {
 }
 ```
 
-#### Router 建议
+#### Router 约束
 
 - 每个 Tab 拥有独立 Router / `NavigationPath`
 - 仅 `Routes` Router 需要承载 `Path`、`Lesson`、`Completion`
 - 深链和 Home continue 行为都应写入 Router，而不是通过全局 `currentScreen` 枚举切屏
 
-### 2.7 深链预留
+### 2.7 深链语义
 
-v1 不要求真实深链落地，但建议预留以下路由语义：
+统一使用以下路由语义：
 
 - `learnnow://home`
 - `learnnow://routes`
@@ -443,7 +442,7 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 - 当前 Lesson 进度
 - 月度热力图数据
 
-#### SwiftUI 拆分建议
+#### SwiftUI 视图拆分
 
 - `HomeView`
   - `HomeHeaderView`
@@ -493,7 +492,7 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 
 ##### B. RouteCardList
 
-原型中至少包含 3 条路线：
+当前路线列表固定包含 3 条路线：
 
 1. 数据科学与人工智能
 2. UI/UX 设计进阶
@@ -549,7 +548,7 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 - 状态文案
 - 是否可继续学习
 
-#### SwiftUI 拆分建议
+#### SwiftUI 视图拆分
 
 - `RoutesView`
   - `RoutesHeaderView`
@@ -597,7 +596,7 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 
 ##### B. PathStageTabs
 
-原型包含 3 个阶段 Tab：
+阶段 Tab 固定为 3 项：
 
 - 统计基础
 - 机器学习
@@ -676,7 +675,7 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 - 节点状态
 - 当前节点进度
 
-#### SwiftUI 拆分建议
+#### SwiftUI 视图拆分
 
 - `PathView`
   - `PathHeaderView`
@@ -725,7 +724,7 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 
 ##### B. SegmentProgressBar
 
-用于表示 Lesson 内部 slide 进度。原型为 2 段。
+用于表示 Lesson 内部 slide 进度。当前 Lesson 固定为 2 段。
 
 ##### C. LessonSlider
 
@@ -818,7 +817,7 @@ Lesson 过程状态：
 - 完成条件
 - 最近停留的 slide 索引（用于恢复）
 
-#### SwiftUI 拆分建议
+#### SwiftUI 视图拆分
 
 - `LessonView`
   - `LessonHeaderView`
@@ -877,7 +876,7 @@ Lesson 过程状态：
 
 说明：
 
-- v1 的 XP、连胜、奖励文案均由本地数据或本地规则生成
+- XP、连胜、奖励文案由本地数据或本地规则生成
 - 不依赖服务端奖励计算结果
 
 ##### C. GeneratedFlashcardsCard
@@ -942,12 +941,12 @@ Lesson 过程状态：
 - 卡片标签
 - 调度提示文案
 
-本期规则：
+数据规则：
 
 - Completion 展示数据来源于本地 mock / 本地规则计算
-- 不要求后端返回奖励结果
+- 不依赖后端返回奖励结果
 
-#### SwiftUI 拆分建议
+#### SwiftUI 视图拆分
 
 - `CompletionView`
   - `CompletionHeroView`
@@ -1022,7 +1021,7 @@ Lesson 过程状态：
 
 说明：
 
-- 四档评分的标题与间隔文案在 v1 由本地静态配置提供
+- 四档评分的标题与间隔文案由本地静态配置提供
 - 不依赖服务端动态返回评分区间
 
 #### 用户操作
@@ -1076,12 +1075,12 @@ Lesson 过程状态：
 - 新卡/巩固/待复习数量
 - 下一张卡信息
 
-本期规则：
+数据规则：
 
 - 评分按钮文案、调度区间和卡片队列可完全使用本地 mock / 本地配置
-- 后端接入仅作为后续扩展预留
+- 不依赖后端接入
 
-#### SwiftUI 拆分建议
+#### SwiftUI 视图拆分
 
 - `AnkiView`
   - `AnkiHeaderView`
@@ -1172,7 +1171,7 @@ Lesson 过程状态：
 - 知识点列表
 - 各知识点掌握度百分比
 
-#### SwiftUI 拆分建议
+#### SwiftUI 视图拆分
 
 - `DashboardView`
   - `DashboardHeaderView`
@@ -1243,7 +1242,7 @@ Lesson 过程状态：
 | IconButton      | Foundation | 返回、播放等图标型按钮                 | Home / Path / Lesson                             |
 | ProgressBar     | Foundation | 一般进度展示                           | Home / Routes / Path / Dashboard                 |
 | PillTag         | Foundation | 轻量标签                               | Home / Lesson / Completion / Anki                |
-| CardContainer   | Foundation | 新拟态卡片底座                         | 全局                                             |
+| CardContainer / SoftCard / InsetCard | Foundation | 双主题玻璃卡片底座（外凸 / 内陷）     | 全局                                             |
 
 ### 4.3 页面复合组件清单
 
@@ -1302,7 +1301,7 @@ Lesson 过程状态：
 - 返回标题型
 - 居中标题型
 
-##### SwiftUI 实现建议
+##### SwiftUI 实现约束
 
 使用统一 `HeaderBar` 组件，通过插槽或枚举控制 leading / trailing 区域。
 
@@ -1504,7 +1503,7 @@ Lesson 过程状态：
 | 页面       | 整页状态                                 | 关键区块 / 过程状态                                                  |
 | ---------- | ---------------------------------------- | -------------------------------------------------------------------- |
 | Home       | `loading` / `loaded` / `error`           | `continueSectionState` / `heatmapSectionState`                       |
-| Routes     | `loading` / `loaded` / `empty` / `error` | `selectedFilter`（预留）                                             |
+| Routes     | `loading` / `loaded` / `empty` / `error` | 无                                                                   |
 | Path       | `loading` / `loaded` / `error`           | `selectedStage` / `timelineSectionState`                             |
 | Lesson     | `loading` / `loaded` / `error`           | `currentSlideIndex` / `lastVisitedSlideIndex` / `quizAnswerStates` / `isReadyForNextSlide` |
 | Completion | `loading` / `loaded` / `error`           | `rewardSectionState` / `generatedFlashcardsSectionState`             |
@@ -1522,7 +1521,7 @@ Lesson 过程状态：
 | FlashcardView      | `front` / `back`                                         |
 | ReviewRatingButton | `normal` / `pressed` / `disabled`                        |
 
-### 5.3 业务实体模型建议
+### 5.3 业务实体模型
 
 #### UserLearningSummary
 
@@ -1593,7 +1592,7 @@ struct MasteryTopic: Identifiable {
 }
 ```
 
-### 5.4 UI 状态枚举建议
+### 5.4 UI 状态枚举
 
 ```swift
 enum ScreenLoadState {
@@ -1675,150 +1674,197 @@ struct LessonResumeState {
 
 ### 6.1 设计语言概述
 
-整体视觉语言为：
+整体视觉语言定义为：
 
-- 新拟态（Neumorphism / Soft UI）
-- 柔和粉彩配色
-- 大圆角卡片
-- 外凸与内凹并存的层级关系
-- 轻量动效与柔和反馈
+- 沉浸式环境光底色（Ambient Glow）
+- 原生 `ultraThinMaterial` 毛玻璃表面
+- 夜间电影感与日间清透感并存的双主题系统
+- 高饱和功能色在深浅背景上的强对比视觉引导
+- 以弹簧为主的物理反馈交互
+- 保留外凸 / 内陷层级关系，但不再依赖传统双向新拟态阴影
 
-### 6.2 颜色 Token
+### 6.2 主题模式策略
 
-以下颜色来自原型：
+- 默认跟随系统 `ColorScheme`，支持日间 / 夜间模式即时切换
+- 颜色 Token 必须通过动态 provider 生成；实现采用 `Color.dynamic(light:dark:)` + `UIColor(dynamicProvider:)`
+- 主题切换不依赖额外业务状态注入，不为 Light / Dark 单独维护页面状态
+- 夜间主题目标为 Premium Dark Cinematic：深空黑画布、半透明深色玻璃、高饱和发光 accent
+- 日间主题目标为 Light Glassmorphism：冷白画布、低透明白色玻璃、更明亮的彩色漫反射
 
-| Token           | 值        | 用途       |
-| --------------- | --------- | ---------- |
-| `bgBase`        | `#E8F0FE` | 全局背景   |
-| `brandBlue`     | `#A1C4FD` | 主品牌浅蓝 |
-| `brandBlueDark` | `#8AACEC` | 主强调蓝   |
-| `brandPink`     | `#FFCCD5` | 粉色强调   |
-| `brandPinkDark` | `#FFAAC3` | 深粉强调   |
-| `brandMint`     | `#C2E9D2` | 薄荷绿     |
-| `brandPurple`   | `#DBCDF0` | 紫色辅助   |
-| `textMain`      | `#5C6B89` | 正文       |
-| `textHeading`   | `#3B4A6B` | 标题       |
-| `textMuted`     | `#8E9EBC` | 次级文字   |
-| `textLight`     | `#A4B2CD` | 弱化文字   |
-| `shadowDark`    | `#CDD9ED` | 阴影暗面   |
-| `shadowLight`   | `#FFFFFF` | 阴影亮面   |
+### 6.3 颜色 Token
 
-### 6.3 字体 Token
+以下 Token 以 `LearnNowPalette` 为事实标准：
 
-原型使用 `Nunito` 风格。SwiftUI 落地时建议优先映射为系统字体权重层级，除非项目要求接入自定义字体。
+| Token           | Light                       | Dark                        | 用途 |
+| --------------- | --------------------------- | --------------------------- | ---- |
+| `canvas`        | `#F4F6F9`                   | `#07070A`                   | 全局画布底色 |
+| `base`          | `#FFFFFF @ 55%`            | `#1E1E24 @ 50%`            | 毛玻璃表面底漆 |
+| `textPrimary`   | `#1E293B @ 100%`           | `#FFFFFF @ 95%`            | 标题、核心信息 |
+| `textSecondary` | `#475569 @ 100%`           | `#FFFFFF @ 75%`            | 说明文、次级正文 |
+| `textMuted`     | `#94A3B8 @ 100%`           | `#FFFFFF @ 50%`            | 弱化标签、未选中状态 |
+| `shadowDark`    | `#A4ADC1 @ 40%`            | `#000000 @ 50%`            | 深度阴影 |
+| `shadowLight`   | `#FFFFFF @ 90%`            | `#FFFFFF @ 10%`            | 保留给高光或极浅边缘 |
+| `accentBlue`    | `#2563EB`                   | `#5E6AD2`                   | 主行动、进行中状态、关键路径 |
+| `accentPink`    | `#EC4899`                   | `#F43F5E`                   | 成就、情绪反馈、热度强调 |
+| `accentMint`    | `#10B981`                   | `#10B981`                   | 正向反馈、完成、健康值 |
+| `accentPurple`  | `#8B5CF6`                   | `#8B5CF6`                   | 辅助路径、次级高亮 |
+| `accentAmber`   | `#F59E0B`                   | `#F59E0B`                   | 提醒、告警但非危险态 |
 
-建议层级：
+补充规则：
 
-| Token       | 建议字号 | 建议字重 | 用途            |
-| ----------- | -------- | -------- | --------------- |
-| `displayXL` | 28       | heavy    | Completion 标题 |
-| `titleL`    | 26       | bold     | 主页面标题      |
-| `titleM`    | 22       | bold     | 次级页面标题    |
-| `headingM`  | 18       | bold     | 区块标题        |
-| `bodyM`     | 16       | semibold | 正文            |
-| `bodyS`     | 14       | semibold | 说明文字        |
-| `caption`   | 12       | bold     | 标签、辅助信息  |
-| `micro`     | 10       | bold     | 极小标签        |
+- 所有 accent 必须在深色大底上保持高饱和发光感，在浅色底上保持可见但不过曝。
+- 不再使用早期 `bgBase` / `brandBlue` 一类浅粉彩常量作为规范基准。
+- 新增颜色应优先作为动态 Token 接入，不允许只定义单一模式颜色。
 
-### 6.4 圆角 Token
+### 6.4 字体 Token
 
-| Token        | 值  |
-| ------------ | --- |
-| `radiusS`    | 8   |
-| `radiusM`    | 16  |
-| `radiusL`    | 24  |
-| `radiusXL`   | 32  |
-| `radiusPill` | 999 |
+全局统一使用系统圆角字形，即 `.system(..., design: .rounded)`；仅代码或数字密集区可使用 monospaced 变体。
 
-### 6.5 阴影 Token
+| Token       | 字号 | 字重 | 用途 |
+| ----------- | ---- | ---- | ---- |
+| `displayXL` | 32       | black    | Completion 标题、核心 hero 数值 |
+| `titleL`    | 26       | heavy    | 顶级页面标题 |
+| `titleM`    | 20       | heavy    | 区块标题、重点卡片标题 |
+| `headingM`  | 18       | heavy    | 页面导航标题、一级操作文案 |
+| `bodyM`     | 16       | semibold | 标准正文、按钮标题 |
+| `bodyS`     | 14       | bold     | 辅助说明、列表副文本 |
+| `caption`   | 13       | bold     | 标签、状态说明、统计单位 |
+| `micro`     | 10       | heavy    | 极小标签 |
+| `codeS`     | 13       | medium   | 代码块、等宽信息 |
 
-#### 外凸态
+### 6.5 圆角 Token
 
-- `neuOutSm`: `4 / 4 / 8` + `-4 / -4 / 8`
-- `neuOut`: `8 / 8 / 16` + `-8 / -8 / 16`
-- `neuOutLg`: `12 / 12 / 24` + `-12 / -12 / 24`
+| Token         | 值  | 典型用途 |
+| ------------- | --- | -------- |
+| `radiusXS`    | 11  | Heatmap 单元、微型状态点 |
+| `radiusS`     | 18  | 小型按钮、紧凑卡片、Quiz 选项 |
+| `radiusM`     | 22  | InsetCard、评分按钮、内陷区域 |
+| `radiusL`     | 26  | 主卡片、SoftCard |
+| `radiusXL`    | 32  | Flashcard、大尺寸 Hero 容器 |
+| `radiusPill`  | 999 | Pill、Capsule、浮动 Tab Bar |
 
-#### 内凹态
+补充规则：
 
-- `neuInSm`: `inset 3 / 3 / 6` + `inset -3 / -3 / 6`
-- `neuIn`: `inset 6 / 6 / 12` + `inset -6 / -6 / 12`
+- 圆形按钮与圆形状态容器使用 `size / 2` 推导，不单独定义额外 token。
+- 新组件优先复用现有半径层级，避免在 `20~28` 区间随意新增相邻值。
 
-### 6.6 间距 Token
+### 6.6 表面与材质规范
 
-建议映射：
+当前设计系统以“材质 + 深度 + 高光描边”替代旧式双阴影新拟态。
 
-| Token     | 值  |
-| --------- | --- |
-| `space4`  | 4   |
-| `space8`  | 8   |
-| `space12` | 12  |
-| `space16` | 16  |
-| `space20` | 20  |
-| `space24` | 24  |
-| `space32` | 32  |
-| `space40` | 40  |
+#### 外凸玻璃表面（`OuterSurface`）
 
-### 6.7 图标规范
+- 底层使用 `base`
+- 背景使用系统 `.ultraThinMaterial`
+- 增加 `0.5pt` 白色至透明的对角渐变高光描边
+- 使用单一纵向深度阴影：`radius 16 / y 8`
+- 适用于主卡片、浮动 Tab Bar、未按下按钮、默认胶囊控件
 
-- 线性图标为主
-- 强调图标可辅以 fill 态
-- 图标应统一在柔和风格下使用，不使用过重描边
-- 建议统一由 `IconToken` 管理尺寸与颜色
+#### 内陷玻璃表面（`InsetSurface`）
 
-### 6.8 动效规范
+- 背景使用低透明黑色底漆：夜间 `35%`，日间 `5%`
+- 外层使用白色描边：夜间 `5%`，日间 `40%`
+- 使用较轻的深度阴影：`radius 8 / y 4`
+- 适用于选中态、输入态、按下态、进度轨道、内嵌槽位
 
-#### 页面切换
+#### 交互按压态（`SoftPressStyle`）
 
-- 使用轻量淡入模糊过渡
-- 不使用强烈位移动效
+- 默认态为 `OuterSurface`
+- 按下态切换为 `InsetSurface`
+- 同步缩放到 `0.96`
+- 同步透明度降到 `0.9`
+- 目的是形成明显的确认感与阻尼回弹，而不是简单的透明度闪烁
 
-#### 按钮点击
+### 6.7 背景与环境光规范
 
-- 轻微缩放
-- 从外凸态切入内凹态
+- 全局背景分为两层：底层 `canvas`，其上为 `BackgroundGlow`
+- 环境光由 3 个动态漫游光球组成：蓝色、紫色、薄荷色
+- 标准尺寸与模糊值为：`320 / blur 60`、`280 / blur 50`、`300 / blur 70`
+- 动效采用 `withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true))`
+- 日间模式下环境光透明度乘数为 `1.0`，夜间模式下为 `0.7`；即日间约为夜间的 `1.43x`
+- 环境光仅服务于氛围与层次，不应影响正文识别、点击反馈或可访问性对比度
 
-#### Completion 入场
+### 6.8 间距 Token
 
-- Hero 图标允许使用放大弹出动效
-- 结果卡片采用顺序淡入上移动效
+标准映射：
 
-#### Anki 翻卡
+| Token      | 值   | 用途 |
+| ---------- | ---- | ---- |
+| `space8`   | 8    | 紧凑元素间距 |
+| `space12`  | 12   | 胶囊 / Tab Bar 内边距 |
+| `space16`  | 16   | 小型操作组、图标与文字组合 |
+| `space18`  | 18   | 页面内互动模块组 |
+| `space20`  | 20   | InsetCard 内容内边距 |
+| `space24`  | 24   | 页面横向边距、主卡片节奏 |
+| `space32`  | 32   | 大区块分隔 |
+| `space60`  | 60   | Scroll 内容底部呼吸区 |
+| `space112` | 112  | 为浮动底栏预留的底部安全空间 |
 
-- 使用 3D 翻转
-- 翻转后再渐显评分区
+### 6.9 图标规范
 
-### 6.9 反馈规范
+- 统一以 `SF Symbols` 为主
+- 默认使用线性图标，关键操作与选中态可使用 `bold` 或 `fill` 倾向
+- 未选中图标优先使用 `textMuted`
+- 强调图标使用对应 accent 色，不使用单独的品牌金属色
+- 图标按钮应优先放置在圆形玻璃表面中，以保证热区和视觉一致性
 
-#### 正确反馈
+### 6.10 动效规范
 
-- 使用成功色
-- 可配合轻微庆祝动效
+#### 全局切换
 
-#### 错误反馈
+- 页面或主屏切换优先使用弹簧：`.spring(response: 0.4, dampingFraction: 0.75)`
+- 避免机械的线性过渡和大幅硬切位移
 
-- 使用暖色或粉色提示
-- 不使用高压警示风格
+#### 按压反馈
 
-#### 加载反馈
+- 按钮点击使用 `.spring(response: 0.3, dampingFraction: 0.6)`
+- 结合 `scale 0.96`、透明度轻微下降和表面外凸 / 内陷切换
 
-- 轻量 Spinner 或骨架屏
-- 保持整体柔和风格一致
+#### 环境光与列表入场
 
-### 6.10 可访问性与适配规范
+- 背景光球使用 8 秒往返漫游，形成持续呼吸感
+- 路径节点等序列化内容可使用 `delay(index * 0.1)` 的顺序弹入
+- 节点弹入参数采用 `.spring(response: 0.5, dampingFraction: 0.8)`
 
-- v1 主视觉以浅色模式为主，但所有页面必须在 Dynamic Type、Increased Contrast、Reduce Motion 下保持可用
+#### 特殊场景
+
+- Completion 可保留轻度庆祝性弹入，但避免粒子、旋转、缩放同时叠加
+- Anki 翻卡继续使用 3D 翻转，评分区出现时配合短弹簧或淡入
+
+### 6.11 反馈规范
+
+#### 正向反馈
+
+- 优先使用 `accentMint`
+- 成就类反馈允许搭配 `accentPink`
+- 反馈应体现“提升感”，避免使用过于廉价的闪烁效果
+
+#### 错误与提醒反馈
+
+- 低风险提示优先使用 `accentAmber`
+- 错误或答错提示优先使用 `accentPink`
+- 不使用高压纯红警告风格，避免破坏整体高级感
+
+#### 加载与占位反馈
+
+- 加载状态优先保持当前玻璃容器稳定，只替换内部内容
+- 可使用轻量 Spinner、骨架屏或渐隐占位，不应让背景层级发生突变
+
+### 6.12 可访问性与适配规范
+
+- Light / Dark 双主题均为正式交付范围，不能只校验单一模式
 - 文本应优先映射系统 `TextStyle` 或结合 `@ScaledMetric`，避免依赖固定高度卡片承载多行文案
-- 正文文本与背景对比度应以可读性优先；若新拟态阴影导致对比不足，应允许增加描边、提高填充对比或降低阴影强度
+- 正文文本与背景对比度应以可读性优先；若玻璃材质导致对比不足，应优先提升底漆、描边或文字不透明度
 - 所有可点击控件最小热区不小于 `44x44pt`
 - 纯图标按钮必须提供 `accessibilityLabel`
 - Progress、Flashcard 正反面、评分按钮应提供清晰的 VoiceOver 语义
-- `Completion` 的弹出动画、`Anki` 的 3D 翻卡、庆祝粒子效果在 `Reduce Motion` 下应退化为淡入淡出或轻微缩放
+- `Reduce Motion` 下应将环境光漫游、Completion 弹入、Anki 翻卡退化为淡入淡出或轻微缩放
 
 ---
 
-## 7. SwiftUI 实现建议
+## 7. SwiftUI 实现规范
 
-### 7.1 工程目录建议
+### 7.1 工程目录规范
 
 ```text
 App/
@@ -1846,7 +1892,7 @@ App/
 └── Resources/
 ```
 
-### 7.2 View 拆分策略
+### 7.2 View 拆分规则
 
 原则：
 
@@ -1893,7 +1939,7 @@ LessonView
     └── InlineQuizView
 ```
 
-### 7.3 状态管理建议
+### 7.3 状态管理规范
 
 #### 默认方案
 
@@ -1906,7 +1952,7 @@ LessonView
 
 #### 何时使用 ViewModel
 
-仅在以下场景建议引入 `XxxViewModel`：
+仅在以下场景引入 `XxxViewModel`：
 
 - 明确存在网络请求编排、取消、重试
 - 需要桥接持久化 / 缓存层
@@ -1914,7 +1960,7 @@ LessonView
 
 #### 组件级瞬时状态
 
-建议由局部 `@State` 管理，例如：
+以下瞬时状态由局部 `@State` 管理：
 
 - 卡片翻转
 - 选项点击反馈显示
@@ -1922,21 +1968,22 @@ LessonView
 
 #### 跨页面导航状态
 
-建议由每个 Tab 的独立 Router 或路径容器管理，避免用一个全局 `currentScreen` 枚举替代真实导航栈。
+跨页面导航状态由每个 Tab 的独立 Router 或路径容器管理，避免用一个全局 `currentScreen` 枚举替代真实导航栈。
 
-### 7.4 组件封装策略
+### 7.4 组件封装规范
 
 #### 不要在组件内部写死业务文案
 
 组件接收文案参数，避免只能复用于单一页面。
 
-#### 不要在页面中重复 new 样式
+#### 不要在页面中重复拼装样式
 
-新拟态样式统一封装为：
+玻璃表面样式统一封装为：
 
-- `NeuCardModifier`
-- `NeuInsetModifier`
-- `NeuButtonStyle`
+- `OuterSurface`
+- `InsetSurface`
+- `SoftPressStyle`
+- `BackgroundGlow`
 
 #### 不要将复杂业务判断放进纯展示组件
 
@@ -1958,101 +2005,100 @@ LessonView
 - 空态
 - 错误态
 - 长文案态
-- 深色模式兼容预检（非 v1 主交付，但必须检查可读性）
+- 日间 / 夜间双主题预检（必须）
 - Dynamic Type 大字号预览
 - Increased Contrast 预览
 - Reduce Motion 预览
 
-### 7.6 主题与 Token 落地方式
+### 7.6 主题与 Token 落地
 
-建议通过以下结构承载 Token：
+统一通过以下结构承载 Token：
 
 ```swift
-enum LNColorToken { }
+enum LearnNowPalette { }
 enum LNRadiusToken { }
-enum LNShadowToken { }
 enum LNSpacingToken { }
 ```
 
-并通过统一扩展映射到 SwiftUI：
+并通过统一扩展与样式层映射到 SwiftUI：
 
 ```swift
 extension Color {
-    static let lnBackground = ...
+    static func dynamic(light: UInt, dark: UInt, lightOpacity: Double = 1.0, darkOpacity: Double = 1.0) -> Color
 }
 ```
 
-### 7.7 图表实现建议
+```swift
+struct OuterSurface: ViewModifier { }
+struct InsetSurface: ViewModifier { }
+struct SoftPressStyle: ButtonStyle { }
+struct BackgroundGlow: View { }
+```
 
-Dashboard 中的记忆曲线建议：
+落地要求：
 
-- v1 可先使用静态 mock 数据
-- 优先采用 `Swift Charts`，仅在交互能力明显不足时再考虑第三方轻量图表库
-- 外层卡片由新拟态样式包裹，图表区域保持简洁
+- 颜色来源统一收敛到 `LearnNowPalette`
+- Light / Dark 差异统一由动态颜色处理，不在页面层写 `if dark { ... }`
+- 卡片、按钮、Tab Bar 等表面系统统一复用 `OuterSurface` / `InsetSurface`
+- 日间 / 夜间玻璃差异仅允许在 Design System 层处理
 
-### 7.8 热力图实现建议
+### 7.7 图表实现规范
 
-Home 的月度学习记录：
+Dashboard 中的记忆曲线遵循以下规则：
 
-- v1 可采用固定网格
+- 图表优先采用 `Swift Charts`
+- 仅在需要完全自定义视觉表现且 `Swift Charts` 无法满足时，才允许自绘图形
+- 外层卡片由玻璃表面样式包裹，图表区域保持简洁
+
+### 7.8 热力图实现规范
+
+Home 的月度学习记录遵循以下规则：
+
+- 使用固定 7 列网格
 - 单元格根据学习强度区分填充深度
-- 点击行为在 v1 可不开放，仅作为展示
+- 当前不开放点击行为，仅作为展示
 
 ---
 
-## 8. 开发边界与待确认项
+## 8. 实现边界
 
-### 8.1 本期实现范围
-
-v1 建议实现以下内容：
+### 8.1 范围内
 
 - 全部 7 个页面
-- Tab 导航
-- Routes → Path → Lesson → Completion 主流程
+- 四个顶级 Tab 与独立导航栈
+- `Routes → Path → Lesson → Completion` 主流程
+- `Completion → Anki` 复习闭环
 - Lesson 中断后恢复到具体 slide
-- Anki 翻卡与评分交互
 - Completion 奖励数据本地生成
-- Anki 评分区间与调度文案本地配置
+- Anki 评分区间、按钮文案与调度文案本地配置
 - Dashboard 图表与掌握度展示
-- 新拟态基础 Design System
+- 日间 / 夜间双主题玻璃化 Design System
 
-### 8.2 后续扩展预留
-
-以下能力可在后续版本补充：
+### 8.2 范围外
 
 - 路线搜索
 - 课程收藏
 - 学习提醒与通知
 - 复习历史记录
-- Dashboard 维度扩展
-- 真实深链
-- 后端数据接入与缓存恢复
+- Dashboard 时间范围切换
+- Heatmap 单日详情 drill-down
+- Routes 状态筛选
+- 服务端数据接入与缓存恢复
 
-### 8.3 已确认实现决策
+### 8.3 已确定规则
 
-1. Lesson 需要支持中断恢复到具体 slide，并以本地状态保存最近停留位置。
+1. Lesson 必须支持中断恢复到具体 slide，并以本地状态保存最近停留位置。
 2. Completion 的 XP、连胜与奖励展示使用本地数据或本地规则，不依赖后端返回。
 3. Anki 的评分区间、按钮文案与调度提示使用本地静态配置，不依赖服务端。
+4. Heatmap 当前为只读展示，不提供点击进入日级详情。
+5. Dashboard 当前不提供时间范围切换。
+6. Routes 当前不提供筛选器。
 
-### 8.4 待确认事项
+### 8.4 风险
 
-1. Heatmap 是否支持点击查看某日详情。
-2. Dashboard 图表是否需要时间范围切换。
-3. Routes 是否需要支持多个状态筛选。
-
-### 8.5 风险与假设
-
-#### 风险
-
-- 新拟态风格在不同设备与深色模式下可能存在对比度问题。
-- 多层阴影会增加视觉实现成本。
+- 毛玻璃材质、环境光模糊与持续动画会增加渲染成本，需关注低端设备性能。
+- Light / Dark 双主题下的文字对比与 accent 亮度需要逐页验收。
 - Lesson 横向分页与内嵌交互可能增加状态同步复杂度。
-
-#### 假设
-
-- v1 以视觉还原与流程跑通为优先。
-- 数据层可先使用 mock。
-- 业务规则中未在原型中出现的部分，以最小可用策略处理。
 
 ---
 
@@ -2096,25 +2142,16 @@ v1 建议实现以下内容：
 
 ### 9.4 Token 快速索引
 
-| 类别 | Token                                                           |
-| ---- | --------------------------------------------------------------- |
-| 颜色 | `bgBase` / `brandBlue` / `brandPink` / `brandMint` / `textMain` |
-| 圆角 | `radiusS` / `radiusM` / `radiusL` / `radiusXL` / `radiusPill`   |
-| 阴影 | `neuOutSm` / `neuOut` / `neuOutLg` / `neuInSm` / `neuIn`        |
-| 间距 | `space4` ~ `space40`                                            |
+| 类别 | Token |
+| ---- | ----- |
+| 颜色 | `canvas` / `base` / `textPrimary` / `textSecondary` / `textMuted` / `accentBlue` / `accentPink` / `accentMint` / `accentPurple` / `accentAmber` |
+| 圆角 | `radiusXS` / `radiusS` / `radiusM` / `radiusL` / `radiusXL` / `radiusPill` |
+| 表面 | `OuterSurface` / `InsetSurface` / `SoftPressStyle` / `BackgroundGlow` |
+| 间距 | `space8` / `space12` / `space16` / `space18` / `space20` / `space24` / `space32` / `space60` / `space112` |
+| 动效 | `screenSpring` / `pressSpring` / `ambientGlow` / `staggeredReveal` |
 
-### 9.5 v1 结论
+### 9.5 文档维护规则
 
-当前 v1.1 已形成一份更接近可直接实施的 SwiftUI Design Spec，具备以下交付价值：
-
-1. 页面边界明确。
-2. Tab、Router 与二级页面归属关系明确。
-3. 组件复用边界明确，并区分了 App Shell 与页面组件。
-4. 页面级状态与区块级状态分层明确。
-5. 视觉 Token 已可映射为 Design System。
-6. SwiftUI 工程拆分、Observation 默认方案与可访问性约束已给出。
-
-后续建议在此基础上继续补两份增强文档：
-
-- `Component Spec v2`：展开每个组件的参数与交互状态。
-- `SwiftUI Architecture v2`：补充 Router、Observation Store、Mock Data、Preview 方案。
+1. 所有影响页面结构、导航、视觉 Token、组件 API、状态模型的变更，必须先更新本文档，再更新实现。
+2. 任意 demo、原型、截图或临时实现都只能用于探索，不能覆盖本文档定义。
+3. 若代码实现与本文档不一致，应视为实现偏离规范，而不是文档自动失效。
