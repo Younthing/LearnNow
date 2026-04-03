@@ -28,7 +28,7 @@ struct ContentView: View {
                 .animation(
                     animationsDisabled
                         ? nil
-                        : .spring(response: 0.36, dampingFraction: 0.88),
+                        : .spring(response: 0.4, dampingFraction: 0.75),
                     value: flow.currentScreen
                 )
 
@@ -1356,73 +1356,77 @@ private struct SoftPressStyle: ButtonStyle {
                     }
                 }
             )
-            .scaleEffect(configuration.isPressed ? 0.985 : 1)
-            .animation(.easeOut(duration: 0.16), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .opacity(configuration.isPressed ? 0.9 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 private struct BackgroundGlow: View {
+    @State private var phase = false
+    @Environment(\.colorScheme) var colorScheme
+
     var body: some View {
+        let opacityMultiplier: Double = colorScheme == .dark ? 0.7 : 1.0
+        
         ZStack {
             Circle()
-                .fill(LearnNowPalette.color(for: .blue).opacity(0.22))
-                .frame(width: 260, height: 260)
-                .blur(radius: 30)
-                .offset(x: 140, y: -280)
+                .fill(LearnNowPalette.color(for: .blue).opacity(0.35 * opacityMultiplier))
+                .frame(width: 320, height: 320)
+                .blur(radius: 60)
+                .offset(x: phase ? 100 : -100, y: phase ? -200 : -350)
 
             Circle()
-                .fill(LearnNowPalette.color(for: .pink).opacity(0.18))
-                .frame(width: 220, height: 220)
-                .blur(radius: 28)
-                .offset(x: -140, y: -120)
+                .fill(LearnNowPalette.color(for: .purple).opacity(0.30 * opacityMultiplier))
+                .frame(width: 280, height: 280)
+                .blur(radius: 50)
+                .offset(x: phase ? -120 : 120, y: phase ? -80 : 80)
 
             Circle()
-                .fill(LearnNowPalette.color(for: .mint).opacity(0.14))
-                .frame(width: 240, height: 240)
-                .blur(radius: 30)
-                .offset(x: -150, y: 320)
+                .fill(LearnNowPalette.color(for: .mint).opacity(0.35 * opacityMultiplier))
+                .frame(width: 300, height: 300)
+                .blur(radius: 70)
+                .offset(x: phase ? 140 : -140, y: phase ? 250 : 380)
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
+                phase.toggle()
+            }
         }
     }
 }
 
 private struct OuterSurface: ViewModifier {
     let cornerRadius: CGFloat
+    @Environment(\.colorScheme) var colorScheme
 
     func body(content: Content) -> some View {
         content
-            .shadow(color: LearnNowPalette.shadowDark.opacity(0.9), radius: 12, x: 8, y: 8)
-            .shadow(color: LearnNowPalette.shadowLight.opacity(0.95), radius: 12, x: -8, y: -8)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(LinearGradient(colors: [Color.white.opacity(colorScheme == .dark ? 0.15 : 0.6), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 0.5)
+            )
+            .shadow(color: LearnNowPalette.shadowDark, radius: 16, x: 0, y: 8)
     }
 }
 
 private struct InsetSurface: ViewModifier {
     let cornerRadius: CGFloat
+    @Environment(\.colorScheme) var colorScheme
 
     func body(content: Content) -> some View {
         content
+            .background(Color.black.opacity(colorScheme == .dark ? 0.35 : 0.05), in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [LearnNowPalette.shadowDark.opacity(0.55), LearnNowPalette.shadowLight.opacity(0.95)],
-                            startPoint: .bottomTrailing,
-                            endPoint: .topLeading
-                        ),
-                        lineWidth: 2
-                    )
+                    .stroke(Color.white.opacity(colorScheme == .dark ? 0.05 : 0.4), lineWidth: 1)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.35), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 5
-                    )
-                    .blur(radius: 1)
-            )
+            .shadow(color: LearnNowPalette.shadowDark.opacity(0.3), radius: 8, x: 0, y: 4)
     }
 }
 
@@ -1475,53 +1479,63 @@ private struct FlowLayout<Item: Hashable, Content: View>: View {
 }
 
 private enum LearnNowPalette {
-    static let base = Color(hex: 0xE8F0FE)
-    static let canvas = Color(hex: 0xDCE5F5)
-    static let textPrimary = Color(hex: 0x3B4A6B)
-    static let textSecondary = Color(hex: 0x5C6B89)
-    static let textMuted = Color(hex: 0x8E9EBC)
-    static let shadowDark = Color(hex: 0xCDD9ED)
-    static let shadowLight = Color.white
+    static let base = Color.dynamic(light: 0xFFFFFF, dark: 0x1E1E24, lightOpacity: 0.55, darkOpacity: 0.5)
+    static let canvas = Color.dynamic(light: 0xF4F6F9, dark: 0x07070A)
+    static let textPrimary = Color.dynamic(light: 0x1E293B, dark: 0xFFFFFF, lightOpacity: 1.0, darkOpacity: 0.95)
+    static let textSecondary = Color.dynamic(light: 0x475569, dark: 0xFFFFFF, lightOpacity: 1.0, darkOpacity: 0.75)
+    static let textMuted = Color.dynamic(light: 0x94A3B8, dark: 0xFFFFFF, lightOpacity: 1.0, darkOpacity: 0.5)
+    static let shadowDark = Color.dynamic(light: 0xA4ADC1, dark: 0x000000, lightOpacity: 0.4, darkOpacity: 0.5)
+    static let shadowLight = Color.dynamic(light: 0xFFFFFF, dark: 0xFFFFFF, lightOpacity: 0.9, darkOpacity: 0.1)
 
     static func color(for accent: LearnNowAccent) -> Color {
         switch accent {
         case .blue:
-            Color(hex: 0x8AACEC)
+            return Color.dynamic(light: 0x2563EB, dark: 0x5E6AD2)
         case .pink:
-            Color(hex: 0xD77B90)
+            return Color.dynamic(light: 0xEC4899, dark: 0xF43F5E)
         case .mint:
-            Color(hex: 0x64A881)
+            return Color.dynamic(light: 0x10B981, dark: 0x10B981)
         case .purple:
-            Color(hex: 0x9A77CB)
+            return Color.dynamic(light: 0x8B5CF6, dark: 0x8B5CF6)
         case .amber:
-            Color(hex: 0xDDA15E)
+            return Color.dynamic(light: 0xF59E0B, dark: 0xF59E0B)
         }
     }
 
     static func gradient(for accent: LearnNowAccent) -> LinearGradient {
-        switch accent {
-        case .blue:
-            LinearGradient(colors: [Color(hex: 0xA1C4FD), Color(hex: 0xB5D2FC)], startPoint: .leading, endPoint: .trailing)
-        case .pink:
-            LinearGradient(colors: [Color(hex: 0xFFCCD5), Color(hex: 0xD77B90)], startPoint: .leading, endPoint: .trailing)
-        case .mint:
-            LinearGradient(colors: [Color(hex: 0xC2E9D2), Color(hex: 0x64A881)], startPoint: .leading, endPoint: .trailing)
-        case .purple:
-            LinearGradient(colors: [Color(hex: 0xDBCDF0), Color(hex: 0x9A77CB)], startPoint: .leading, endPoint: .trailing)
-        case .amber:
-            LinearGradient(colors: [Color(hex: 0xF5CF8C), Color(hex: 0xDDA15E)], startPoint: .leading, endPoint: .trailing)
-        }
+        let col = color(for: accent)
+        return LinearGradient(
+            colors: [col.opacity(0.85), col],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 }
 
 private extension View {
     func softOuter(radius: CGFloat, x: CGFloat, y: CGFloat) -> some View {
-        shadow(color: LearnNowPalette.shadowDark.opacity(0.85), radius: radius, x: x, y: y)
-            .shadow(color: LearnNowPalette.shadowLight.opacity(0.96), radius: radius, x: -x, y: -y)
+        self
+            .shadow(color: LearnNowPalette.shadowDark, radius: radius, x: 0, y: y)
     }
 }
 
 private extension Color {
+#if canImport(UIKit)
+    static func dynamic(light: UInt, dark: UInt, lightOpacity: Double = 1.0, darkOpacity: Double = 1.0) -> Color {
+        Color(UIColor { trait in
+            let hex = trait.userInterfaceStyle == .dark ? dark : light
+            let opacity = trait.userInterfaceStyle == .dark ? darkOpacity : lightOpacity
+            
+            return UIColor(
+                red: CGFloat((hex >> 16) & 0xFF) / 255.0,
+                green: CGFloat((hex >> 8) & 0xFF) / 255.0,
+                blue: CGFloat(hex & 0xFF) / 255.0,
+                alpha: CGFloat(opacity)
+            )
+        })
+    }
+#endif
+
     init(hex: UInt, opacity: Double = 1) {
         self.init(
             .sRGB,
