@@ -396,7 +396,7 @@
           <h1 class="header-title">学习概览</h1>
           <div class="header-subtitle">星期一 · 三月三十日</div>
         </div>
-        <img src="https://i.pravatar.cc/150?u=a04258" alt="User" class="avatar">
+        <img src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2048%2048%22%3E%3Crect%20width%3D%2248%22%20height%3D%2248%22%20rx%3D%2224%22%20fill%3D%22%23A1C4FD%22%2F%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%2217%22%20r%3D%229%22%20fill%3D%22%23FFFFFF%22%2F%3E%3Cpath%20d%3D%22M10%2042c0-8%206-12%2014-12s14%204%2014%2012%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E" alt="User" class="avatar">
       </div>
       
       <div class="scroll-area">
@@ -452,11 +452,98 @@
       </div>
     </div>
 
-    <!-- ☁️ PATH SCREEN -->
-    <div class="screen" id="view-path">
+    <!-- ☁️ ROUTES SCREEN -->
+    <div class="screen" id="view-routes">
       <div class="header" style="padding-bottom: 12px;">
         <div>
-          <h1 class="header-title">学习路径</h1>
+          <h1 class="header-title">学习路线</h1>
+          <div class="header-subtitle">选择你的探索方向</div>
+        </div>
+      </div>
+      
+      <div class="scroll-area" style="padding-top: 16px;">
+        
+        <!-- Route Card 1 -->
+        <div class="neu-card" onclick="switchTab('view-path')" style="cursor: pointer; position: relative; overflow: hidden; margin-bottom: 24px;">
+          <div style="position: absolute; top: -10px; right: -10px; opacity: 0.05; transform: scale(2.5);">
+             <i data-lucide="cpu" size="64"></i>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 16px;">
+            <div class="node-icon-wrap" style="color: var(--brand-blue-dark); box-shadow: var(--neu-in); width: 48px; height: 48px;">
+              <i data-lucide="cpu" size="24"></i>
+            </div>
+            <div style="flex: 1; z-index: 1;">
+              <h3 style="font-size: 18px; font-weight: 800; color: var(--text-h); margin-bottom: 4px;">数据科学与人工智能</h3>
+              <p style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 16px;">统计 · 机器学习 · 深度学习</p>
+              
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 6px;">
+                <span>已完成 35%</span>
+                <span style="color: var(--brand-blue-dark);">继续学习</span>
+              </div>
+              <div class="neu-progress" style="margin: 0; height: 6px;">
+                <div class="neu-progress-fill" style="width: 35%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Route Card 2 -->
+        <div class="neu-card" style="cursor: pointer; position: relative; overflow: hidden; margin-bottom: 24px;">
+          <div style="position: absolute; top: -10px; right: -10px; opacity: 0.05; transform: scale(2.5);">
+             <i data-lucide="palette" size="64"></i>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 16px;">
+            <div class="node-icon-wrap" style="color: #D77B90; width: 48px; height: 48px;">
+              <i data-lucide="palette" size="24"></i>
+            </div>
+            <div style="flex: 1; z-index: 1;">
+              <h3 style="font-size: 18px; font-weight: 800; color: var(--text-h); margin-bottom: 4px;">UI/UX 设计进阶</h3>
+              <p style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 16px;">色彩体系 · 组件化设计 · 交互</p>
+              
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 6px;">
+                <span>未开始</span>
+                <span style="color: #D77B90;">开始探索</span>
+              </div>
+              <div class="neu-progress" style="margin: 0; height: 6px;">
+                <div class="neu-progress-fill" style="width: 0%; background: linear-gradient(90deg, #FFCCD5, #D77B90); box-shadow: none;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Route Card 3 -->
+        <div class="neu-card" style="cursor: pointer; position: relative; overflow: hidden;">
+          <div style="position: absolute; top: -10px; right: -10px; opacity: 0.05; transform: scale(2.5);">
+             <i data-lucide="code" size="64"></i>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 16px;">
+            <div class="node-icon-wrap" style="color: #64A881; width: 48px; height: 48px;">
+              <i data-lucide="code" size="24"></i>
+            </div>
+            <div style="flex: 1; z-index: 1;">
+              <h3 style="font-size: 18px; font-weight: 800; color: var(--text-h); margin-bottom: 4px;">全栈 Web 开发</h3>
+              <p style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 16px;">React · Node.js · 数据库架构</p>
+              
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 6px;">
+                <span>已完成 10%</span>
+                <span style="color: #64A881;">继续学习</span>
+              </div>
+              <div class="neu-progress" style="margin: 0; height: 6px;">
+                <div class="neu-progress-fill" style="width: 10%; background: linear-gradient(90deg, #C2E9D2, #64A881); box-shadow: none;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ☁️ PATH SCREEN -->
+    <div class="screen" id="view-path">
+      <div class="header" style="padding-bottom: 12px; align-items: center; justify-content: flex-start; gap: 16px;">
+        <button class="neu-btn-icon" onclick="switchTab('view-routes')" style="width: 40px; height: 40px;"><i data-lucide="arrow-left" size="20"></i></button>
+        <div>
+          <h1 class="header-title" style="font-size: 22px;">学习路径</h1>
           <div class="header-subtitle">数据科学与人工智能</div>
         </div>
       </div>
@@ -656,7 +743,7 @@
       <div class="nav-item active" data-target="view-home" onclick="switchTab('view-home')">
         <i data-lucide="home" class="nav-icon" size="24" stroke-width="2.5"></i>
       </div>
-      <div class="nav-item" data-target="view-path" onclick="switchTab('view-path')">
+      <div class="nav-item" data-target="view-routes" onclick="switchTab('view-routes')">
         <i data-lucide="map" class="nav-icon" size="24" stroke-width="2.5"></i>
       </div>
       <div class="nav-item" data-target="view-anki" onclick="switchTab('view-anki')">
@@ -681,8 +768,8 @@
       const navItem = document.querySelector(`.nav-item[data-target="${targetId}"]`);
       if (navItem) {
         navItem.classList.add('active');
-      } else if (targetId === 'view-lesson') {
-        document.querySelector(`.nav-item[data-target="view-path"]`).classList.add('active');
+      } else if (targetId === 'view-lesson' || targetId === 'view-path') {
+        document.querySelector(`.nav-item[data-target="view-routes"]`).classList.add('active');
       }
     }
 
