@@ -45,6 +45,19 @@ struct LearnNowFlowStateTests {
     }
 
     @Test
+    func unlockedCompletedModuleCanBeReopenedByChapterID() {
+        var sut = LearnNowFlowState.completionPreview
+
+        sut.finishLearning()
+        #expect(sut.currentScreen == .path)
+
+        sut.openLesson(moduleID: "hypothesis")
+        #expect(sut.currentScreen == .lesson)
+        #expect(sut.currentLessonTitle == "假设检验")
+        #expect(sut.currentLessonPageIndex == 0)
+    }
+
+    @Test
     func incorrectLessonAnswerCanBeRetried() {
         var sut = LearnNowFlowState()
         sut.openLesson()

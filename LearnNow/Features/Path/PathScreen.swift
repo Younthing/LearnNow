@@ -3,7 +3,7 @@ import SwiftUI
 struct PathScreen: View {
     let flow: LearnNowFlowState
     let onBack: () -> Void
-    let onOpenLesson: () -> Void
+    let onOpenLesson: (String) -> Void
 
     @State private var animateNodes = false
 
@@ -43,8 +43,8 @@ struct PathScreen: View {
                             node: node,
                             showsLineBelow: index < flow.pathNodes.count - 1,
                             onTap: {
-                                if node.status == .current {
-                                    onOpenLesson()
+                                if node.isInteractive {
+                                    onOpenLesson(node.id)
                                 }
                             }
                         )
@@ -101,43 +101,81 @@ private struct PathNodeRow: View {
             VStack {
                 if node.status == .current {
                     Button(action: onTap) {
-                        InsetCard(contentPadding: 22) {
-                            VStack(alignment: .leading, spacing: 14) {
-                                HStack {
-                                    Text(node.title)
-                                        .font(.system(size: 22, weight: .black, design: .rounded))
-                                        .foregroundStyle(LearnNowPalette.color(for: .blue))
-                                    Spacer()
-                                    Image(systemName: "play.circle.fill")
-                                        .font(.system(size: 24))
-                                        .foregroundStyle(LearnNowPalette.color(for: .blue))
-                                }
-
-                                Text(node.subtitle)
-                                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                                    .foregroundStyle(LearnNowPalette.textMuted)
-
-                                ProgressTrack(progress: 0.40, accent: .blue, height: 10)
-                            }
-                        }
+                        currentModuleCard
                     }
                     .buttonStyle(SoftPressStyle(cornerRadius: 22))
-                    .accessibilityIdentifier("path.currentModule")
-                } else {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(node.title)
-                            .font(.system(size: 18, weight: .heavy, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.textPrimary.opacity(node.status == .locked ? 0.5 : 1))
-                        Text(node.subtitle)
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.textMuted.opacity(node.status == .locked ? 0.5 : 1))
+                    .accessibilityIdentifier("path.module.\(node.id)")
+                } else if node.status == .done && node.isInteractive {
+                    Button(action: onTap) {
+                        completedModuleRow
                     }
-                    .padding(.top, 12)
-                    .padding(.bottom, 24)
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("path.module.\(node.id)")
+                } else {
+                    staticModuleRow
                 }
             }
         }
         .padding(.bottom, node.status == .current ? 24 : 0)
+    }
+
+    private var currentModuleCard: some View {
+        InsetCard(contentPadding: 22) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Text(node.title)
+                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .foregroundStyle(LearnNowPalette.color(for: .blue))
+                    Spacer()
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundStyle(LearnNowPalette.color(for: .blue))
+                }
+
+                Text(node.subtitle)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(LearnNowPalette.textMuted)
+
+                ProgressTrack(progress: 0.40, accent: .blue, height: 10)
+            }
+        }
+        .accessibilityIdentifier("path.currentModule")
+    }
+
+    private var completedModuleRow: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(node.title)
+                    .font(.system(size: 18, weight: .heavy, design: .rounded))
+                    .foregroundStyle(LearnNowPalette.textPrimary)
+
+                Text(node.subtitle)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(LearnNowPalette.textMuted)
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(LearnNowPalette.textMuted.opacity(0.75))
+                .padding(.top, 2)
+        }
+        .padding(.top, 12)
+        .contentShape(Rectangle())
+    }
+
+    private var staticModuleRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(node.title)
+                .font(.system(size: 18, weight: .heavy, design: .rounded))
+                .foregroundStyle(LearnNowPalette.textPrimary.opacity(node.status == .locked ? 0.5 : 1))
+            Text(node.subtitle)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(LearnNowPalette.textMuted.opacity(node.status == .locked ? 0.5 : 1))
+        }
+        .padding(.top, 12)
+        .padding(.bottom, 24)
     }
 
     @ViewBuilder
@@ -183,6 +221,6 @@ private struct PathNodeRow: View {
 #Preview("Path") {
     ZStack {
         LearnNowPalette.canvas.ignoresSafeArea()
-        PathScreen(flow: .pathPreview, onBack: {}, onOpenLesson: {})
+        PathScreen(flow: .pathPreview, onBack: {}, onOpenLesson: { _ in })
     }
 }

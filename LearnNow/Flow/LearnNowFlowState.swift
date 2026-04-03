@@ -137,6 +137,7 @@ struct LearnNowPathNode: Identifiable, Equatable {
     let title: String
     let subtitle: String
     let status: Status
+    let isInteractive: Bool
 }
 
 struct LearnNowHeatCell: Identifiable, Equatable {
@@ -313,7 +314,8 @@ struct LearnNowFlowState: Equatable {
                 id: module.id,
                 title: module.title,
                 subtitle: pathNodeSubtitle(for: index, baseSubtitle: module.subtitle, status: status),
-                status: status
+                status: status,
+                isInteractive: isLessonAvailable(for: index)
             )
         }
     }
@@ -417,6 +419,15 @@ struct LearnNowFlowState: Equatable {
         currentScreen = .lesson
     }
 
+    mutating func openLesson(moduleID: String) {
+        guard let moduleIndex = Self.modules.firstIndex(where: { $0.id == moduleID }) else { return }
+        guard isLessonAvailable(for: moduleIndex) else { return }
+
+        loadLesson(for: moduleIndex)
+        selectedTab = .routes
+        currentScreen = .lesson
+    }
+
     mutating func answerCurrentLesson(with optionID: String) {
         guard lessonPages.indices.contains(currentLessonPageIndex) else { return }
         guard case .unanswered = lessonPages[currentLessonPageIndex].answerState else { return }
@@ -507,6 +518,11 @@ struct LearnNowFlowState: Equatable {
         case .locked:
             return "\(baseSubtitle) · 未解锁"
         }
+    }
+
+    private func isLessonAvailable(for moduleIndex: Int) -> Bool {
+        guard Self.modules.indices.contains(moduleIndex) else { return false }
+        return moduleIndex <= nextAvailableModuleIndex && !Self.modules[moduleIndex].lessonPages.isEmpty
     }
 
     private mutating func loadLesson(for moduleIndex: Int) {

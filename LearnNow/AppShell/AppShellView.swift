@@ -48,7 +48,9 @@ struct AppShellView: View {
             PathScreen(
                 flow: flow,
                 onBack: { flow.showRoutes() },
-                onOpenLesson: { flow.openLesson() }
+                onOpenLesson: { moduleID in
+                    flow.openLesson(moduleID: moduleID)
+                }
             )
         case .lesson:
             LessonScreen(flow: $flow)

@@ -58,6 +58,18 @@ final class LearnNowUITests: XCTestCase {
         assertExists(app.staticTexts["线性回归模型"])
     }
 
+    @MainActor
+    func testCompletedModuleCanBeReopenedFromPath() throws {
+        navigateToCompletion()
+
+        tapWhenHittable(element(matchingIdentifier: "completion.cta.finish"))
+        assertExists(element(matchingIdentifier: "screen.path"))
+
+        tapWhenHittable(element(matchingIdentifier: "path.module.hypothesis"))
+        assertExists(element(matchingIdentifier: "screen.lesson"))
+        assertExists(app.staticTexts["假设检验"])
+    }
+
     // MARK: - Helpers
 
     /// Assert that an element appears within the timeout.
@@ -135,7 +147,7 @@ final class LearnNowUITests: XCTestCase {
         assertExists(element(matchingIdentifier: "screen.path"))
 
         // 3  Path → Lesson (current module)
-        tapWhenHittable(element(matchingIdentifier: "path.currentModule"))
+        tapWhenHittable(element(matchingIdentifier: "path.module.hypothesis"))
         assertExists(element(matchingIdentifier: "screen.lesson"))
 
         // 4  Lesson page 1: answer + advance
