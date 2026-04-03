@@ -42,6 +42,7 @@
 为了保持代码整洁，应在 SwiftUI 中编写自定义 ViewModifier 来封装新拟态视觉效果。
 
 ### 2.1 凸起效果 (Neu-Out)
+
 用于卡片 (`neu-card`)、按钮的默认状态。
 
 ```swift
@@ -49,7 +50,7 @@ import SwiftUI
 
 struct NeuOutModifier: ViewModifier {
     var cornerRadius: CGFloat
-    
+
     func body(content: Content) -> some View {
         content
             .background(Color("bg-base"))
@@ -69,14 +70,15 @@ extension View {
 ```
 
 ### 2.2 凹陷效果 (Neu-In)
+
 用于输入框、进度条底槽 (`neu-progress`)、按钮按压状态 (`:active`)、激活的 Tab。
 
-*注意：SwiftUI 的内阴影可以通过叠加带有 `.inner` 模糊效果的形状来实现。*
+_注意：SwiftUI 的内阴影可以通过叠加带有 `.inner` 模糊效果的形状来实现。_
 
 ```swift
 struct NeuInModifier: ViewModifier {
     var cornerRadius: CGFloat
-    
+
     func body(content: Content) -> some View {
         content
             .background(
@@ -108,6 +110,7 @@ extension View {
 在从 Web 原型转化为 iOS 原生应用时，需严格遵循以下 `ui-ux-pro-max` 规则：
 
 ### 3.1 触摸与交互 (Touch & Interaction) / 优先级: CRITICAL
+
 - **`touch-target-size`**: SwiftUI 中所有的按钮、可点击区块必须保证至少有 **44×44pt** 的点击区域（如导航栏返回按钮、底部 Tab 等）。
 - **`hover-vs-tap` & `press-feedback`**: iOS 没有 Hover，按钮按下时需即时反馈。原型中定义了 `.neu-btn:active` 的状态。在 SwiftUI 中应该通过 `.buttonStyle` 定义高亮态（缩小 Scale 并切换到 `.neuInStyle()` 凹槽效果）。
 
@@ -133,15 +136,18 @@ struct NeuButtonStyle: ButtonStyle {
 ```
 
 ### 3.2 动效系统 (Animation) / 优先级: MEDIUM
+
 - **`duration-timing` & `spring-physics`**: 原型中所有卡片的切换和按钮点击（如 `transform: scale(0.98); animation: softFade 0.4s`）在 SwiftUI 中应尽量采用基于物理特性的弹簧动画：`.animation(.spring(response: 0.4, dampingFraction: 0.7), value: ...)`。
 - **`interruptible`**: SwiftUI 的动画应当是可被打断的，避免长时间锁住主线程用户的操作。
 - **动态图标 (`spin-anim`)**: 对原型中用于代表打卡的呼吸/旋转状态（如 `lucide-loader` 和 火苗跳动），SwiftUI 可使用 `withAnimation(.linear.repeatForever(autoreverses: false))` 实装。
 
 ### 3.3 可访问性与排版 (Accessibility & Typography) / 优先级: CRITICAL
+
 - **`dynamic-type`**: 原型使用 `Nunito`。在迁移过程中，务必使用 `Font.custom("Nunito", size: 16, relativeTo: .body)` 来适配 Apple 的动态类型（Dynamic Type），以防用户在系统设置放大字体时界面失效。
 - **`color-contrast`**: 虽然新拟态配色极低对比度，但原型的文本颜色（例如 `#3B4A6B` 相对背景 `#E8F0FE`）表现较好。需注意 `text-muted` (`#8E9EBC`) 颜色，如果文本太细太小（如小于12pt），在某些设备上可能没法满足 4.5:1 的对比度，可以利用 SwiftUI 的 `.bold()` 略加字重。
 
 ### 3.4 视图层次与导航 (Navigation Patterns)
+
 - **`safe-area-awareness`**: 原型的浮岛底部导航（Floating Nav bar）在 iOS 迁移时，必须避开 Home Indicator（底栏横线）和刘海屏（Notch/Dynamic Island Area），建议将其 `bottom` 的 padding 结合系统环境变量 `safeAreaInsets.bottom` 来计算。
 - **`tab-bar-ios`**: 原型的底部栏可通过隐藏默认 Tab Bar 的方式，自定义覆盖一个基于 HStack 实现的浮岛导航条，同时利用 `.matchedGeometryEffect` 给选中的 Tab 图标加上平滑的缩放和新拟态高亮切换过渡。
 
