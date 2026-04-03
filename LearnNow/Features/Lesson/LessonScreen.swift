@@ -1,63 +1,32 @@
 import SwiftUI
 
 struct LessonScreen: View {
-    @Binding var flow: LearnNowFlowState
+    let model: LessonScreenModel
+    let onBack: () -> Void
+    let onSelectPage: (Int) -> Void
+    let onAnswer: (String) -> Void
+    let onCallToAction: (LearnNowLessonCallToAction) -> Void
 
     private var selectionBinding: Binding<Int> {
         Binding(
-            get: { flow.currentLessonPageIndex },
-            set: { flow.currentLessonPageIndex = $0 }
+            get: { model.currentPageIndex },
+            set: { onSelectPage($0) }
         )
     }
 
     var body: some View {
         VStack(spacing: 18) {
-            HStack {
-                CircleIconButton(systemImage: "arrow.left", accent: .blue) {
-                    flow.openPath()
-                }
+            LessonTopBar(title: model.title, onBack: onBack)
 
-                Spacer()
-
-                Text(flow.currentLessonTitle)
-                    .font(.system(size: 18, weight: .heavy, design: .rounded))
-                    .foregroundStyle(LearnNowPalette.textPrimary)
-                    .accessibilityIdentifier("lesson.title")
-
-                Spacer()
-
-                Color.clear
-                    .frame(width: 44, height: 44)
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
-
-            LessonSegments(
-                count: flow.lessonPages.count,
-                currentIndex: flow.currentLessonPageIndex
-            )
-            .padding(.horizontal, 24)
+            LessonSegments(count: model.pageCount, currentIndex: model.currentPageIndex)
+                .padding(.horizontal, LearnNowSpacing.screenHorizontal)
 
             TabView(selection: selectionBinding) {
-                ForEach(Array(flow.lessonPages.enumerated()), id: \.element.id) { index, page in
-                    LessonPageScreen(
+                ForEach(Array(model.pages.enumerated()), id: \.element.id) { index, page in
+                    LessonPageView(
                         page: page,
-                        feedback: LearnNowFlowState.feedback(for: page),
-                        onAnswer: { optionID in
-                            flow.answerCurrentLesson(with: optionID)
-                        },
-                        onCallToAction: {
-                            switch page.callToAction {
-                            case .retry:
-                                flow.retryCurrentLessonQuestion()
-                            case .nextPage:
-                                flow.advanceLesson()
-                            case .completeLesson:
-                                flow.completeLesson()
-                            case nil:
-                                break
-                            }
-                        }
+                        onAnswer: onAnswer,
+                        onCallToAction: onCallToAction
                     )
                     .tag(index)
                 }
@@ -65,6 +34,31 @@ struct LessonScreen: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
         }
         .accessibilityIdentifier("screen.lesson")
+    }
+}
+
+private struct LessonTopBar: View {
+    let title: String
+    let onBack: () -> Void
+
+    var body: some View {
+        HStack {
+            CircleIconButton(systemImage: "arrow.left", accent: .blue, action: onBack)
+
+            Spacer()
+
+            Text(title)
+                .font(.system(size: 18, weight: .heavy, design: .rounded))
+                .foregroundStyle(LearnNowPalette.textPrimary)
+                .accessibilityIdentifier("lesson.title")
+
+            Spacer()
+
+            Color.clear
+                .frame(width: 44, height: 44)
+        }
+        .padding(.horizontal, LearnNowSpacing.screenHorizontal)
+        .padding(.top, LearnNowSpacing.screenTop)
     }
 }
 
@@ -96,90 +90,107 @@ private struct LessonSegments: View {
     }
 }
 
-private struct LessonPageScreen: View {
-    let page: LearnNowLessonPage
-    let feedback: LearnNowLessonFeedback?
+private struct LessonPageView: View {
+    let page: LessonScreenModel.Page
     let onAnswer: (String) -> Void
-    let onCallToAction: () -> Void
+    let onCallToAction: (LearnNowLessonCallToAction) -> Void
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 22) {
-                VStack(alignment: .center, spacing: 16) {
-                    NeumorphicPill(text: page.badge, accent: page.accent)
-                    Text(page.title)
-                        .font(.system(size: 30, weight: .black, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-
-                Text(page.summary)
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LearnNowPalette.textSecondary)
-                    .lineSpacing(6)
-
-                CalloutCard(
-                    title: page.calloutTitle,
-                    message: page.calloutBody,
-                    accent: page.calloutAccent
+                LessonHeroSection(page: page)
+                LessonExplanationSection(page: page)
+                LessonPracticeSection(
+                    page: page,
+                    onAnswer: onAnswer,
+                    onCallToAction: onCallToAction
                 )
-
-                if let codeSample = page.codeSample {
-                    CodeSampleCard(code: codeSample)
-                }
-
-                VStack(alignment: .leading, spacing: 16) {
-                    Label("随堂练习", systemImage: "square.and.pencil")
-                        .font(.system(size: 16, weight: .heavy, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-
-                    Text(page.question.prompt)
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textSecondary)
-                        .lineSpacing(4)
-
-                    ForEach(page.question.options) { option in
-                        LessonOptionButton(option: option, page: page) {
-                            onAnswer(option.id)
-                        }
-                        .accessibilityIdentifier("lesson.option.\(option.id)")
-                    }
-
-                    if let feedback {
-                        FeedbackCard(feedback: feedback)
-                    }
-
-                    if let action = page.callToAction {
-                        FullWidthButton(
-                            title: action.title,
-                            accent: action == .retry ? nil : .blue,
-                            action: onCallToAction
-                        )
-                        .accessibilityIdentifier("lesson.cta")
-                    }
-                }
-                .padding(.top, 10)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, LearnNowSpacing.screenHorizontal)
             .padding(.top, 12)
             .padding(.bottom, 30)
         }
     }
 }
 
-private struct LessonOptionButton: View {
-    let option: LearnNowLessonOption
-    let page: LearnNowLessonPage
-    let action: () -> Void
+private struct LessonHeroSection: View {
+    let page: LessonScreenModel.Page
 
-    private var isAnswered: Bool {
-        if case .unanswered = page.answerState {
-            false
-        } else {
-            true
+    var body: some View {
+        VStack(alignment: .center, spacing: 16) {
+            NeumorphicPill(text: page.badge, accent: page.accent)
+
+            Text(page.title)
+                .font(.system(size: 30, weight: .black, design: .rounded))
+                .foregroundStyle(LearnNowPalette.textPrimary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private struct LessonExplanationSection: View {
+    let page: LessonScreenModel.Page
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(page.summary)
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .foregroundStyle(LearnNowPalette.textSecondary)
+                .lineSpacing(6)
+
+            CalloutCard(callout: page.callout)
+
+            if let codeSample = page.codeSample {
+                CodeSampleCard(code: codeSample)
+            }
         }
     }
+}
+
+private struct LessonPracticeSection: View {
+    let page: LessonScreenModel.Page
+    let onAnswer: (String) -> Void
+    let onCallToAction: (LearnNowLessonCallToAction) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Label("随堂练习", systemImage: "square.and.pencil")
+                .font(.system(size: 16, weight: .heavy, design: .rounded))
+                .foregroundStyle(LearnNowPalette.textPrimary)
+
+            Text(page.questionPrompt)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(LearnNowPalette.textSecondary)
+                .lineSpacing(4)
+
+            ForEach(page.options) { option in
+                LessonOptionButton(option: option) {
+                    onAnswer(option.id)
+                }
+                .accessibilityIdentifier("lesson.option.\(option.id)")
+            }
+
+            if let feedback = page.feedback {
+                FeedbackCard(feedback: feedback)
+            }
+
+            if let action = page.callToAction {
+                FullWidthButton(
+                    title: action.title,
+                    accent: action.accent,
+                    action: { onCallToAction(action.kind) }
+                )
+                .accessibilityIdentifier("lesson.cta")
+            }
+        }
+        .padding(.top, 10)
+    }
+}
+
+private struct LessonOptionButton: View {
+    let option: LessonScreenModel.Option
+    let action: () -> Void
 
     var body: some View {
         Button(action: action) {
@@ -211,38 +222,36 @@ private struct LessonOptionButton: View {
             )
         }
         .buttonStyle(.plain)
-        .disabled(isAnswered)
+        .disabled(!option.isEnabled)
     }
 
     private var borderColor: Color {
-        switch page.answerState {
-        case .correct(let optionID) where optionID == option.id:
+        switch option.presentation {
+        case .correct:
             LearnNowPalette.color(for: .mint)
-        case .incorrect(let optionID) where optionID == option.id:
+        case .incorrect:
             LearnNowPalette.color(for: .pink)
-        default:
+        case .normal:
             .clear
         }
     }
 
     private var borderWidth: CGFloat {
-        switch page.answerState {
-        case .correct(let optionID) where optionID == option.id:
+        switch option.presentation {
+        case .correct, .incorrect:
             2
-        case .incorrect(let optionID) where optionID == option.id:
-            2
-        default:
+        case .normal:
             0
         }
     }
 
     private var labelColor: Color {
-        switch page.answerState {
-        case .correct(let optionID) where optionID == option.id:
+        switch option.presentation {
+        case .correct:
             LearnNowPalette.color(for: .mint)
-        case .incorrect(let optionID) where optionID == option.id:
+        case .incorrect:
             LearnNowPalette.color(for: .pink)
-        default:
+        case .normal:
             LearnNowPalette.textSecondary
         }
     }
@@ -257,6 +266,7 @@ private struct FeedbackCard: View {
                 Text(feedback.title)
                     .font(.system(size: 15, weight: .heavy, design: .rounded))
                     .foregroundStyle(LearnNowPalette.color(for: feedback.accent))
+
                 Text(feedback.body)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundStyle(LearnNowPalette.textSecondary)
@@ -267,21 +277,20 @@ private struct FeedbackCard: View {
 }
 
 private struct CalloutCard: View {
-    let title: String
-    let message: String
-    let accent: LearnNowAccent
+    let callout: LessonScreenModel.Callout
 
     var body: some View {
         InsetCard(contentPadding: 18) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 8) {
-                    Image(systemName: accent == .amber ? "exclamationmark.triangle.fill" : "lightbulb.fill")
-                    Text(title)
+                    Image(systemName: callout.accent == .amber ? "exclamationmark.triangle.fill" : "lightbulb.fill")
+
+                    Text(callout.title)
                         .font(.system(size: 14, weight: .heavy, design: .rounded))
                 }
-                .foregroundStyle(LearnNowPalette.color(for: accent))
+                .foregroundStyle(LearnNowPalette.color(for: callout.accent))
 
-                Text(message)
+                Text(callout.message)
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundStyle(LearnNowPalette.textSecondary)
                     .lineSpacing(4)
@@ -304,16 +313,14 @@ private struct CodeSampleCard: View {
 }
 
 #Preview("Lesson") {
-    LessonScreenPreviewContainer()
-}
-
-private struct LessonScreenPreviewContainer: View {
-    @State private var flow = LearnNowFlowState.lessonPreview
-
-    var body: some View {
-        ZStack {
-            LearnNowPalette.canvas.ignoresSafeArea()
-            LessonScreen(flow: $flow)
-        }
+    ZStack {
+        LearnNowPalette.canvas.ignoresSafeArea()
+        LessonScreen(
+            model: LearnNowFlowState.lessonPreview.lessonScreenModel,
+            onBack: {},
+            onSelectPage: { _ in },
+            onAnswer: { _ in },
+            onCallToAction: { _ in }
+        )
     }
 }

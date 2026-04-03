@@ -1,56 +1,45 @@
 import SwiftUI
 
 struct DashboardScreen: View {
-    let flow: LearnNowFlowState
+    let model: DashboardScreenModel
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 24) {
-                ScreenHeader(title: "学习数据", subtitle: "你的进步雷达")
+        ScreenScaffold {
+            ScreenHeader(title: model.title, subtitle: model.subtitle)
 
-                SoftCard(contentPadding: 20) {
-                    VStack(alignment: .leading, spacing: 18) {
-                        Text("艾宾浩斯记忆曲线")
-                            .font(.system(size: 17, weight: .heavy, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-
-                        InsetCard(contentPadding: 14) {
-                            RetentionChart(
-                                primarySeries: flow.retentionSeries,
-                                baselineSeries: flow.baselineSeries
-                            )
-                            .frame(height: 180)
-                        }
-                    }
+            InsightCard(title: model.retentionTitle) {
+                InsetCard(contentPadding: 14) {
+                    RetentionChart(
+                        primarySeries: model.primarySeries,
+                        baselineSeries: model.baselineSeries
+                    )
+                    .frame(height: 180)
                 }
+            }
 
-                Text("知识图谱")
-                    .font(.system(size: 20, weight: .heavy, design: .rounded))
-                    .foregroundStyle(LearnNowPalette.textPrimary)
+            SectionHeader(title: model.knowledgeTitle)
 
-                SoftCard(contentPadding: 20) {
-                    VStack(spacing: 22) {
-                        ForEach(flow.knowledgeMetrics) { metric in
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text(metric.title)
-                                        .font(.system(size: 15, weight: .heavy, design: .rounded))
-                                        .foregroundStyle(LearnNowPalette.textPrimary)
-                                    Spacer()
-                                    Text("\(Int(metric.progress * 100))%")
-                                        .font(.system(size: 15, weight: .black, design: .rounded))
-                                        .foregroundStyle(LearnNowPalette.color(for: metric.accent))
-                                }
+            SoftCard(contentPadding: 20) {
+                VStack(spacing: 22) {
+                    ForEach(model.knowledgeMetrics) { metric in
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Text(metric.title)
+                                    .font(.system(size: 15, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(LearnNowPalette.textPrimary)
 
-                                ProgressTrack(progress: metric.progress, accent: metric.accent, height: 8)
+                                Spacer()
+
+                                Text("\(Int(metric.progress * 100))%")
+                                    .font(.system(size: 15, weight: .black, design: .rounded))
+                                    .foregroundStyle(LearnNowPalette.color(for: metric.accent))
                             }
+
+                            ProgressTrack(progress: metric.progress, accent: metric.accent, height: 8)
                         }
                     }
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
         }
         .accessibilityIdentifier("screen.dash")
     }
@@ -88,6 +77,7 @@ private struct RetentionChart: View {
 
                 ForEach(primarySeries.indices, id: \.self) { index in
                     let point = point(at: index, values: primarySeries, size: geometry.size)
+
                     Circle()
                         .fill(LearnNowPalette.base)
                         .frame(width: 9, height: 9)
@@ -122,6 +112,7 @@ private struct ChartLineShape: Shape {
                     x: CGFloat(index) * step,
                     y: (1 - values[index]) * rect.height
                 )
+
                 if index == 0 {
                     path.move(to: point)
                 } else {
@@ -147,6 +138,6 @@ private struct ChartAreaShape: Shape {
 #Preview("Dashboard") {
     ZStack {
         LearnNowPalette.canvas.ignoresSafeArea()
-        DashboardScreen(flow: .dashboardPreview)
+        DashboardScreen(model: LearnNowFlowState.dashboardPreview.dashboardScreenModel)
     }
 }

@@ -1,79 +1,77 @@
 import SwiftUI
 
 struct CompletionScreen: View {
-    let flow: LearnNowFlowState
+    let model: CompletionScreenModel
     let onContinueLearning: () -> Void
     let onFinish: () -> Void
     let onOpenReviewBoard: () -> Void
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 26) {
-                Spacer(minLength: 60)
+        ScreenScaffold(spacing: 26) {
+            Spacer(minLength: 60)
 
-                InsetCircle(size: 112) {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 42, weight: .black))
-                        .foregroundStyle(LearnNowPalette.color(for: .mint))
-                }
-
-                Text("课程通关！")
-                    .font(.system(size: 32, weight: .black, design: .rounded))
-                    .foregroundStyle(LearnNowPalette.textPrimary)
-
-                SoftCard {
-                    HStack {
-                        CompletionStat(
-                            icon: "flame.fill",
-                            value: "\(flow.streakDays)",
-                            title: "天连胜保持",
-                            accent: .pink
-                        )
-
-                        Divider()
-                            .frame(height: 48)
-                            .overlay(LearnNowPalette.textMuted.opacity(0.25))
-
-                        CompletionStat(
-                            icon: "bolt.fill",
-                            value: "+15",
-                            title: "XP 经验值",
-                            accent: .blue
-                        )
-                    }
-                }
-
-                InsetCard {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Label("已提炼 \(flow.generatedReviewCount) 张记忆卡片", systemImage: "square.stack.3d.up")
-                            .font(.system(size: 16, weight: .heavy, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-
-                        FlowLayout(items: flow.generatedReviewTags) { tag in
-                            NeumorphicPill(text: tag, accent: .blue)
-                        }
-
-                        HStack(alignment: .top, spacing: 10) {
-                            Image(systemName: "sparkles")
-                                .foregroundStyle(LearnNowPalette.color(for: .blue))
-                            Text(flow.completionReviewMessage)
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundStyle(LearnNowPalette.textMuted)
-                        }
-                    }
-                }
-
-                CompletionActionGroup(
-                    nextLessonTitle: flow.nextLessonTitle,
-                    showsReviewAction: flow.generatedReviewCount > 0,
-                    onContinueLearning: onContinueLearning,
-                    onFinish: onFinish,
-                    onOpenReviewBoard: onOpenReviewBoard
-                )
+            InsetCircle(size: 112) {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 42, weight: .black))
+                    .foregroundStyle(LearnNowPalette.color(for: .mint))
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
-            .padding(.bottom, 40)
+            .frame(maxWidth: .infinity)
+
+            Text(model.title)
+                .font(.system(size: 32, weight: .black, design: .rounded))
+                .foregroundStyle(LearnNowPalette.textPrimary)
+                .frame(maxWidth: .infinity)
+
+            SoftCard {
+                HStack {
+                    CompletionStat(
+                        icon: "flame.fill",
+                        value: "\(model.streakDays)",
+                        title: "天连胜保持",
+                        accent: .pink
+                    )
+
+                    Divider()
+                        .frame(height: 48)
+                        .overlay(LearnNowPalette.textMuted.opacity(0.25))
+
+                    CompletionStat(
+                        icon: "bolt.fill",
+                        value: model.gainedXPText,
+                        title: "XP 经验值",
+                        accent: .blue
+                    )
+                }
+            }
+
+            InsetCard {
+                VStack(alignment: .leading, spacing: 16) {
+                    Label("已提炼 \(model.reviewCount) 张记忆卡片", systemImage: "square.stack.3d.up")
+                        .font(.system(size: 16, weight: .heavy, design: .rounded))
+                        .foregroundStyle(LearnNowPalette.textPrimary)
+
+                    FlowLayout(items: model.reviewTags) { tag in
+                        NeumorphicPill(text: tag, accent: .blue)
+                    }
+
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "sparkles")
+                            .foregroundStyle(LearnNowPalette.color(for: .blue))
+
+                        Text(model.reviewMessage)
+                            .font(LearnNowTypography.body)
+                            .foregroundStyle(LearnNowPalette.textMuted)
+                    }
+                }
+            }
+
+            CompletionActionGroup(
+                nextLessonTitle: model.nextLessonTitle,
+                showsReviewAction: model.showsReviewAction,
+                onContinueLearning: onContinueLearning,
+                onFinish: onFinish,
+                onOpenReviewBoard: onOpenReviewBoard
+            )
         }
         .accessibilityIdentifier("screen.completion")
     }
@@ -98,19 +96,17 @@ private struct CompletionActionGroup: View {
                         CompletionPrimaryCTAButton(
                             title: "学习下一章节",
                             subtitle: nextLessonTitle,
-                            systemImage: "arrow.right"
-                        ) {
-                            onContinueLearning()
-                        }
+                            systemImage: "arrow.right",
+                            action: onContinueLearning
+                        )
                         .frame(width: primaryWidth)
                         .accessibilityIdentifier("completion.cta.next")
 
                         CompletionCompactCTAButton(
                             title: "完成学习",
-                            systemImage: "checkmark"
-                        ) {
-                            onFinish()
-                        }
+                            systemImage: "checkmark",
+                            action: onFinish
+                        )
                         .frame(width: secondaryWidth)
                         .accessibilityIdentifier("completion.cta.finish")
                     }
@@ -130,6 +126,7 @@ private struct CompletionActionGroup: View {
                 Button(action: onOpenReviewBoard) {
                     HStack(spacing: 6) {
                         Text("去复习看板看看")
+
                         Image(systemName: "arrow.right")
                             .font(.system(size: 12, weight: .bold))
                     }
@@ -161,7 +158,7 @@ private struct CompletionStat: View {
             .foregroundStyle(LearnNowPalette.color(for: accent))
 
             Text(title)
-                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                .font(LearnNowTypography.label)
                 .foregroundStyle(LearnNowPalette.textMuted)
         }
         .frame(maxWidth: .infinity)
@@ -180,8 +177,9 @@ private struct CompletionPrimaryCTAButton: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(title)
                         .font(.system(size: 16, weight: .heavy, design: .rounded))
+
                     Text(subtitle)
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(LearnNowTypography.screenSubtitle)
                         .foregroundStyle(LearnNowPalette.textMuted)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
@@ -211,8 +209,9 @@ private struct CompletionCompactCTAButton: View {
             VStack(spacing: 6) {
                 Image(systemName: systemImage)
                     .font(.system(size: 14, weight: .black))
+
                 Text(title)
-                    .font(.system(size: 13, weight: .heavy, design: .rounded))
+                    .font(LearnNowTypography.label)
                     .multilineTextAlignment(.center)
             }
             .foregroundStyle(LearnNowPalette.textPrimary)
@@ -228,7 +227,7 @@ private struct CompletionCompactCTAButton: View {
     ZStack {
         LearnNowPalette.canvas.ignoresSafeArea()
         CompletionScreen(
-            flow: .completionPreview,
+            model: LearnNowFlowState.completionPreview.completionScreenModel,
             onContinueLearning: {},
             onFinish: {},
             onOpenReviewBoard: {}

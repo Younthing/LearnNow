@@ -39,6 +39,25 @@ extension LearnNowFlowState {
         return flow
     }
 
+    static var reviewBoardEmptyPreview: Self {
+        var flow = Self()
+        flow.appliedReviewFilters = LearnNowReviewFilters(
+            topics: ["描述统计"],
+            moduleIDs: ["regression"]
+        )
+        flow.draftReviewFilters = flow.appliedReviewFilters
+        flow.selectTab(.anki)
+        return flow
+    }
+
+    static var reviewBoardFilteredPreview: Self {
+        var flow = Self()
+        flow.appliedReviewFilters.favorite = .favoritedOnly
+        flow.draftReviewFilters = flow.appliedReviewFilters
+        flow.selectTab(.anki)
+        return flow
+    }
+
     static var dashboardPreview: Self {
         var flow = Self()
         flow.selectTab(.dash)

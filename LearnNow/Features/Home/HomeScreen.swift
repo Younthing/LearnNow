@@ -1,126 +1,111 @@
 import SwiftUI
 
 struct HomeScreen: View {
-    let flow: LearnNowFlowState
+    let model: HomeScreenModel
     let onContinueLearning: () -> Void
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 24) {
-                ScreenHeader(
-                    title: "学习概览",
-                    subtitle: flow.todayLabel,
-                    trailing: { AvatarBadge() }
-                )
+        ScreenScaffold {
+            ScreenHeader(
+                title: model.title,
+                subtitle: model.subtitle,
+                trailing: { AvatarBadge() }
+            )
 
-                SoftCard {
-                    HStack(alignment: .center, spacing: 18) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("绝佳状态")
-                                .font(.system(size: 20, weight: .heavy, design: .rounded))
-                                .foregroundStyle(LearnNowPalette.textPrimary)
-                            Text("累计获得 \(flow.totalXP) XP")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundStyle(LearnNowPalette.textMuted)
-                        }
+            HomeHeroCard(
+                totalXPText: model.totalXPText,
+                streakDays: model.streakDays
+            )
 
-                        Spacer()
-
-                        InsetCircle(size: 72) {
-                            VStack(spacing: 2) {
-                                Text("\(flow.streakDays)")
-                                    .font(.system(size: 22, weight: .black, design: .rounded))
-                                    .foregroundStyle(LearnNowPalette.color(for: .pink))
-                                Text("天连胜")
-                                    .font(.system(size: 10, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(LearnNowPalette.textMuted)
-                            }
-                        }
-                    }
-                }
-
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 20), count: 2), spacing: 20) {
-                    ForEach(flow.homeMetrics) { metric in
-                        InsetCard {
-                            VStack(spacing: 10) {
-                                Text(metric.title)
-                                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                                    .foregroundStyle(LearnNowPalette.textMuted)
-
-                                HStack(alignment: .lastTextBaseline, spacing: 4) {
-                                    Text(metric.value)
-                                        .font(.system(size: 28, weight: .black, design: .rounded))
-                                        .foregroundStyle(LearnNowPalette.color(for: metric.accent))
-                                    if let unit = metric.unit {
-                                        Text(unit)
-                                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                                            .foregroundStyle(LearnNowPalette.textMuted)
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                    }
-                }
-
-                sectionTitle("继续学习")
-
-                SoftCard(contentPadding: 20) {
-                    VStack(alignment: .leading, spacing: 14) {
-                        HStack(alignment: .top, spacing: 16) {
-                            VStack(alignment: .leading, spacing: 10) {
-                                NeumorphicPill(text: "第3单元 · 课时4", accent: .blue)
-                                Text("假设检验：均值比较")
-                                    .font(.system(size: 20, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(LearnNowPalette.textPrimary)
-                            }
-
-                            Spacer()
-
-                            CircleIconButton(
-                                systemImage: "play.fill",
-                                accent: .blue,
-                                action: onContinueLearning
-                            )
-                        }
-
-                        ProgressTrack(progress: 0.40, accent: .blue, height: 12)
-
-                        HStack {
-                            Spacer()
-                            Text("完成 40%")
-                                .font(.system(size: 12, weight: .heavy, design: .rounded))
-                                .foregroundStyle(LearnNowPalette.textMuted)
-                        }
-                    }
-                }
-
-                SoftCard(contentPadding: 20) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack {
-                            Text("本月学习记录")
-                                .font(.system(size: 16, weight: .heavy, design: .rounded))
-                                .foregroundStyle(LearnNowPalette.textPrimary)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(LearnNowPalette.textMuted)
-                        }
-
-                        HeatmapGrid(cells: flow.heatmap)
-                    }
-                }
+            MetricGridSection(items: model.metrics) { metric in
+                HomeMetricCard(metric: metric)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
+
+            SectionHeader(title: model.continueSectionTitle)
+
+            HeroProgressCard(
+                badge: model.continueCard.badge,
+                title: model.continueCard.title,
+                progress: model.continueCard.progress,
+                progressText: model.continueCard.progressText,
+                accent: .blue,
+                action: onContinueLearning
+            )
+
+            InsightCard(
+                title: model.studyRecordTitle,
+                accessory: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(LearnNowPalette.textMuted)
+                }
+            ) {
+                HeatmapGrid(cells: model.heatmap)
+            }
         }
         .accessibilityIdentifier("screen.home")
     }
+}
 
-    private func sectionTitle(_ title: String) -> some View {
-        Text(title)
-            .font(.system(size: 20, weight: .heavy, design: .rounded))
-            .foregroundStyle(LearnNowPalette.textPrimary)
+private struct HomeHeroCard: View {
+    let totalXPText: String
+    let streakDays: Int
+
+    var body: some View {
+        SoftCard {
+            HStack(alignment: .center, spacing: 18) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("绝佳状态")
+                        .font(LearnNowTypography.cardHeadline)
+                        .foregroundStyle(LearnNowPalette.textPrimary)
+
+                    Text(totalXPText)
+                        .font(LearnNowTypography.screenSubtitle)
+                        .foregroundStyle(LearnNowPalette.textMuted)
+                }
+
+                Spacer()
+
+                InsetCircle(size: 72) {
+                    VStack(spacing: 2) {
+                        Text("\(streakDays)")
+                            .font(.system(size: 22, weight: .black, design: .rounded))
+                            .foregroundStyle(LearnNowPalette.color(for: .pink))
+
+                        Text("天连胜")
+                            .font(.system(size: 10, weight: .heavy, design: .rounded))
+                            .foregroundStyle(LearnNowPalette.textMuted)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct HomeMetricCard: View {
+    let metric: LearnNowHeaderMetric
+
+    var body: some View {
+        InsetCard {
+            VStack(spacing: 10) {
+                Text(metric.title)
+                    .font(LearnNowTypography.screenSubtitle)
+                    .foregroundStyle(LearnNowPalette.textMuted)
+
+                HStack(alignment: .lastTextBaseline, spacing: 4) {
+                    Text(metric.value)
+                        .font(LearnNowTypography.metricValue)
+                        .foregroundStyle(LearnNowPalette.color(for: metric.accent))
+
+                    if let unit = metric.unit {
+                        Text(unit)
+                            .font(LearnNowTypography.metricUnit)
+                            .foregroundStyle(LearnNowPalette.textMuted)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
     }
 }
 
@@ -153,19 +138,19 @@ private struct HeatmapGrid: View {
     var body: some View {
         LazyVGrid(columns: columns, spacing: 8) {
             ForEach(cells) { cell in
-                if cell.level == 0 {
-                    Circle()
-                        .fill(fillColor(for: cell.level))
-                        .frame(height: 22)
-                        .opacity(cell.level == nil ? 0 : 1)
-                        .modifier(OuterSurface(cornerRadius: 11))
-                } else {
-                    Circle()
-                        .fill(fillColor(for: cell.level))
-                        .frame(height: 22)
-                        .opacity(cell.level == nil ? 0 : 1)
-                        .modifier(InsetSurface(cornerRadius: 11))
+                Group {
+                    if cell.level == 0 {
+                        Circle()
+                            .fill(fillColor(for: cell.level))
+                            .modifier(OuterSurface(cornerRadius: 11))
+                    } else {
+                        Circle()
+                            .fill(fillColor(for: cell.level))
+                            .modifier(InsetSurface(cornerRadius: 11))
+                    }
                 }
+                .frame(height: 22)
+                .opacity(cell.level == nil ? 0 : 1)
             }
         }
     }
@@ -189,6 +174,6 @@ private struct HeatmapGrid: View {
 #Preview("Home") {
     ZStack {
         LearnNowPalette.canvas.ignoresSafeArea()
-        HomeScreen(flow: .homePreview, onContinueLearning: {})
+        HomeScreen(model: LearnNowFlowState.homePreview.homeScreenModel, onContinueLearning: {})
     }
 }

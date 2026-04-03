@@ -70,6 +70,19 @@ final class LearnNowUITests: XCTestCase {
         assertExists(app.staticTexts["假设检验"])
     }
 
+    @MainActor
+    func testPathTrackTabsSwitchVisibleContent() throws {
+        tapWhenHittable(element(matchingIdentifier: "tab.routes"))
+        tapWhenHittable(element(matchingIdentifier: "route.datascience"))
+        assertExists(element(matchingIdentifier: "screen.path"))
+
+        tapWhenHittable(element(matchingIdentifier: "path.track.machineLearning"))
+        assertExists(element(matchingIdentifier: "path.module.regression"))
+
+        tapWhenHittable(element(matchingIdentifier: "path.track.deepLearning"))
+        assertExists(element(matchingIdentifier: "path.empty"))
+    }
+
     // MARK: - Helpers
 
     /// Assert that an element appears within the timeout.

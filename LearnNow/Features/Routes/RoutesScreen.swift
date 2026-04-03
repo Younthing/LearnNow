@@ -1,27 +1,21 @@
 import SwiftUI
 
 struct RoutesScreen: View {
-    let flow: LearnNowFlowState
-    let onOpenCurrentRoute: () -> Void
+    let model: RoutesOverviewModel
+    let onOpenRoute: (String) -> Void
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 24) {
-                ScreenHeader(title: "学习路线", subtitle: "选择你的探索方向")
+        ScreenScaffold {
+            ScreenHeader(title: model.title, subtitle: model.subtitle)
 
-                VStack(spacing: 20) {
-                    ForEach(flow.routes) { route in
-                        RouteCard(route: route) {
-                            if route.interactive {
-                                onOpenCurrentRoute()
-                            }
-                        }
-                        .accessibilityIdentifier(route.id == "datascience" ? "route.datascience" : "")
+            VStack(spacing: LearnNowSpacing.cardGap) {
+                ForEach(model.routes) { route in
+                    RouteCard(route: route) {
+                        onOpenRoute(route.id)
                     }
+                    .accessibilityIdentifier(route.id == "datascience" ? "route.datascience" : "")
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
         }
         .accessibilityIdentifier("screen.routes")
     }
@@ -48,17 +42,19 @@ private struct RouteCard: View {
                             .multilineTextAlignment(.leading)
 
                         Text(route.subtitle)
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .font(LearnNowTypography.body)
                             .foregroundStyle(LearnNowPalette.textMuted)
                             .multilineTextAlignment(.leading)
 
                         HStack {
                             Text(route.progress == 0 ? "未开始" : "已完成 \(Int(route.progress * 100))%")
+
                             Spacer()
+
                             Text(route.cta)
                                 .foregroundStyle(LearnNowPalette.color(for: route.accent))
                         }
-                        .font(.system(size: 12, weight: .heavy, design: .rounded))
+                        .font(LearnNowTypography.label)
                         .foregroundStyle(LearnNowPalette.textMuted)
 
                         ProgressTrack(progress: route.progress, accent: route.accent, height: 6)
@@ -86,6 +82,6 @@ private struct RouteCard: View {
 #Preview("Routes") {
     ZStack {
         LearnNowPalette.canvas.ignoresSafeArea()
-        RoutesScreen(flow: .routesPreview, onOpenCurrentRoute: {})
+        RoutesScreen(model: LearnNowFlowState.routesPreview.routesOverviewModel, onOpenRoute: { _ in })
     }
 }

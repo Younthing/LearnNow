@@ -16,14 +16,31 @@ struct AppShellView: View {
             BackgroundGlow()
                 .ignoresSafeArea()
 
-            currentScreenView
-                .padding(.bottom, 112)
-                .animation(
-                    animationsDisabled
-                        ? nil
-                        : .spring(response: 0.4, dampingFraction: 0.75),
-                    value: flow.currentScreen
-                )
+            ZStack {
+                tabStage(tab: .home) {
+                    HomeScreen(
+                        model: flow.homeScreenModel,
+                        onContinueLearning: { flow.openLesson() }
+                    )
+                }
+
+                tabStage(tab: .routes) {
+                    RoutesJourneyContainer(flow: $flow)
+                }
+
+                tabStage(tab: .anki) {
+                    ReviewBoardContainer(flow: $flow)
+                }
+
+                tabStage(tab: .dash) {
+                    DashboardScreen(model: flow.dashboardScreenModel)
+                }
+            }
+            .padding(.bottom, 112)
+            .animation(
+                animationsDisabled ? nil : .spring(response: 0.4, dampingFraction: 0.75),
+                value: flow.currentScreen
+            )
 
             FloatingTabBar(selectedTab: flow.selectedTab) { tab in
                 flow.selectTab(tab)
@@ -33,39 +50,136 @@ struct AppShellView: View {
         }
     }
 
-    @ViewBuilder
-    private var currentScreenView: some View {
-        switch flow.currentScreen {
-        case .home:
-            HomeScreen(flow: flow) {
-                flow.openLesson()
-            }
-        case .routes:
-            RoutesScreen(flow: flow) {
-                flow.openPath()
-            }
-        case .path:
-            PathScreen(
-                flow: flow,
-                onBack: { flow.showRoutes() },
-                onOpenLesson: { moduleID in
-                    flow.openLesson(moduleID: moduleID)
-                }
-            )
-        case .lesson:
-            LessonScreen(flow: $flow)
-        case .completion:
-            CompletionScreen(
-                flow: flow,
-                onContinueLearning: { flow.openNextLesson() },
-                onFinish: { flow.finishLearning() },
-                onOpenReviewBoard: { flow.openReviewBoard() }
-            )
-        case .anki:
-            ReviewBoardScreen(flow: $flow)
-        case .dash:
-            DashboardScreen(flow: flow)
+    private func tabStage<Content: View>(
+        tab: LearnNowTab,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        StableStage(isActive: flow.currentScreen == screen(for: tab)) {
+            content()
         }
+    }
+
+    private func screen(for tab: LearnNowTab) -> LearnNowScreen {
+        switch tab {
+        case .home:
+            .home
+        case .routes:
+            .routes
+        case .anki:
+            .anki
+        case .dash:
+            .dash
+        }
+    }
+}
+
+private struct RoutesJourneyContainer: View {
+    @Binding var flow: LearnNowFlowState
+
+    var body: some View {
+        ZStack {
+            routesStage(destination: .overview) {
+                RoutesScreen(model: flow.routesOverviewModel) { _ in
+                    flow.openPath()
+                }
+            }
+
+            routesStage(destination: .path) {
+                PathScreen(
+                    model: flow.pathScreenModel,
+                    onBack: { flow.showRoutes() },
+                    onSelectTrack: { flow.selectRouteTrack($0) },
+                    onOpenLesson: { flow.openLesson(moduleID: $0) }
+                )
+            }
+
+            routesStage(destination: .lesson) {
+                LessonScreen(
+                    model: flow.lessonScreenModel,
+                    onBack: { flow.openPathForLoadedLesson() },
+                    onSelectPage: { flow.setCurrentLessonPageIndex($0) },
+                    onAnswer: { flow.answerCurrentLesson(with: $0) },
+                    onCallToAction: { flow.handleLessonCallToAction($0) }
+                )
+            }
+
+            routesStage(destination: .completion) {
+                CompletionScreen(
+                    model: flow.completionScreenModel,
+                    onContinueLearning: { flow.openNextLesson() },
+                    onFinish: { flow.finishLearning() },
+                    onOpenReviewBoard: { flow.openReviewBoard() }
+                )
+            }
+        }
+    }
+
+    private func routesStage<Content: View>(
+        destination: LearnNowRoutesDestination,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        StableStage(isActive: flow.routesDestination == destination) {
+            content()
+        }
+    }
+}
+
+private struct ReviewBoardContainer: View {
+    @Binding var flow: LearnNowFlowState
+
+    private var activeSheet: Binding<LearnNowReviewSheet?> {
+        Binding(
+            get: { flow.activeReviewSheet },
+            set: { newValue in
+                if let newValue {
+                    flow.activeReviewSheet = newValue
+                } else {
+                    flow.dismissReviewSheet()
+                }
+            }
+        )
+    }
+
+    var body: some View {
+        ReviewBoardScreen(
+            model: flow.reviewBoardModel,
+            onOpenFilters: { flow.openReviewCardPool() },
+            onFlipCard: { flow.flipCurrentReviewCard() },
+            onRate: { flow.rateCurrentReviewCard($0) },
+            onEmptyAction: { flow.handleReviewEmptyPrimaryAction() }
+        )
+        .sheet(item: activeSheet) { sheet in
+            switch sheet {
+            case .cardPool:
+                ReviewFiltersSheet(
+                    model: flow.reviewFiltersSheetModel,
+                    onReset: { flow.resetDraftReviewFilters() },
+                    onSelectTime: { flow.setDraftTimeFilter($0) },
+                    onToggleTopic: { flow.toggleDraftTopic($0) },
+                    onToggleModule: { flow.toggleDraftModule($0) },
+                    onSelectMastery: { flow.setDraftMasteryFilter($0) },
+                    onSelectFavorite: { flow.setDraftFavoriteFilter($0) },
+                    onToggleFavorite: { flow.toggleReviewCardFavorited(id: $0) },
+                    onToggleMastered: { flow.toggleReviewCardMastered(id: $0) },
+                    onApply: { flow.applyReviewCardPoolFilters() }
+                )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+            }
+        }
+    }
+}
+
+private struct StableStage<Content: View>: View {
+    let isActive: Bool
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        content
+            .opacity(isActive ? 1 : 0)
+            .zIndex(isActive ? 1 : 0)
+            .allowsHitTesting(isActive)
+            .accessibilityHidden(!isActive)
     }
 }
 

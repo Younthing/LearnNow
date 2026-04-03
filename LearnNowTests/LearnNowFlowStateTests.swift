@@ -36,12 +36,29 @@ struct LearnNowFlowStateTests {
         var sut = LearnNowFlowState()
 
         sut.openPath()
-        #expect(sut.currentScreen == .path)
+        #expect(sut.currentScreen == .routes)
         #expect(sut.selectedTab == .routes)
+        #expect(sut.routesDestination == .path)
 
         sut.openLesson()
-        #expect(sut.currentScreen == .lesson)
+        #expect(sut.currentScreen == .routes)
         #expect(sut.selectedTab == .routes)
+        #expect(sut.routesDestination == .lesson)
+    }
+
+    @Test
+    func selectingRouteTrackFiltersVisiblePathNodes() {
+        var sut = LearnNowFlowState()
+        sut.openPath()
+
+        #expect(sut.selectedRouteTrack == .statistics)
+        #expect(sut.visiblePathNodes.map(\.id) == ["stats", "probability", "hypothesis"])
+
+        sut.selectRouteTrack(.machineLearning)
+        #expect(sut.visiblePathNodes.map(\.id) == ["regression"])
+
+        sut.selectRouteTrack(.deepLearning)
+        #expect(sut.visiblePathNodes.isEmpty)
     }
 
     @Test
@@ -49,10 +66,13 @@ struct LearnNowFlowStateTests {
         var sut = LearnNowFlowState.completionPreview
 
         sut.finishLearning()
-        #expect(sut.currentScreen == .path)
+        #expect(sut.currentScreen == .routes)
+        #expect(sut.routesDestination == .path)
+        #expect(sut.selectedRouteTrack == .statistics)
 
         sut.openLesson(moduleID: "hypothesis")
-        #expect(sut.currentScreen == .lesson)
+        #expect(sut.currentScreen == .routes)
+        #expect(sut.routesDestination == .lesson)
         #expect(sut.currentLessonTitle == "假设检验")
         #expect(sut.currentLessonPageIndex == 0)
     }
@@ -91,7 +111,8 @@ struct LearnNowFlowStateTests {
 
         sut.completeLesson()
 
-        #expect(sut.currentScreen == .completion)
+        #expect(sut.currentScreen == .routes)
+        #expect(sut.routesDestination == .completion)
         #expect(sut.totalXP == 1_255)
         #expect(sut.generatedReviewTags == ["t 检验", "P值定义", "数据稳健性"])
         #expect(sut.hasNextLesson)
@@ -106,14 +127,16 @@ struct LearnNowFlowStateTests {
 
         sut.openNextLesson()
         #expect(sut.selectedTab == .routes)
-        #expect(sut.currentScreen == .lesson)
+        #expect(sut.currentScreen == .routes)
+        #expect(sut.routesDestination == .lesson)
         #expect(sut.currentLessonTitle == "线性回归模型")
         #expect(sut.currentLessonPageIndex == 0)
 
         sut = .completionPreview
         sut.finishLearning()
         #expect(sut.selectedTab == .routes)
-        #expect(sut.currentScreen == .path)
+        #expect(sut.currentScreen == .routes)
+        #expect(sut.routesDestination == .path)
         #expect(sut.pathNodes[2].status == .done)
         #expect(sut.pathNodes[3].status == .current)
 
