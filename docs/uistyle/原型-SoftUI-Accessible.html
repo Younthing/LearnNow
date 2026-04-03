@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearnNow - Soft UI + Accessible & Ethical</title>
+  
+  <!-- Using Plus Jakarta Sans for extreme readability and modern geometric look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    /* 
+     * AESTHETIC: Soft UI Evolution + Accessible & Ethical
+     * Resolves the primary issues of Neumorphism (poor contrast, unclear interactability) 
+     * by using semantic borders, very high contrast text (WCAG AAA compliant), 
+     * clear focus states, and soft but distinct structural layers.
+     */
+    :root {
+      /* Warm, comfortable background, reduces eye strain compared to pure white */
+      --bg-body: #F5F4F1;
+      --bg-surface: #FFFFFF;
+      --bg-surface-hover: #F8F7F4;
+      
+      /* High-contrast accessible palette */
+      --brand-primary: #2563EB; /* Accessible Blue (Contrast > 4.5:1 against white) */
+      --brand-primary-light: #EFF6FF;
+      --brand-primary-hover: #1D4ED8;
+      
+      --brand-success: #059669; /* Forest green */
+      --brand-success-light: #ECFDF5;
+      
+      --brand-warning: #D97706;
+      --brand-warning-light: #FFFBEB;
+      
+      --brand-danger: #DC2626;
+      --brand-danger-light: #FEF2F2;
+
+      /* Text Colors - WCAG AAA Compliant Options */
+      --text-highest: #0F172A; /* Slate 900 for headings */
+      --text-high: #334155;    /* Slate 700 for body text */
+      --text-medium: #475569;  /* Slate 600 for secondary text */
+      
+      /* Borders & Softness */
+      --border-light: #E2E8F0;
+      --border-focus: #93C5FD;
+      
+      /* Evolved Soft Shadows: Clearer directionality, zero "smudge", just clean lift */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+      --shadow-focus: 0 0 0 3px rgba(37, 99, 235, 0.3); /* Clear ethical focus ring */
+
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Global Focus Outline for Accessibility Keyboard Navigation */
+    *:focus-visible {
+      outline: 2px solid var(--brand-primary);
+      outline-offset: 2px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: #E5E5E5; /* Desktop background */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-high);
+      padding: 20px;
+    }
+
+    /* Device Mockup */
+    .device {
+      width: 390px;
+      height: 844px;
+      background: var(--bg-body);
+      border-radius: 44px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      border: 8px solid #1E293B; /* Distinct dark hardware bezel for contrast */
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 54px;
+      padding: 0 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-highest);
+      z-index: 50;
+      flex-shrink: 0;
+      background: transparent;
+    }
+    .status-icons { display: flex; gap: 6px; align-items: center;}
+
+    /* Navigation Bar (Bottom) */
+    .nav-bar {
+      position: absolute;
+      bottom: 24px;
+      left: 20px;
+      right: 20px;
+      height: 72px;
+      background: var(--bg-surface);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-light);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 8px;
+      z-index: 50;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      color: var(--text-medium);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    
+    .nav-item:hover {
+      background: var(--bg-surface-hover);
+      color: var(--text-high);
+    }
+    
+    .nav-item.active {
+      color: var(--brand-primary);
+      background: var(--brand-primary-light);
+    }
+    
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 8px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background-color: var(--brand-primary);
+    }
+
+    .nav-icon { transition: transform 0.2s; }
+    .nav-item.active .nav-icon { transform: translateY(-4px); }
+
+    /* Screen Views */
+    .screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      background: var(--bg-body);
+      overflow: hidden;
+    }
+    .screen.active {
+      display: flex;
+      animation: softFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes softFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px 120px;
+      scroll-behavior: smooth;
+    }
+    .scroll-area::-webkit-scrollbar { display: none; }
+
+    /* Header */
+    .header {
+      padding: 24px 24px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-body);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-title { font-size: 28px; font-weight: 800; color: var(--text-highest); letter-spacing: -0.5px; line-height: 1.2;}
+    .header-subtitle { font-size: 14px; font-weight: 600; color: var(--text-medium); margin-top: 4px;}
+    .avatar { 
+        width: 48px; height: 48px; 
+        border-radius: 50%; 
+        object-fit: cover; 
+        border: 2px solid var(--bg-surface);
+        box-shadow: var(--shadow-sm); 
+        background: var(--bg-surface);
+    }
+
+    /* Soft Card with clear boundaries */
+    .soft-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-light);
+      margin-bottom: 24px;
+      transition: all 0.2s ease;
+    }
+
+    /* Buttons - Obvious Interactability */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 16px 24px;
+      border-radius: var(--radius-lg);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-high);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn:hover { background: var(--bg-surface-hover); border-color: #CBD5E1; }
+    .btn:active { transform: translateY(1px); box-shadow: none; }
+    
+    .btn-primary { 
+        background: var(--brand-primary); 
+        color: white; 
+        border: none;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+    .btn-primary:hover { background: var(--brand-primary-hover); }
+    
+    .btn-icon {
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer; color: var(--text-high);
+        transition: all 0.2s ease;
+    }
+    .btn-icon:hover { background: var(--bg-surface-hover); color: var(--brand-primary); border-color: var(--brand-primary-light);}
+    .btn-icon:active { transform: scale(0.95); }
+
+    /* Accessible Progress Track */
+    .progress-wrap {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .progress-labels { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--text-medium);}
+    .progress-track {
+      height: 12px;
+      background: #E2E8F0; /* High contrast track outline */
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      background: var(--brand-primary);
+    }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .stat-box {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+    }
+    .stat-val { font-size: 28px; font-weight: 800; color: var(--text-highest); line-height: 1;}
+    .stat-label { font-size: 13px; font-weight: 600; color: var(--text-medium); }
+    .stat-icon { color: var(--brand-primary); margin-bottom: 4px; padding: 8px; background: var(--brand-primary-light); border-radius: 8px; }
+
+    /* Accessible Heatmap */
+    .heatmap { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 16px; }
+    .heat-cell { 
+        aspect-ratio: 1; 
+        border-radius: 6px; 
+        background: var(--bg-body); 
+        border: 1px solid var(--border-light);
+        display: flex; align-items: center; justify-content: center;
+        position: relative;
+    }
+    /* Ethical design: Provide alt text/title for hover over heatmap cells rather than just color */
+    .heat-cell[title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 110%;
+        background: var(--text-highest);
+        color: white;
+        padding: 4px 8px;
+        font-size: 11px;
+        border-radius: 4px;
+        white-space: nowrap;
+        z-index: 100;
+        pointer-events: none;
+        font-weight: 600;
+    }
+
+    .heat-cell.lvl-1 { background: #D1FAE5; border-color: #86EFAC; } 
+    .heat-cell.lvl-2 { background: #34D399; border-color: #10B981; }
+    .heat-cell.lvl-3 { background: #059669; border-color: #047857; }
+
+    /* Path Node Timeline */
+    .path-container { position: relative; padding-left: 24px; margin-top: 24px; }
+    .path-line { position: absolute; left: 40px; top: 16px; bottom: 40px; width: 2px; background: var(--border-light); z-index: 1;}
+    .path-node { position: relative; display: flex; gap: 20px; margin-bottom: 32px; z-index: 2;}
+    
+    .node-icon-wrap { 
+        width: 36px; height: 36px; 
+        border-radius: 50%; border: 2px solid var(--border-light);
+        display: flex; align-items: center; justify-content: center; 
+        background: var(--bg-surface); 
+        flex-shrink: 0; color: var(--text-medium);
+    }
+    .path-node.done .node-icon-wrap { color: white; background: var(--brand-success); border-color: var(--brand-success); }
+    .path-node.current .node-icon-wrap { 
+        color: var(--brand-primary); 
+        border-color: var(--brand-primary);
+        border-width: 3px;
+    }
+    
+    .node-content { flex: 1; padding-top: 4px; }
+    .node-title { font-size: 16px; font-weight: 700; color: var(--text-highest); margin-bottom: 4px; }
+    .node-desc { font-size: 13px; font-weight: 500; color: var(--text-medium); }
+
+    /* Ethical Pill Tags */
+    .pill { 
+        padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; 
+        display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent;
+    }
+    .pill.mint { background: var(--brand-success-light); color: var(--brand-success); border-color: #A7F3D0; }
+    .pill.pink { background: var(--brand-danger-light); color: var(--brand-danger); border-color: #FECACA; }
+    .pill.blue { background: var(--brand-primary-light); color: var(--brand-primary); border-color: #BFDBFE; }
+    .pill.warning { background: var(--brand-warning-light); color: var(--brand-warning); border-color: #FDE68A; }
+
+    /* Accessible Lesson Quiz */
+    .quiz-option { 
+        padding: 16px 20px; 
+        border-radius: var(--radius-md); 
+        margin-bottom: 16px; 
+        display: flex; align-items: center; gap: 16px; 
+        cursor: pointer; font-weight: 600; font-size: 16px; 
+        background: var(--bg-surface);
+        border: 2px solid var(--border-light);
+        color: var(--text-highest);
+        transition: all 0.2s ease;
+    }
+    .quiz-option:hover { border-color: var(--brand-primary); background: var(--bg-surface-hover); }
+    .quiz-option:focus-visible { outline: none; border-color: var(--brand-primary); box-shadow: var(--shadow-focus); }
+    
+    .quiz-option.selected { border-color: var(--brand-primary); background: var(--brand-primary-light); }
+    .quiz-option.correct { border-color: var(--brand-success); background: var(--brand-success-light); }
+    .quiz-option.wrong { border-color: var(--brand-danger); background: var(--brand-danger-light); }
+    
+    .opt-letter { 
+        width: 32px; height: 32px; 
+        border-radius: 8px; 
+        background: var(--bg-body);
+        border: 1px solid var(--border-light);
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 14px; font-weight: 700; color: var(--text-medium);
+    }
+    .quiz-option.selected .opt-letter { background: var(--brand-primary); color: white; border-color: var(--brand-primary); }
+    .quiz-option.correct .opt-letter { background: var(--brand-success); color: white; border-color: var(--brand-success); }
+    .quiz-option.wrong .opt-letter { background: var(--brand-danger); color: white; border-color: var(--brand-danger); }
+
+    /* Code Block */
+    .code-block {
+        background: #1E293B; /* High contrast dark background for code readability */
+        border-radius: var(--radius-md);
+        padding: 20px;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #F8FAFC;
+        margin: 20px 0;
+        overflow-x: auto;
+        border: 1px solid #0F172A;
+    }
+
+    /* Flashcards Container */
+    .flashcard-wrap { perspective: 1000px; margin: 30px 0; height: 360px; position: relative;}
+    .flashcard { 
+        width: 100%; height: 100%; 
+        position: relative; 
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+        transform-style: preserve-3d; cursor: pointer;
+    }
+    .flashcard:hover .card-face { box-shadow: var(--shadow-lg); border-color: var(--brand-primary-light); }
+    .flashcard.flipped { transform: rotateY(180deg); }
+    
+    .card-face { 
+        position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+        border-radius: var(--radius-xl); padding: 40px 24px; 
+        display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; 
+        background: var(--bg-surface);
+        border: 2px solid var(--border-light);
+        box-shadow: var(--shadow-md); 
+        transition: all 0.3s;
+    }
+    .card-back { transform: rotateY(180deg); background: #FAFAFA; }
+    
+    /* Ethical Rating Buttons: Transparent wording, distinct accessible colors */
+    .rating-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px; opacity: 0; transition: opacity 0.4s; pointer-events: none;}
+    .rating-grid.show { opacity: 1; pointer-events: auto;}
+    .rate-btn { font-size: 14px; padding: 12px 4px; flex-direction: column; display: flex; gap: 4px; border-radius: var(--radius-md); }
+    
+    /* Horizontal Tabs */
+    .tabs-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 4px 24px 20px; scrollbar-width: none; }
+    .tabs-scroll::-webkit-scrollbar { display: none;}
+    .tab { 
+        padding: 10px 20px; border-radius: var(--radius-pill); font-size: 14px; font-weight: 700; white-space: nowrap; 
+        background: transparent; color: var(--text-medium); cursor: pointer; transition: all 0.2s; border: 1px solid var(--border-light);
+    }
+    .tab:hover { background: white; color: var(--text-high); }
+    .tab.active { background: var(--text-highest); border-color: var(--text-highest); color: white; }
+    
+    /* Helpers */
+    .accessible-sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="device">
+    <!-- Top Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <i data-lucide="signal" stroke-width="2.5" size="16"></i>
+        <i data-lucide="wifi" stroke-width="2.5" size="16"></i>
+        <i data-lucide="battery-full" stroke-width="2.5" size="20"></i>
+      </div>
+    </div>
+
+    <!-- ☁️ HOME SCREEN -->
+    <div class="screen active" id="view-home" role="main" aria-label="Home Screen">
+      <div class="header">
+        <div>
+          <h1 class="header-title">学习概览</h1>
+          <div class="header-subtitle">星期一 · 三月三十日</div>
+        </div>
+        <img src="https://i.pravatar.cc/150?u=a04258" alt="用户头像: 个人中心" class="avatar" tabindex="0">
+      </div>
+      
+      <div class="scroll-area">
+        <!-- Streak Card in Ethical Style -->
+        <div class="soft-card" style="display: flex; align-items: center; justify-content: space-between; border-left: 4px solid var(--brand-warning);">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 800; color: var(--text-highest); margin-bottom: 6px; display: flex; align-items:center; gap: 6px;">
+                <i data-lucide="flame" size="20" color="var(--brand-warning)"></i> 绝佳状态
+            </h2>
+            <p style="font-size: 14px; color: var(--text-medium); font-weight: 500;">累计获得 1,240 经验值</p>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 32px; font-weight: 900; color: var(--text-highest); line-height: 1;">12</div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-medium); margin-top:4px;">天连胜</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-icon"><i data-lucide="book-open" size="20"></i></div>
+            <div class="stat-val" style="color: var(--brand-primary);">25<span style="font-size:14px; color:var(--text-medium)">卡</span></div>
+            <div class="stat-label">今日待复习</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-icon" style="color: var(--brand-success); background: var(--brand-success-light);"><i data-lucide="target" size="20"></i></div>
+            <div class="stat-val" style="color: var(--brand-success);">61%</div>
+            <div class="stat-label">全局掌握度</div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 32px 0 16px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-highest);">继续学习</h3>
+        </div>
+        
+        <div class="soft-card" style="padding: 20px; border: 2px solid var(--brand-primary-light);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span class="pill blue" style="margin-bottom: 12px; font-size: 12px;"> 第3单元 · 课时4</span>
+                <h4 style="font-size: 18px; font-weight: 800; color: var(--text-highest); margin-bottom: 4px;">假设检验：均值比较</h4>
+              </div>
+              <button class="btn-icon" onclick="switchTab('view-lesson')" aria-label="继续学习：假设检验">
+                <i data-lucide="play" fill="currentColor" size="18" style="margin-left: 2px;"></i>
+              </button>
+            </div>
+            
+            <div class="progress-wrap" style="margin-top: 16px;">
+                <div class="progress-labels">
+                    <span style="color: var(--text-medium)">进度</span>
+                    <span style="color: var(--text-highest); font-weight: 800;">40%</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill" style="width: 40%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="soft-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-size: 16px; font-weight: 800; color: var(--text-highest);">本月学习记录</div>
+            <a href="#" style="color: var(--brand-primary); font-size: 14px; font-weight: 600; text-decoration: none;">查看全部</a>
+          </div>
+          <!-- Grid representing commitment -->
+          <div class="heatmap" id="home-heatmap" role="img" aria-label="活动热力图，本月有12天进行过学习"></div>
+          <div style="display: flex; justify-content:flex-end; align-items:center; gap:8px; margin-top: 12px; font-size:12px; font-weight:500; color:var(--text-medium);">
+            少 <div style="display:flex; gap:4px;"><span class="heat-cell" style="width:12px; height:12px;"></span><span class="heat-cell lvl-1" style="width:12px; height:12px;"></span><span class="heat-cell lvl-2" style="width:12px; height:12px;"></span><span class="heat-cell lvl-3" style="width:12px; height:12px;"></span></div> 多
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ☁️ PATH SCREEN -->
+    <div class="screen" id="view-path" aria-label="Learning Path Screen">
+      <div class="header" style="padding-bottom: 16px;">
+        <div>
+          <h1 class="header-title">学习路径</h1>
+          <div class="header-subtitle">数据科学与人工智能</div>
+        </div>
+      </div>
+      
+      <div class="tabs-scroll" role="tablist">
+        <button class="tab active" role="tab" aria-selected="true">统计基础</button>
+        <button class="tab" role="tab" aria-selected="false">机器学习</button>
+        <button class="tab" role="tab" aria-selected="false">深度学习</button>
+      </div>
+
+      <div class="scroll-area" style="padding-top: 16px;">
+        <div class="path-container">
+          <div class="path-line"></div>
+          
+          <div class="path-node done" tabindex="0">
+            <div class="node-icon-wrap"><i data-lucide="check" stroke-width="3" size="18"></i></div>
+            <div class="node-content">
+              <div class="node-title">描述统计与数据探索</div>
+              <div class="node-desc">6课时 · 已掌握</div>
+            </div>
+          </div>
+
+          <div class="path-node done" tabindex="0">
+            <div class="node-icon-wrap"><i data-lucide="check" stroke-width="3" size="18"></i></div>
+            <div class="node-content">
+              <div class="node-title">概率论基础</div>
+              <div class="node-desc">8课时 · 已掌握</div>
+            </div>
+          </div>
+
+          <div class="path-node current" onclick="switchTab('view-lesson')" style="cursor:pointer;" tabindex="0" role="button" aria-label="进入当前课程：假设检验">
+            <div class="node-icon-wrap"><i data-lucide="pencil" size="18"></i></div>
+            <div class="node-content">
+              <div class="soft-card" style="padding: 20px; box-shadow: var(--shadow-lg); border-color: var(--brand-primary); background: #FFFFFF;">
+                <div class="pill blue" style="margin-bottom: 8px; font-size:11px; padding: 4px 8px;">进行中</div>
+                <div class="node-title" style="color: var(--text-highest); font-size: 18px;">假设检验</div>
+                <div class="node-desc" style="margin-bottom: 16px;">共 10 课时</div>
+                
+                <div class="progress-wrap">
+                    <div class="progress-labels">
+                        <span style="color: var(--text-medium); font-size: 12px;">已完成 4 课时</span>
+                        <span style="color: var(--brand-primary); font-weight: 800; font-size: 12px;">40%</span>
+                    </div>
+                    <div class="progress-track" style="height: 6px;">
+                      <div class="progress-fill" style="width: 40%;"></div>
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+           <div class="path-node" style="opacity: 0.6;">
+            <div class="node-icon-wrap" style="background:#F1F5F9;"><i data-lucide="lock" size="16"></i></div>
+            <div class="node-content">
+              <div class="node-title" style="color:var(--text-medium)">线性回归模型</div>
+              <div class="node-desc">12课时 · 需要先完成上方课程</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ☁️ LESSON SCREEN -->
+    <div class="screen" id="view-lesson" aria-label="Lesson Content Screen">
+      <div class="header" style="align-items: center;">
+        <button class="btn-icon" onclick="switchTab('view-path')" aria-label="返回学习路径" style="width:40px;height:40px;"><i data-lucide="arrow-left" size="20"></i></button>
+        <div style="flex: 1; text-align: center;">
+          <h2 style="font-size: 16px; font-weight: 800; color: var(--text-highest);">课程 4 / 10</h2>
+        </div>
+        <div style="width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; color:var(--text-medium)"><i data-lucide="more-horizontal" size="20"></i></div>
+      </div>
+      
+      <div class="progress-track" style="margin:0 24px; height: 4px; border-radius:0;"><div class="progress-fill" style="width: 40%; border-radius:0;"></div></div>
+      
+      <div class="scroll-area" style="padding-top: 32px;">
+        <span class="pill blue" style="margin-bottom: 16px;">单元 3：推断统计</span>
+        <h1 style="font-size: 28px; font-weight: 800; color: var(--text-highest); margin-bottom: 24px; line-height: 1.3;">t检验：小样本分析</h1>
+        
+        <p style="font-size: 17px; line-height: 1.7; font-weight: 500; color: var(--text-high); margin-bottom: 24px;">
+          t检验是比较两组数据均值差异的核心工具。它基于 <strong>t 分布</strong>，专为 <mark style="background:var(--brand-warning-light); color:var(--brand-warning); padding:2px 4px; border-radius:4px; font-weight:700;">小样本 (n &lt; 30)</mark> 且总体方差未知的场景而设计。
+        </p>
+
+        <!-- Ethically clear code block -->
+        <div class="code-block" tabindex="0" aria-label="Python Code Snippet">
+<span style="color:#64748B;"># 独立样本检验 - Python</span>
+<span style="color:#C678DD;">from</span> scipy <span style="color:#C678DD;">import</span> stats
+
+t, p = stats.<span style="color:#61AFEF;">ttest_ind</span>(
+  a, b, equal_var=<span style="color:#D19A66;">False</span>
+)
+<span style="color:#56B6C2;">print</span>(<span style="color:#98C379;">f"P值: </span><span style="color:#E5C07B;">{p:.4f}</span><span style="color:#98C379;">"</span>)
+        </div>
+
+        <!-- Quiz Section -->
+        <div class="soft-card" style="margin-top: 40px; border: 2px solid var(--border-light); background: var(--bg-surface);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom: 20px;">
+                <div style="background:var(--brand-primary-light); color:var(--brand-primary); padding:8px; border-radius:8px;"><i data-lucide="help-circle" size="20"></i></div>
+                <h3 style="font-size: 18px; font-weight: 800; color: var(--text-highest);">知识测试</h3>
+            </div>
+
+            <p style="font-weight: 700; font-size: 16px; margin-bottom: 24px; line-height: 1.5; color: var(--text-highest);">处理样本极少（不到 30 个）且缺乏总体方差数据的情况时，通常适用什么检验？</p>
+            
+            <button class="quiz-option" onclick="handleQuiz(this, false)" tabindex="0">
+              <div class="opt-letter">A</div> <span style="flex:1; text-align:left;">Z 检验 (基于标准正态)</span>
+            </button>
+            <button class="quiz-option" onclick="handleQuiz(this, true)" tabindex="0">
+              <div class="opt-letter">B</div> <span style="flex:1; text-align:left;">t 检验 (基于 t 分布)</span>
+            </button>
+            <button class="quiz-option" onclick="handleQuiz(this, false)" tabindex="0">
+              <div class="opt-letter">C</div> <span style="flex:1; text-align:left;">卡方检验 (Chi-Square)</span>
+            </button>
+            
+            <div id="quiz-feedback" style="display: none; padding: 16px; border-radius: var(--radius-sm); margin-top: 24px; font-size: 15px; font-weight: 600; line-height: 1.6;"></div>
+            
+            <button id="btn-next-lesson" class="btn btn-primary" style="margin-top: 24px; display: none;">继续下一课</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ☁️ ANKI SCREEN -->
+    <div class="screen" id="view-anki" aria-label="Anki Flashcards Screen">
+      <div class="header">
+        <h1 class="header-title" style="width: 100%; text-align: center;">记忆闪卡</h1>
+      </div>
+
+      <!-- Ethical Clear Labelling -->
+      <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; padding: 0 20px;">
+        <div class="pill blue" title="今天新增的学习卡片"><i data-lucide="plus-circle" size="14"></i> 8 新卡</div>
+        <div class="pill warning" title="今天需要复习的旧卡片"><i data-lucide="rotate-cw" size="14"></i> 5 待复习</div>
+      </div>
+
+      <div class="scroll-area" style="padding-top: 10px;">
+        <div class="flashcard-wrap" id="anki-card-container">
+          <!-- Button element for a11y, screen readers will know it's interactable -->
+          <button class="flashcard" onclick="flipCard()" aria-label="点击翻转卡片查看背面" style="border:none; background:transparent; padding:0; display:block;">
+            <!-- Front -->
+            <div class="card-face card-front">
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-medium); text-transform: uppercase; margin-bottom: 30px; letter-spacing: 1px;">假设检验 · 核心概念</div>
+              <div style="font-size: 36px; font-weight: 800; color: var(--text-highest); margin-bottom: auto;">P值 <br><span style="font-size:20px; font-weight: 600; color: var(--text-medium)">(p-value)</span></div>
+              
+              <div style="padding: 12px 20px; background: var(--bg-body); border-radius: var(--radius-pill); font-size: 14px; font-weight: 600; color: var(--text-high); display:flex; align-items:center; gap:8px;">
+                  <i data-lucide="mouse-pointer-click" size="16" color="var(--brand-primary)"></i> 点击卡片查看解析
+              </div>
+            </div>
+            <!-- Back -->
+            <div class="card-face card-back">
+              <div style="font-size: 13px; font-weight: 800; color: var(--brand-primary); text-transform: uppercase; margin-bottom: 24px; letter-spacing: 1px;">解析说明</div>
+              <div style="font-size: 18px; font-weight: 600; line-height: 1.6; color: var(--text-highest); text-align: left;">
+                在原假设为真时，观测到当前结果（或更极端结果）的发生概率。<br><br>
+                <div style="padding: 16px; background: var(--brand-danger-light); border: 1px solid #FECACA; border-radius: var(--radius-sm); margin-top: 20px; color: var(--brand-danger);">
+                    <strong style="font-size:18px; display:block; margin-bottom:8px;">若 p &lt; 0.05</strong> 
+                    通常代表结果显著，应拒绝原假设。
+                </div>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Ethical design requires users explicitly know how long until next review -->
+        <div class="rating-grid" id="anki-rating" aria-label="选择记忆程度">
+          <button class="btn rate-btn" style="border-bottom: 4px solid var(--brand-danger);" onclick="nextCard()">
+            <span style="font-weight: 800; color: var(--text-highest);">重来</span>
+            <span style="font-size:12px; font-weight:600; color:var(--text-medium)">1 分钟后</span>
+          </button>
+          <button class="btn rate-btn" style="border-bottom: 4px solid var(--brand-warning);" onclick="nextCard()">
+            <span style="font-weight: 800; color: var(--text-highest);">困难</span>
+            <span style="font-size:12px; font-weight:600; color:var(--text-medium)">6 分钟后</span>
+          </button>
+          <button class="btn rate-btn" style="border-bottom: 4px solid var(--brand-success);" onclick="nextCard()">
+            <span style="font-weight: 800; color: var(--text-highest);">良好</span>
+            <span style="font-size:12px; font-weight:600; color:var(--text-medium)">1 天后</span>
+          </button>
+          <button class="btn rate-btn" style="border-bottom: 4px solid var(--brand-primary);" onclick="nextCard()">
+            <span style="font-weight: 800; color: var(--text-highest);">简单</span>
+            <span style="font-size:12px; font-weight:600; color:var(--text-medium)">4 天后</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ☁️ DASHBOARD SCREEN -->
+    <div class="screen" id="view-dash" aria-label="Analytics Dashboard">
+      <div class="header">
+        <div>
+          <h1 class="header-title">学习分析</h1>
+          <div class="header-subtitle">基于真实数据的学习反馈</div>
+        </div>
+      </div>
+      
+      <div class="scroll-area" style="padding-top: 20px;">
+        
+        <div class="soft-card" style="padding: 24px 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-highest);">记忆保持率</h3>
+              <i data-lucide="info" size="18" color="var(--text-medium)" aria-label="图表显示基于艾宾浩斯曲线的记忆预估"></i>
+          </div>
+          <!-- chart container -->
+          <div style="height: 200px; width: 100%; position: relative;">
+            <canvas id="chart-forget" role="img" aria-label="折线图：当前学习策略 (蓝色实线) 相比无复习状态 (虚线) 能将记忆保持在 80% 左右。"></canvas>
+          </div>
+        </div>
+
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-highest); margin: 32px 0 16px; padding: 0 8px;">掌握度图谱</h3>
+        
+        <div class="soft-card" style="padding: 24px 20px;">
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-highest);">
+              <span>描述统计 <i data-lucide="check-circle" size="14" color="var(--brand-success)" style="margin-left:4px"></i></span>
+              <span style="color: var(--brand-success);">92%</span>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-track"><div class="progress-fill" style="width: 92%; background: var(--brand-success);"></div></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-highest);">
+              <span>假设检验</span>
+              <span style="color: var(--brand-primary);">61%</span>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-track"><div class="progress-fill" style="width: 61%;"></div></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-highest);">
+              <span>回归算法</span>
+              <span style="color: var(--text-medium);">25%</span>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-track"><div class="progress-fill" style="width: 25%; background: var(--text-medium);"></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bar" aria-label="Main Navigation">
+      <button class="nav-item active" data-target="view-home" onclick="switchTab('view-home')" aria-label="首页" aria-selected="true" role="tab">
+        <i data-lucide="home" class="nav-icon" size="24" stroke-width="2.5"></i>
+      </button>
+      <button class="nav-item" data-target="view-path" onclick="switchTab('view-path')" aria-label="学习路径" aria-selected="false" role="tab">
+        <i data-lucide="route" class="nav-icon" size="24" stroke-width="2.5"></i> <!-- Changed to route icon for better semantics -->
+      </button>
+      <button class="nav-item" data-target="view-anki" onclick="switchTab('view-anki')" aria-label="记忆卡片" aria-selected="false" role="tab">
+        <i data-lucide="layers" class="nav-icon" size="24" stroke-width="2.5"></i>
+      </button>
+      <button class="nav-item" data-target="view-dash" onclick="switchTab('view-dash')" aria-label="数据分析" aria-selected="false" role="tab">
+        <i data-lucide="bar-chart-2" class="nav-icon" size="24" stroke-width="2.5"></i>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(targetId) {
+      document.querySelectorAll('.screen').forEach(el => {
+          el.classList.remove('active');
+          el.setAttribute('aria-hidden', 'true');
+      });
+      document.querySelectorAll('.nav-item').forEach(el => {
+          el.classList.remove('active');
+          el.setAttribute('aria-selected', 'false');
+      });
+      
+      const targetScreen = document.getElementById(targetId);
+      if(targetScreen) {
+          targetScreen.classList.add('active');
+          targetScreen.removeAttribute('aria-hidden');
+      }
+      
+      const navItem = document.querySelector(`.nav-item[data-target="${targetId}"]`);
+      if (navItem) {
+        navItem.classList.add('active');
+        navItem.setAttribute('aria-selected', 'true');
+      } else if (targetId === 'view-lesson') {
+        const pathNav = document.querySelector(`.nav-item[data-target="view-path"]`);
+        pathNav.classList.add('active');
+        pathNav.setAttribute('aria-selected', 'true');
+      }
+    }
+
+    // Home Heatmap Setup - Generating ethical heatmap with title attributes for screen reading
+    const heatmapEl = document.getElementById('home-heatmap');
+    const activeDays = [2,3,4,6,7,9,10,11,12,14,15,16,18,19,20,21,23,24,25,26,27,28,29,30];
+    for (let i = 1; i <= 35; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'heat-cell';
+      
+      if(i > 31) { 
+          cell.style.visibility = 'hidden'; 
+      } else {
+          let lvl = 0;
+          if(activeDays.includes(i)) {
+              if (i > 25) lvl = 3;
+              else if (i % 2 === 0) lvl = 1;
+              else lvl = 2;
+              
+              cell.classList.add(`lvl-${lvl}`);
+              cell.setAttribute('title', `3月${i}日：完成 ${lvl * 3} 课时`);
+              cell.setAttribute('aria-label', `3月${i}日，活跃`);
+          } else {
+              cell.setAttribute('title', `3月${i}日：未学习`);
+              cell.setAttribute('aria-label', `3月${i}日，未活跃`);
+          }
+      }
+      heatmapEl.appendChild(cell);
+    }
+
+    // Accessible Quiz Logic
+    let quizAnswered = false;
+    function handleQuiz(el, isCorrect) {
+      if (quizAnswered) return;
+      quizAnswered = true;
+      
+      const feedback = document.getElementById('quiz-feedback');
+      feedback.style.display = 'block';
+      const nextBtn = document.getElementById('btn-next-lesson');
+      
+      // Update ARIA states
+      document.querySelectorAll('.quiz-option').forEach(opt => {
+          opt.style.pointerEvents = 'none';
+          opt.setAttribute('aria-disabled', 'true');
+      });
+      
+      if (isCorrect) {
+        el.classList.add('correct');
+        el.setAttribute('aria-pressed', 'true');
+        
+        feedback.style.backgroundColor = 'var(--brand-success-light)';
+        feedback.style.color = 'var(--brand-success)';
+        feedback.style.border = '1px solid #A7F3D0';
+        feedback.innerHTML = '<i data-lucide="check-circle" size="20" style="vertical-align:middle; margin-right:8px"></i> 回答正确！t分布考虑了小样本方差的不确定性，因此更为稳健。';
+        nextBtn.style.display = 'flex';
+        nextBtn.focus(); // Move focus to logical next step
+        
+        // Ethical confetti: Accessible celebration that isn't too distracting
+        confetti({
+          particleCount: 80, spread: 60, origin: { y: 0.6 },
+          colors: ['#2563EB', '#10B981', '#F59E0B']
+        });
+      } else {
+        el.classList.add('wrong');
+        el.setAttribute('aria-pressed', 'true');
+        
+        feedback.style.backgroundColor = 'var(--brand-danger-light)';
+        feedback.style.color = 'var(--brand-danger)';
+        feedback.style.border = '1px solid #FECACA';
+        feedback.innerHTML = '<i data-lucide="x-circle" size="20" style="vertical-align:middle; margin-right:8px"></i> 不太准确。Z检验在缺少总体方差且样本规模很小的情况下会产生误导。';
+        
+        nextBtn.style.display = 'flex';
+        nextBtn.textContent = '重试本题';
+        nextBtn.onclick = () => {
+          quizAnswered = false;
+          el.classList.remove('wrong');
+          el.removeAttribute('aria-pressed');
+          feedback.style.display = 'none';
+          nextBtn.style.display = 'none';
+          document.querySelectorAll('.quiz-option').forEach(opt => {
+              opt.style.pointerEvents = 'auto';
+              opt.removeAttribute('aria-disabled');
+          });
+        };
+        nextBtn.focus();
+      }
+      lucide.createIcons();
+    }
+
+    // Anki logic
+    let isFlipped = false;
+    function flipCard() {
+      if (isFlipped) return;
+      const card = document.querySelector('.flashcard');
+      card.classList.add('flipped');
+      card.setAttribute('aria-expanded', 'true');
+      
+      document.getElementById('anki-rating').classList.add('show');
+      isFlipped = true;
+    }
+    
+    function nextCard() {
+      const card = document.querySelector('.flashcard');
+      const rating = document.getElementById('anki-rating');
+      
+      // Slide out gently
+      card.style.transform = 'rotateY(180deg) translateX(100%)';
+      card.style.opacity = '0';
+      rating.classList.remove('show');
+      
+      setTimeout(() => {
+        card.style.transition = 'none';
+        card.classList.remove('flipped');
+        card.setAttribute('aria-expanded', 'false');
+        card.style.transform = 'translateY(10px)';
+        card.style.opacity = '0';
+        
+        // Mocking next card data
+        document.querySelector('.card-front').children[1].innerHTML = "Type I Error<br><span style='font-size:20px; font-weight: 600; color: var(--text-medium)'>(第一类错误)</span>";
+        document.querySelector('.card-back').children[1].innerHTML = "弃真错误。<br><br><div style='padding:16px; background:var(--brand-warning-light); border: 1px solid #FDE68A; border-radius:8px; margin-top:20px; color:var(--brand-warning);'><strong style='font-size:18px; display:block; margin-bottom:8px'>场景解释</strong>原假设明明是真的，却被测试结果错误地拒绝了（即假阳性）。</div>";
+        
+        setTimeout(() => {
+          card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+          card.style.transform = 'translateY(0)';
+          card.style.opacity = '1';
+          isFlipped = false;
+        }, 50);
+      }, 400);
+    }
+
+    // Chart.js A11y and Styling
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.color = '#64748B'; /* Slate 500 for chart labels */
+    
+    setTimeout(() => {
+      const ctx = document.getElementById('chart-forget');
+      if (ctx && window.Chart) {
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7'],
+            datasets: [
+              {
+                label: '带有干预的学习策略',
+                data: [100, 85, 82, 85, 82, 80, 82],
+                borderColor: '#2563EB', /* Accessible Primary */
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true,
+                pointBackgroundColor: '#FFFFFF',
+                pointBorderColor: '#2563EB',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+              },
+              {
+                label: '无干预的遗忘规律',
+                data: [100, 33, 28, 25, 23, 21, 20],
+                borderColor: '#94A3B8', /* Slate 400 */
+                borderWidth: 2,
+                borderDash: [6, 6],
+                tension: 0.3,
+                pointRadius: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false }, 
+                tooltip: { 
+                    enabled: true,
+                    backgroundColor: '#1E293B',
+                    titleFont: { size: 14, family: "'Plus Jakarta Sans'" },
+                    bodyFont: { size: 13, family: "'Plus Jakarta Sans'" },
+                    padding: 12,
+                    cornerRadius: 8
+                } 
+            },
+            scales: {
+              x: { 
+                  grid: { display:false }, 
+                  border: { display: false },
+                  ticks: { font: { weight: 600 } }
+              },
+              y: { 
+                min: 0, max: 100,
+                grid: { color: '#E2E8F0', borderDash: [4, 4] },
+                border: { display: false },
+                ticks: { stepSize: 25, font: { weight: 600 } }
+              }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            }
+          }
+        });
+      }
+    }, 500);
+
+  </script>
+</body>
+</html>

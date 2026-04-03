@@ -5,6 +5,7 @@
 .DS_Store
 ## User settings
 xcuserdata/
+ai_develop_note/
 
 ## Obj-C/Swift specific
 *.hmap
