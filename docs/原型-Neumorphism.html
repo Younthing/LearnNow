@@ -617,9 +617,6 @@
         <div class="segment neu-progress" onclick="scrollToSlide(2)" style="flex: 1; height: 6px; margin: 0; cursor: pointer; transition: transform 0.2s;">
            <div class="neu-progress-fill" style="width: 0%;"></div>
         </div>
-        <div class="segment neu-progress" onclick="scrollToSlide(3)" style="flex: 1; height: 6px; margin: 0; cursor: pointer; transition: transform 0.2s;">
-           <div class="neu-progress-fill" style="width: 0%;"></div>
-        </div>
       </div>
       
       <!-- Horizontal Scroll Area -->
@@ -628,7 +625,7 @@
         <!-- Slide 1: Intro -->
         <div class="slide scroll-area" style="flex: 0 0 100%; width: 100%; scroll-snap-align: start; padding-top: 16px; min-height: 100%; box-sizing: border-box; padding-bottom: 60px;">
           <div style="text-align: center; margin-bottom: 24px;">
-              <span class="pill blue">小节 1 / 3</span>
+              <span class="pill blue">小节 1 / 2</span>
               <h1 style="font-size: 26px; font-weight: 900; color: var(--text-h); margin-top: 16px;">t检验与小样本</h1>
           </div>
           
@@ -671,7 +668,7 @@
         <!-- Slide 2: Next Concept & Inline Quiz -->
         <div class="slide scroll-area" style="flex: 0 0 100%; width: 100%; scroll-snap-align: start; padding-top: 16px; min-height: 100%; box-sizing: border-box; padding-bottom: 80px;">
           <div style="text-align: center; margin-bottom: 24px;">
-              <span class="pill pink">小节 2 / 3</span>
+              <span class="pill pink">小节 2 / 2</span>
               <h3 style="font-size: 26px; font-weight: 900; color: var(--text-h); margin-top: 16px;">P值 的终极意义</h3>
           </div>
           
@@ -704,18 +701,85 @@
           </div>
         </div>
 
-        <!-- Slide 3: Conclusion -->
-        <div class="slide scroll-area" style="flex: 0 0 100%; width: 100%; scroll-snap-align: start; padding-top: 16px; min-height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 150px; box-sizing: border-box;">
-          <div class="node-icon-wrap" style="color: var(--brand-mint); width: 80px; height: 80px; margin-bottom: 24px;">
-              <i data-lucide="check" size="40"></i>
-          </div>
-          <h2 style="font-size: 24px; font-weight: 900; color: var(--text-h); margin-bottom: 12px;">太棒了！</h2>
-          <p style="font-size: 15px; font-weight: 600; color: var(--text-muted); margin-bottom: 40px; text-align: center;">你已经掌握了 t 检验 的稳健性与 P值的核心概念！</p>
-          <button class="neu-btn primary" onclick="switchTab('view-path')" style="width: 80%;">返回学习路线</button>
+      </div>
+    </div>
+
+    <!-- ☁️ COMPLETION SCREEN -->
+    <div class="screen" id="view-completion">
+      <div class="scroll-area completion-anim-container" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px 20px; box-sizing: border-box; background: var(--bg-base);">
+        
+        <div class="pop-icon-wrap" style="color: var(--brand-mint); width: 100px; height: 100px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 24px; background: var(--bg-base); box-shadow: var(--neu-in); animation: popOut 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;">
+            <i data-lucide="check" size="48" stroke-width="3"></i>
+        </div>
+        <h2 style="font-size: 28px; font-weight: 900; color: var(--text-h); margin-bottom: 32px; animation: softFadeUp 0.6s ease forwards; opacity: 0; animation-delay: 0.2s;">课程通关！</h2>
+
+        <!-- 游戏化结算面板 -->
+        <div style="width: 100%; max-width: 340px; background: var(--bg-base); box-shadow: var(--neu-out); border-radius: var(--radius-lg); padding: 24px 20px; margin-bottom: 24px; display: flex; justify-content: space-around; align-items: center; animation: softFadeUp 0.6s ease forwards; opacity: 0; animation-delay: 0.4s;">
+           <div style="text-align: center;">
+              <div style="display: flex; align-items: center; gap: 4px; color: #D77B90; justify-content: center; margin-bottom: 6px;">
+                 <i data-lucide="flame" size="24" fill="currentColor" style="animation: pulse 2s infinite;"></i>
+                 <span style="font-size: 24px; font-weight: 900;">12</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-muted);">天连胜保持</div>
+           </div>
+           
+           <div style="width: 2px; height: 50px; background: rgba(142, 158, 188, 0.2); border-radius: 1px;"></div>
+
+           <div style="text-align: center;">
+              <div style="display: flex; align-items: center; gap: 4px; color: var(--brand-blue-dark); justify-content: center; margin-bottom: 6px;">
+                 <i data-lucide="zap" size="24" fill="currentColor"></i>
+                 <span style="font-size: 24px; font-weight: 900;">+15</span>
+              </div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-muted);">XP 经验值</div>
+           </div>
+        </div>
+
+        <!-- 认知闭环与记忆卡生成 -->
+        <div style="width: 100%; max-width: 340px; background: var(--bg-base); box-shadow: var(--neu-in); border-radius: var(--radius-lg); padding: 24px 20px; margin-bottom: 40px; animation: softFadeUp 0.6s ease forwards; opacity: 0; animation-delay: 0.6s;">
+           <div style="display: flex; align-items: center; gap: 8px; color: var(--text-h); margin-bottom: 16px;">
+              <i data-lucide="layers" size="18"></i>
+              <span style="font-weight: 900; font-size: 15px;">已提炼 3 张记忆卡片</span>
+           </div>
+           <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+              <span class="pill blue" style="box-shadow: var(--neu-out-sm);">t 检验</span>
+              <span class="pill pink" style="box-shadow: var(--neu-out-sm);">P值定义</span>
+              <span class="pill mint" style="box-shadow: var(--neu-out-sm);">数据稳健性</span>
+           </div>
+           <div style="font-size: 13px; font-weight: 600; color: var(--text-muted); display: flex; gap: 6px; line-height: 1.5;">
+              <i data-lucide="loader" size="14" class="spin-anim" style="margin-top: 2px; flex-shrink: 0;"></i> 智能调度系统已将考点放入你的明日复习池中。
+           </div>
+        </div>
+
+        <!-- CTAs -->
+        <div style="width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 16px; animation: softFadeUp 0.6s ease forwards; opacity: 0; animation-delay: 0.8s;">
+           <button class="neu-btn primary" onclick="switchTab('view-path')" style="width: 100%;">
+              完成学习 <i data-lucide="check" size="18" style="margin-left: 4px;"></i>
+           </button>
+           
+           <button class="neu-btn" onclick="switchTab('view-anki')" style="width: 100%; color: var(--text-main);">
+              去复习看板看看
+           </button>
         </div>
 
       </div>
     </div>
+    
+    <style>
+      @keyframes popOut {
+         0% { transform: scale(0.8); box-shadow: var(--neu-in); opacity: 0; }
+         50% { transform: scale(1.1); box-shadow: var(--neu-out-lg); opacity: 1; }
+         100% { transform: scale(1); box-shadow: var(--neu-out-lg); opacity: 1; }
+      }
+      @keyframes softFadeUp {
+         from { opacity: 0; transform: translateY(20px); }
+         to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes pulse {
+         0% { transform: scale(1); opacity: 1; }
+         50% { transform: scale(1.1); opacity: 0.8; }
+         100% { transform: scale(1); opacity: 1; }
+      }
+    </style>
 
     <!-- ☁️ ANKI SCREEN -->
     <div class="screen" id="view-anki">
@@ -873,8 +937,13 @@
         
         if (nextBtn) {
             nextBtn.style.display = 'flex';
-            nextBtn.textContent = '进入下一分页';
-            nextBtn.onclick = () => scrollToSlide(nextSlideNum);
+            if (nextSlideNum > 2) {
+                nextBtn.textContent = '完成通关';
+                nextBtn.onclick = () => switchTab('view-completion');
+            } else {
+                nextBtn.textContent = '进入下一分页';
+                nextBtn.onclick = () => scrollToSlide(nextSlideNum);
+            }
         }
         
         confetti({
