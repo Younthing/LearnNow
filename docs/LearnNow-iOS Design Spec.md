@@ -1,8 +1,9 @@
 # LearnNow iOS Design Spec（SwiftUI 实现规格文档）
 
-- 文档版本：v1
-- 文档状态：Draft / 可交接初版
+- 文档版本：v1.1
+- 文档状态：Draft / 可交接修订版
 - 适用端：iOS（SwiftUI）
+- 最低部署目标：iOS 26.2（与当前工程配置一致，默认采用现代 SwiftUI / Observation）
 - 设计来源：`原型-Neumorphism.html`
 - 目标用途：从原型迁移到 SwiftUI，实现页面拆分、组件复用、状态定义与导航落地
 
@@ -81,7 +82,8 @@
 #### SwiftUI 命名
 
 - 页面视图统一采用 `XxxView`
-- 页面 ViewModel 统一采用 `XxxViewModel`
+- 页面级引用类型状态容器不强制使用 ViewModel 命名；优先采用 `XxxStore` / `XxxModel`
+- 仅在存在明显异步编排、副作用协调或持久化桥接时，再使用 `XxxViewModel`
 - 组件统一采用 `PascalCase`
 - 枚举统一采用 `PascalCase`
 - 状态值统一采用英文语义词
@@ -90,6 +92,7 @@
 
 - `HomeView`
 - `RoutesView`
+- `HomeStore`
 - `PathNodeCard`
 - `LessonPageState`
 
@@ -179,11 +182,16 @@ Dashboard
 | Anki       | Tab 根页面 / 流程可直达 | Tab / Completion   | 下一张卡 / Tab 切换    |
 | Dashboard  | Tab 根页面              | Tab                | Tab 切换               |
 
+实现层说明：
+
+- `Path`、`Lesson`、`Completion` 统一归属 `Routes` Tab 的 `NavigationStack`
+- `Home` 的 Continue Learning 属于跨 Tab 触发行为，不单独拥有二级页面栈
+
 ### 1.5 主要用户主流程
 
 #### 主流程 A：从首页继续学习
 
-`Home → Lesson → Completion → Path 或 Anki`
+`Home → 切换至 Routes 栈中的 Lesson → Completion → Path 或 Anki`
 
 #### 主流程 B：从路线进入学习
 
@@ -251,29 +259,50 @@ Dashboard
 
 ### 2.5 返回逻辑
 
-1. `Path` 返回到 `Routes`。
-2. `Lesson` 返回到 `Path`。
+1. `Path` 返回到 `Routes` 根页面。
+2. `Lesson` 返回到所属 `Path`。
 3. `Completion` 没有顶部返回按钮，主出口由 CTA 决定。
-4. Tab 切换不保留视觉上的“返回关系”，但应保留页面状态恢复能力。
+4. Tab 切换应保留各自独立的栈历史，不因切换而清空 `NavigationPath`。
 
 ### 2.6 导航实现建议
 
-#### NavigationStack
+#### App Shell
 
 建议采用：
 
-- `TabView` 承载 4 个根页面。
-- 每个根页面内部使用独立 `NavigationStack`，或采用全局 Router 管理嵌套路径。
+- 根层由 `AppShellView` 持有 `TabView(selection:)`
+- 底部导航视觉上可保持原型中的浮动新拟态样式，但应由 App Shell 统一提供 `FloatingTabBar`
+- `FloatingTabBar` 只负责展示与切换 `selectedTab`，不直接持有页面业务状态
 
-#### 路由枚举建议
+#### NavigationStack
+
+- 每个 Tab 使用独立 `NavigationStack`
+- `Home`、`Anki`、`Dashboard` 各自拥有根级页面
+- `Routes` 的栈统一承载 `RoutesView → PathView → LessonView → CompletionView`
+- `Home` 的 Continue Learning 通过切换到 `Routes` Tab，并恢复或构造对应的路由链进入 `Lesson`
+
+#### 路由与 Tab 建议
 
 ```swift
-enum AppRoute: Hashable {
-    case path(routeID: String)
+enum AppTab: Hashable {
+    case home
+    case routes
+    case anki
+    case dashboard
+}
+
+enum RoutesRoute: Hashable {
+    case path(routeID: String, stageID: String? = nil)
     case lesson(routeID: String, lessonID: String)
     case completion(routeID: String, lessonID: String)
 }
 ```
+
+#### Router 建议
+
+- 每个 Tab 拥有独立 Router / `NavigationPath`
+- 仅 `Routes` Router 需要承载 `Path`、`Lesson`、`Completion`
+- 深链和 Home continue 行为都应写入 Router，而不是通过全局 `currentScreen` 枚举切屏
 
 ### 2.7 深链预留
 
@@ -321,7 +350,10 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 3. 今日学习统计
 4. Continue Learning 区
 5. 月度学习记录区
-6. 底部浮动 TabBar
+
+说明：
+
+- 底部浮动 TabBar 由 `AppShellView` 提供，不属于 `HomeView` 内部层级
 
 #### 核心模块
 
@@ -363,16 +395,15 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 
 #### 用户操作
 
-- 点击 ContinueLearningCard 的主按钮进入 `Lesson`
+- 点击 ContinueLearningCard 的主按钮，切换到 `Routes` Tab 并进入当前 `Lesson`
 - 查看本月学习记录
 - 切换 Tab
 
 #### 页面状态
 
-- `loading`：数据加载中
-- `loaded`：正常展示
-- `empty`：无当前课程时，Continue 区显示空态
-- `error`：数据加载失败
+- 整页：`loading` / `loaded` / `error`
+- 区块：`continueSectionState` 可为 `loaded` / `empty` / `error`
+- 区块：`heatmapSectionState` 可为 `loaded` / `empty` / `error`
 
 #### 异常状态 / 空状态
 
@@ -389,7 +420,7 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 
 #### 导航行为
 
-- `ContinueLearningCard` → `Lesson`
+- `ContinueLearningCard` → 切换 `Routes` Tab → push `Lesson`
 
 #### 依赖组件
 
@@ -399,7 +430,6 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 - `DailyStatCard`
 - `ContinueLearningCard`
 - `HeatmapCard`
-- `BottomTabBar`
 
 #### 数据需求
 
@@ -447,7 +477,10 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 
 1. Header 区
 2. 路线卡片列表
-3. 底部浮动 TabBar
+
+说明：
+
+- 底部浮动 TabBar 由 `AppShellView` 提供，不属于 `RoutesView` 内部层级
 
 #### 核心模块
 
@@ -505,7 +538,6 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 - `HeaderBar`
 - `RouteCard`
 - `ProgressBar`
-- `BottomTabBar`
 
 #### 数据需求
 
@@ -729,6 +761,7 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 - 选择题目选项
 - 查看即时反馈
 - 进入下一 slide
+- 中断后重新进入 Lesson 时，恢复到上次停留的 slide
 - 完成所有 slide 后进入 `Completion`
 
 #### 页面状态
@@ -738,12 +771,12 @@ v1 不要求真实深链落地，但建议预留以下路由语义：
 - `loading`
 - `loaded`
 - `error`
-- `completed`
 
 Lesson 过程状态：
 
 - `currentSlideIndex`
-- `quizAnswerState`
+- `lastVisitedSlideIndex`
+- `quizAnswerStates`
 - `isSlidePassed`
 - `isReadyForNextSlide`
 
@@ -783,6 +816,7 @@ Lesson 过程状态：
 - 正确答案
 - 反馈文案
 - 完成条件
+- 最近停留的 slide 索引（用于恢复）
 
 #### SwiftUI 拆分建议
 
@@ -841,6 +875,11 @@ Lesson 过程状态：
 - 连胜保持
 - XP 增长
 
+说明：
+
+- v1 的 XP、连胜、奖励文案均由本地数据或本地规则生成
+- 不依赖服务端奖励计算结果
+
 ##### C. GeneratedFlashcardsCard
 
 展示：
@@ -865,13 +904,14 @@ Lesson 过程状态：
 
 #### 页面状态
 
-- `loaded`
-
-若奖励计算异步化，允许扩展：
-
 - `loading`
 - `loaded`
 - `error`
+
+区块状态：
+
+- `rewardSectionState`
+- `generatedFlashcardsSectionState`
 
 #### 异常状态 / 空状态
 
@@ -901,6 +941,11 @@ Lesson 过程状态：
 - 生成卡片数
 - 卡片标签
 - 调度提示文案
+
+本期规则：
+
+- Completion 展示数据来源于本地 mock / 本地规则计算
+- 不要求后端返回奖励结果
 
 #### SwiftUI 拆分建议
 
@@ -938,7 +983,10 @@ Lesson 过程状态：
 2. 卡片类型统计标签
 3. 中央 Flashcard 区
 4. 评分按钮区
-5. 底部浮动 TabBar
+
+说明：
+
+- 底部浮动 TabBar 由 `AppShellView` 提供，不属于 `AnkiView` 内部层级
 
 #### 核心模块
 
@@ -971,6 +1019,11 @@ Lesson 过程状态：
 - 困难
 - 良好
 - 简单
+
+说明：
+
+- 四档评分的标题与间隔文案在 v1 由本地静态配置提供
+- 不依赖服务端动态返回评分区间
 
 #### 用户操作
 
@@ -1014,7 +1067,6 @@ Lesson 过程状态：
 - `FlashcardView`
 - `ReviewRatingButton`
 - `ReviewRatingButtonRow`
-- `BottomTabBar`
 
 #### 数据需求
 
@@ -1023,6 +1075,11 @@ Lesson 过程状态：
 - 调度区间文案
 - 新卡/巩固/待复习数量
 - 下一张卡信息
+
+本期规则：
+
+- 评分按钮文案、调度区间和卡片队列可完全使用本地 mock / 本地配置
+- 后端接入仅作为后续扩展预留
 
 #### SwiftUI 拆分建议
 
@@ -1058,7 +1115,10 @@ Lesson 过程状态：
 1. Header 区
 2. 记忆曲线卡片
 3. 知识图谱 / 掌握度列表
-4. 底部浮动 TabBar
+
+说明：
+
+- 底部浮动 TabBar 由 `AppShellView` 提供，不属于 `DashboardView` 内部层级
 
 #### 核心模块
 
@@ -1085,10 +1145,9 @@ Lesson 过程状态：
 
 #### 页面状态
 
-- `loading`
-- `loaded`
-- `empty`
-- `error`
+- 整页：`loading` / `loaded` / `error`
+- 区块：`memoryCurveSectionState` 可为 `loaded` / `empty` / `error`
+- 区块：`knowledgeSectionState` 可为 `loaded` / `empty` / `error`
 
 #### 异常状态 / 空状态
 
@@ -1106,7 +1165,6 @@ Lesson 过程状态：
 - `HeaderBar`
 - `MemoryCurveCard`
 - `MasteryProgressRow`
-- `BottomTabBar`
 
 #### 数据需求
 
@@ -1128,9 +1186,17 @@ Lesson 过程状态：
 
 ### 4.1 组件分层说明
 
-组件分为三层：
+组件分为四层：
 
-#### A. Foundation Components
+#### A. App Shell Components
+
+由 App 根壳层统一持有，不下沉到页面内部。
+
+示例：
+
+- `FloatingTabBar`
+
+#### B. Foundation Components
 
 最小基础组件，不直接承载完整业务语义。
 
@@ -1143,20 +1209,19 @@ Lesson 过程状态：
 - `PillTag`
 - `CardContainer`
 
-#### B. Shared Business Components
+#### C. Shared Business Components
 
 跨页面复用，具备明确业务语义。
 
 示例：
 
 - `HeaderBar`
-- `BottomTabBar`
 - `RouteCard`
 - `ContinueLearningCard`
 - `MasteryProgressRow`
 - `FlashcardView`
 
-#### C. Composite Page Components
+#### D. Composite Page Components
 
 偏页面场景的复合模块，仅在一到两个页面复用。
 
@@ -1169,16 +1234,16 @@ Lesson 过程状态：
 
 ### 4.2 全局通用组件清单
 
-| 组件名          | 类型       | 主要用途               | 复用页面                                         |
-| --------------- | ---------- | ---------------------- | ------------------------------------------------ |
-| HeaderBar       | Shared     | 页面顶部标题区域       | Home / Routes / Path / Lesson / Anki / Dashboard |
-| BottomTabBar    | Shared     | 底部主导航             | Home / Routes / Anki / Dashboard                 |
-| PrimaryButton   | Foundation | 强主操作按钮           | Lesson / Completion / Empty State                |
-| SecondaryButton | Foundation | 次级按钮               | Completion / Empty State                         |
-| IconButton      | Foundation | 返回、播放等图标型按钮 | Home / Path / Lesson                             |
-| ProgressBar     | Foundation | 一般进度展示           | Home / Routes / Path / Dashboard                 |
-| PillTag         | Foundation | 轻量标签               | Home / Lesson / Completion / Anki                |
-| CardContainer   | Foundation | 新拟态卡片底座         | 全局                                             |
+| 组件名          | 类型       | 主要用途                               | 复用页面                                         |
+| --------------- | ---------- | -------------------------------------- | ------------------------------------------------ |
+| FloatingTabBar  | AppShell   | App 壳层主导航；维护 `selectedTab` 展示 | AppShell                                         |
+| HeaderBar       | Shared     | 页面顶部标题区域                       | Home / Routes / Path / Lesson / Anki / Dashboard |
+| PrimaryButton   | Foundation | 强主操作按钮                           | Lesson / Completion / Empty State                |
+| SecondaryButton | Foundation | 次级按钮                               | Completion / Empty State                         |
+| IconButton      | Foundation | 返回、播放等图标型按钮                 | Home / Path / Lesson                             |
+| ProgressBar     | Foundation | 一般进度展示                           | Home / Routes / Path / Dashboard                 |
+| PillTag         | Foundation | 轻量标签                               | Home / Lesson / Completion / Anki                |
+| CardContainer   | Foundation | 新拟态卡片底座                         | 全局                                             |
 
 ### 4.3 页面复合组件清单
 
@@ -1414,10 +1479,13 @@ Lesson 过程状态：
 
 ### 4.6 组件复用矩阵
 
+说明：
+
+- AppShell 级组件不进入页面复用矩阵，`FloatingTabBar` 统一由根壳层持有
+
 | 组件               | Home | Routes | Path | Lesson | Completion | Anki | Dashboard |
 | ------------------ | ---- | ------ | ---- | ------ | ---------- | ---- | --------- |
 | HeaderBar          | ✓    | ✓      | ✓    | ✓      |            | ✓    | ✓         |
-| BottomTabBar       | ✓    | ✓      |      |        |            | ✓    | ✓         |
 | ProgressBar        | ✓    | ✓      | ✓    | ✓      |            |      | ✓         |
 | PillTag            | ✓    |        | ✓    | ✓      | ✓          | ✓    |           |
 | PrimaryButton      |      |        |      | ✓      | ✓          |      |           |
@@ -1431,21 +1499,23 @@ Lesson 过程状态：
 
 ### 5.1 页面级状态定义
 
-| 页面       | 页面状态                                     |
-| ---------- | -------------------------------------------- |
-| Home       | `loading` / `loaded` / `empty` / `error`     |
-| Routes     | `loading` / `loaded` / `empty` / `error`     |
-| Path       | `loading` / `loaded` / `error`               |
-| Lesson     | `loading` / `loaded` / `completed` / `error` |
-| Completion | `loaded`                                     |
-| Anki       | `loading` / `loaded` / `empty` / `error`     |
-| Dashboard  | `loading` / `loaded` / `empty` / `error`     |
+页面级状态仅用于“整页无法渲染主要内容”的场景。局部卡片、图表或热力图是否为空，应由 section state 表达，而不是把整页统一打成 `empty`。
+
+| 页面       | 整页状态                                 | 关键区块 / 过程状态                                                  |
+| ---------- | ---------------------------------------- | -------------------------------------------------------------------- |
+| Home       | `loading` / `loaded` / `error`           | `continueSectionState` / `heatmapSectionState`                       |
+| Routes     | `loading` / `loaded` / `empty` / `error` | `selectedFilter`（预留）                                             |
+| Path       | `loading` / `loaded` / `error`           | `selectedStage` / `timelineSectionState`                             |
+| Lesson     | `loading` / `loaded` / `error`           | `currentSlideIndex` / `lastVisitedSlideIndex` / `quizAnswerStates` / `isReadyForNextSlide` |
+| Completion | `loading` / `loaded` / `error`           | `rewardSectionState` / `generatedFlashcardsSectionState`             |
+| Anki       | `loading` / `loaded` / `empty` / `error` | `front` / `back` / `submitted`                                       |
+| Dashboard  | `loading` / `loaded` / `error`           | `memoryCurveSectionState` / `knowledgeSectionState`                  |
 
 ### 5.2 组件级状态定义
 
 | 组件               | 组件状态                                                 |
 | ------------------ | -------------------------------------------------------- |
-| BottomTabBarItem   | `normal` / `active`                                      |
+| FloatingTabBarItem | `normal` / `active`                                      |
 | RouteCard          | `inProgress` / `notStarted` / `completed`                |
 | PathNodeRow        | `completed` / `inProgress` / `locked`                    |
 | QuizOptionCard     | `normal` / `selected` / `correct` / `wrong` / `disabled` |
@@ -1526,10 +1596,15 @@ struct MasteryTopic: Identifiable {
 ### 5.4 UI 状态枚举建议
 
 ```swift
-enum LoadableState {
-    case idle
+enum ScreenLoadState {
     case loading
     case loaded
+    case error(message: String)
+}
+
+enum SectionLoadState<Value> {
+    case loading
+    case loaded(Value)
     case empty
     case error(message: String)
 }
@@ -1552,6 +1627,11 @@ enum FlashcardFace {
     case front
     case back
 }
+
+struct LessonResumeState {
+    let lessonID: String
+    var lastVisitedSlideIndex: Int
+}
 ```
 
 ### 5.5 状态流转规则
@@ -1559,10 +1639,12 @@ enum FlashcardFace {
 #### Lesson
 
 1. 页面载入完成后进入 `loaded`
-2. 用户选择答案后更新选项状态
-3. 显示反馈文案
-4. Slide 达到通过条件后允许进入下一页
-5. 最后一页完成后进入 `Completion`
+2. 若存在本地保存的 `lastVisitedSlideIndex`，进入时恢复到对应 slide
+3. 用户选择答案后更新选项状态
+4. 显示反馈文案
+5. Slide 达到通过条件后允许进入下一页
+6. 切换 slide 时更新本地恢复索引
+7. 最后一页完成后 push 到 `Completion`，而不是在 `Lesson` 内停留 `completed`
 
 #### Anki
 
@@ -1722,6 +1804,16 @@ enum FlashcardFace {
 - 轻量 Spinner 或骨架屏
 - 保持整体柔和风格一致
 
+### 6.10 可访问性与适配规范
+
+- v1 主视觉以浅色模式为主，但所有页面必须在 Dynamic Type、Increased Contrast、Reduce Motion 下保持可用
+- 文本应优先映射系统 `TextStyle` 或结合 `@ScaledMetric`，避免依赖固定高度卡片承载多行文案
+- 正文文本与背景对比度应以可读性优先；若新拟态阴影导致对比不足，应允许增加描边、提高填充对比或降低阴影强度
+- 所有可点击控件最小热区不小于 `44x44pt`
+- 纯图标按钮必须提供 `accessibilityLabel`
+- Progress、Flashcard 正反面、评分按钮应提供清晰的 VoiceOver 语义
+- `Completion` 的弹出动画、`Anki` 的 3D 翻卡、庆祝粒子效果在 `Reduce Motion` 下应退化为淡入淡出或轻微缩放
+
 ---
 
 ## 7. SwiftUI 实现建议
@@ -1731,7 +1823,11 @@ enum FlashcardFace {
 ```text
 App/
 ├── AppEntry/
+├── AppShell/
 ├── Navigation/
+│   ├── AppTab/
+│   ├── Routers/
+│   └── Destinations/
 ├── DesignSystem/
 │   ├── Tokens/
 │   ├── Modifiers/
@@ -1754,9 +1850,26 @@ App/
 
 原则：
 
+- App Shell 负责 `selectedTab`、浮动 TabBar 和各 Tab 的 `NavigationStack`
 - 页面只负责布局与路由触发
 - 组件负责稳定复用
-- 业务状态从页面 ViewModel 向下传递
+- 业务状态从 feature model / store 向下传递
+
+#### App Shell
+
+```text
+AppShellView
+├── TabView(selection:)
+├── Home NavigationStack
+├── Routes NavigationStack
+│   ├── RoutesView
+│   ├── PathView
+│   ├── LessonView
+│   └── CompletionView
+├── Anki NavigationStack
+├── Dashboard NavigationStack
+└── FloatingTabBar
+```
 
 #### 示例：Home
 
@@ -1782,13 +1895,22 @@ LessonView
 
 ### 7.3 状态管理建议
 
-#### 页面级状态
+#### 默认方案
 
-建议由 `ObservableObject` 或新式 Observation 持有，例如：
+当前工程最低版本为 iOS 26.2，默认采用新式 Observation：
 
-- `HomeViewModel`
-- `RoutesViewModel`
-- `LessonViewModel`
+- 根层使用 `@State` 持有每个 Tab 的 Router
+- Feature 根视图使用 `@State` 持有 `@Observable` 的 `XxxStore` / `XxxModel`
+- 共享服务通过 `@Environment(Type.self)` 注入
+- 不默认使用 `ObservableObject` / `@EnvironmentObject`
+
+#### 何时使用 ViewModel
+
+仅在以下场景建议引入 `XxxViewModel`：
+
+- 明确存在网络请求编排、取消、重试
+- 需要桥接持久化 / 缓存层
+- 需要聚合多个 service 的副作用
 
 #### 组件级瞬时状态
 
@@ -1800,7 +1922,7 @@ LessonView
 
 #### 跨页面导航状态
 
-建议由统一 Router 或路径容器管理。
+建议由每个 Tab 的独立 Router 或路径容器管理，避免用一个全局 `currentScreen` 枚举替代真实导航栈。
 
 ### 7.4 组件封装策略
 
@@ -1824,7 +1946,7 @@ LessonView
 - 卡片是否显示空态
 - Lesson 是否可进入下一页
 
-这些判断应由页面层或 ViewModel 层先完成。
+这些判断应由页面层或 feature model / store 层先完成。
 
 ### 7.5 Preview 策略
 
@@ -1836,7 +1958,10 @@ LessonView
 - 空态
 - 错误态
 - 长文案态
-- 深色模式兼容预览（即便 v1 不主打 Dark Mode，也建议预检）
+- 深色模式兼容预检（非 v1 主交付，但必须检查可读性）
+- Dynamic Type 大字号预览
+- Increased Contrast 预览
+- Reduce Motion 预览
 
 ### 7.6 主题与 Token 落地方式
 
@@ -1862,7 +1987,7 @@ extension Color {
 Dashboard 中的记忆曲线建议：
 
 - v1 可先使用静态 mock 数据
-- 采用 Swift Charts 或第三方轻量图表库
+- 优先采用 `Swift Charts`，仅在交互能力明显不足时再考虑第三方轻量图表库
 - 外层卡片由新拟态样式包裹，图表区域保持简洁
 
 ### 7.8 热力图实现建议
@@ -1884,7 +2009,10 @@ v1 建议实现以下内容：
 - 全部 7 个页面
 - Tab 导航
 - Routes → Path → Lesson → Completion 主流程
+- Lesson 中断后恢复到具体 slide
 - Anki 翻卡与评分交互
+- Completion 奖励数据本地生成
+- Anki 评分区间与调度文案本地配置
 - Dashboard 图表与掌握度展示
 - 新拟态基础 Design System
 
@@ -1900,16 +2028,19 @@ v1 建议实现以下内容：
 - 真实深链
 - 后端数据接入与缓存恢复
 
-### 8.3 待确认事项
+### 8.3 已确认实现决策
 
-1. Lesson 是否需要支持中断恢复到具体 slide。
-2. Completion 的 XP 与连胜是否为真实后端数据。
-3. Anki 的评分区间是否由服务端返回。
-4. Heatmap 是否支持点击查看某日详情。
-5. Dashboard 图表是否需要时间范围切换。
-6. Routes 是否需要支持多个状态筛选。
+1. Lesson 需要支持中断恢复到具体 slide，并以本地状态保存最近停留位置。
+2. Completion 的 XP、连胜与奖励展示使用本地数据或本地规则，不依赖后端返回。
+3. Anki 的评分区间、按钮文案与调度提示使用本地静态配置，不依赖服务端。
 
-### 8.4 风险与假设
+### 8.4 待确认事项
+
+1. Heatmap 是否支持点击查看某日详情。
+2. Dashboard 图表是否需要时间范围切换。
+3. Routes 是否需要支持多个状态筛选。
+
+### 8.5 风险与假设
 
 #### 风险
 
@@ -1955,13 +2086,13 @@ v1 建议实现以下内容：
 
 | 页面       | 页面级状态                                   | 关键过程状态                            |
 | ---------- | -------------------------------------------- | --------------------------------------- |
-| Home       | `loading` / `loaded` / `empty` / `error`     | 无                                      |
+| Home       | `loading` / `loaded` / `error`               | `continueSectionState` / `heatmapSectionState` |
 | Routes     | `loading` / `loaded` / `empty` / `error`     | 无                                      |
 | Path       | `loading` / `loaded` / `error`               | `selectedStage`                         |
-| Lesson     | `loading` / `loaded` / `completed` / `error` | `currentSlideIndex` / `quizAnswerState` |
-| Completion | `loaded`                                     | 无                                      |
+| Lesson     | `loading` / `loaded` / `error`               | `currentSlideIndex` / `lastVisitedSlideIndex` / `quizAnswerStates` |
+| Completion | `loading` / `loaded` / `error`               | `rewardSectionState` / `generatedFlashcardsSectionState` |
 | Anki       | `loading` / `loaded` / `empty` / `error`     | `front` / `back` / `submitted`          |
-| Dashboard  | `loading` / `loaded` / `empty` / `error`     | 无                                      |
+| Dashboard  | `loading` / `loaded` / `error`               | `memoryCurveSectionState` / `knowledgeSectionState` |
 
 ### 9.4 Token 快速索引
 
@@ -1974,16 +2105,16 @@ v1 建议实现以下内容：
 
 ### 9.5 v1 结论
 
-当前 v1 已形成一份可用于 SwiftUI 交接的 Design Spec 初版，具备以下交付价值：
+当前 v1.1 已形成一份更接近可直接实施的 SwiftUI Design Spec，具备以下交付价值：
 
 1. 页面边界明确。
-2. 导航关系明确。
-3. 组件复用边界明确。
-4. 状态命名统一。
+2. Tab、Router 与二级页面归属关系明确。
+3. 组件复用边界明确，并区分了 App Shell 与页面组件。
+4. 页面级状态与区块级状态分层明确。
 5. 视觉 Token 已可映射为 Design System。
-6. SwiftUI 工程拆分建议已给出。
+6. SwiftUI 工程拆分、Observation 默认方案与可访问性约束已给出。
 
 后续建议在此基础上继续补两份增强文档：
 
 - `Component Spec v2`：展开每个组件的参数与交互状态。
-- `SwiftUI Architecture v2`：补充 Router、ViewModel、Mock Data、Preview 方案。
+- `SwiftUI Architecture v2`：补充 Router、Observation Store、Mock Data、Preview 方案。
