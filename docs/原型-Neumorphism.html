@@ -162,6 +162,7 @@
       scroll-behavior: smooth;
     }
     .scroll-area::-webkit-scrollbar { display: none; }
+    .lesson-slider::-webkit-scrollbar { display: none; }
 
     /* Header */
     .header {
@@ -608,44 +609,111 @@
         <div style="width: 44px;"></div> <!-- Spacer -->
       </div>
       
-      <div class="neu-progress" style="margin:0 24px; height: 6px; border-radius:3px;"><div class="neu-progress-fill" style="width: 40%; border-radius:3px;"></div></div>
+      <!-- Segmented Progress Bar -->
+      <div class="segments-container" style="display: flex; gap: 8px; margin: 0 24px; padding: 4px 0;">
+        <div class="segment neu-progress active" onclick="scrollToSlide(1)" style="flex: 1; height: 6px; margin: 0; cursor: pointer; transition: transform 0.2s; transform: scaleY(1.5);">
+           <div class="neu-progress-fill" style="width: 100%;"></div>
+        </div>
+        <div class="segment neu-progress" onclick="scrollToSlide(2)" style="flex: 1; height: 6px; margin: 0; cursor: pointer; transition: transform 0.2s;">
+           <div class="neu-progress-fill" style="width: 0%;"></div>
+        </div>
+        <div class="segment neu-progress" onclick="scrollToSlide(3)" style="flex: 1; height: 6px; margin: 0; cursor: pointer; transition: transform 0.2s;">
+           <div class="neu-progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
       
-      <div class="scroll-area" style="padding-top: 32px;">
-        <div style="text-align: center; margin-bottom: 24px;">
-            <span class="pill blue">单元 3</span>
-            <h1 style="font-size: 26px; font-weight: 900; color: var(--text-h); margin-top: 16px;">t检验：均值比较</h1>
-        </div>
+      <!-- Horizontal Scroll Area -->
+      <div class="lesson-slider" id="lessonSlider" style="display: flex; flex: 1; overflow-x: auto; scroll-snap-type: x mandatory; padding-top: 16px; scroll-behavior: smooth;">
         
-        <p style="font-size: 16px; line-height: 1.6; font-weight: 600; text-align: justify; margin-bottom: 24px; padding: 0 8px;">
-          t检验是比较两组数据均值差异的核心工具。它基于 <strong style="color:var(--brand-blue-dark)">t 分布</strong>，专为 <strong style="color:#D77B90">小样本</strong> (n &lt; 30) 且发散度未知的场景而设计。
-        </p>
+        <!-- Slide 1: Intro -->
+        <div class="slide scroll-area" style="flex: 0 0 100%; width: 100%; scroll-snap-align: start; padding-top: 16px; min-height: 100%; box-sizing: border-box; padding-bottom: 60px;">
+          <div style="text-align: center; margin-bottom: 24px;">
+              <span class="pill blue">小节 1 / 3</span>
+              <h1 style="font-size: 26px; font-weight: 900; color: var(--text-h); margin-top: 16px;">t检验与小样本</h1>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.6; font-weight: 600; text-align: justify; margin-bottom: 16px; padding: 0 8px;">
+            t检验是比较均值差异的核心工具。它基于 <strong style="color:var(--brand-blue-dark)">t 分布</strong>，专为 <strong style="color:#D77B90">小样本</strong> (n &lt; 30) 且发散度无从得知的场景而设计。
+          </p>
 
-        <div class="neu-code">
-          <span style="color:#8E9EBC;">// 独立样本检验 - Python</span><br>
-          <span style="color:#9A77CB;">from</span> scipy <span style="color:#9A77CB;">import</span> stats<br><br>
-          t, p = stats.<span style="color:#6F98E2;">ttest_ind</span>(<br>
-          &nbsp;&nbsp;a, b, equal_var=<span style="color:#9A77CB;">False</span><br>
-          )<br>
-          <span style="color:#6F98E2;">print</span>(<span style="color:#64A881;">f"P值: {p:.4f}"</span>)
+          <div style="background: var(--bg-base); box-shadow: var(--neu-in); border-left: 4px solid #DDA15E; border-radius: var(--radius-sm); padding: 16px; margin: 20px 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #DDA15E; margin-bottom: 8px;">
+              <i data-lucide="alert-triangle" size="18"></i>
+              <span style="font-weight: 800; font-size: 14px;">核心认知</span>
+            </div>
+            <p style="font-size: 14px; font-weight: 600; color: var(--text-main); line-height: 1.5;">理论上 t检验 要求数据必须符合正态分布。但在实际测算中，<strong>t检验实际上表现得非常“稳健”(Robust)</strong>。只要数据偏态不极其严重，直接使用常常也是足够安全的。</p>
+          </div>
+
+          <div class="neu-code" style="margin: 20px 8px;">
+            <span style="color:#8E9EBC;">// 独立样本检验 - Python</span><br>
+            <span style="color:#9A77CB;">from</span> scipy <span style="color:#9A77CB;">import</span> stats<br><br>
+            t, p = stats.<span style="color:#6F98E2;">ttest_ind</span>(a, b, equal_var=<span style="color:#9A77CB;">False</span>)<br>
+            <span style="color:#6F98E2;">print</span>(<span style="color:#64A881;">f"P值: {p:.4f}"</span>)
+          </div>
+
+          <!-- Inline Callback Quiz -->
+          <div style="margin-top: 40px; padding: 20px 8px; border-top: 2px dashed rgba(142, 158, 188, 0.3);">
+             <h3 style="font-size: 16px; font-weight: 800; color: var(--text-h); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;"><i data-lucide="edit-3" size="18" style="color: var(--brand-pink-dark);"></i> 随堂练习</h3>
+             <p style="font-weight: 700; font-size: 14px; margin-bottom: 24px; text-align: justify;">如果我手头只有 25 个样本数据，且总体方差未知，但我发现数据有一点左偏（并非完美正态），我可以直接运行上述代码尝试 t检验 吗？</p>
+             
+             <div class="quiz-option" onclick="handleQuiz(this, false, 'quiz-feedback-1', 2)">
+               <div class="opt-letter">A</div> 绝对不行，必须严格正态分布
+             </div>
+             <div class="quiz-option" onclick="handleQuiz(this, true, 'quiz-feedback-1', 2)">
+               <div class="opt-letter">B</div> 可以，t检验对此具备稳健性
+             </div>
+             
+             <div id="quiz-feedback-1" style="display: none; padding: 16px; border-radius: var(--radius-sm); box-shadow: var(--neu-in); margin-top: 16px; font-size: 14px; font-weight: 700; line-height: 1.5;"></div>
+             <button id="btn-next-lesson-1" class="neu-btn primary" style="margin-top: 24px; display: none;"></button>
+          </div>
         </div>
 
-        <!-- Quiz Section -->
-        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-h); margin: 40px 0 20px;">互动练习</h3>
-        <p style="font-weight: 700; font-size: 15px; margin-bottom: 24px;">样本少于30且未知的总体方差时，你应该使用什么检验方法？</p>
-        
-        <div class="quiz-option" onclick="handleQuiz(this, false)">
-          <div class="opt-letter">A</div> Z 检验 (正态分布)
+        <!-- Slide 2: Next Concept & Inline Quiz -->
+        <div class="slide scroll-area" style="flex: 0 0 100%; width: 100%; scroll-snap-align: start; padding-top: 16px; min-height: 100%; box-sizing: border-box; padding-bottom: 80px;">
+          <div style="text-align: center; margin-bottom: 24px;">
+              <span class="pill pink">小节 2 / 3</span>
+              <h3 style="font-size: 26px; font-weight: 900; color: var(--text-h); margin-top: 16px;">P值 的终极意义</h3>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.6; font-weight: 600; text-align: justify; margin-bottom: 16px; padding: 0 8px;">
+            运行完刚才的代码后，我们会得到一个关键数据：<strong style="color:var(--brand-blue-dark)">P值 (p-value)</strong>。这是假设检验中最核心的判决依据。
+          </p>
+
+          <div style="background: var(--bg-base); box-shadow: var(--neu-in); border-left: 4px solid var(--brand-mint); border-radius: var(--radius-sm); padding: 16px; margin: 20px 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #64A881; margin-bottom: 8px;">
+              <i data-lucide="lightbulb" size="18"></i>
+              <span style="font-weight: 800; font-size: 14px;">避坑提示</span>
+            </div>
+            <p style="font-size: 14px; font-weight: 600; color: var(--text-main); line-height: 1.5;">很多初学者会把 P值 误认为是“原假设为真的概率”。<br><br><strong>其实不然！</strong> P值的真正潜台词是：如果原假设本身是真的，那你观测到手头这批目前数据（甚至更夸张数据）的可能性有多低。</p>
+          </div>
+
+          <!-- Inline Callback Quiz -->
+          <div style="margin-top: 40px; padding: 20px 8px; border-top: 2px dashed rgba(142, 158, 188, 0.3);">
+             <h3 style="font-size: 16px; font-weight: 800; color: var(--text-h); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;"><i data-lucide="edit-3" size="18" style="color: var(--brand-pink-dark);"></i> 随堂练习</h3>
+             <p style="font-weight: 700; font-size: 14px; margin-bottom: 24px;">你运行代码得出 p=0.01。这严格意味着什么？</p>
+             
+             <div class="quiz-option" onclick="handleQuiz(this, false, 'quiz-feedback-2', 3)">
+               <div class="opt-letter">A</div> 原假设有 1% 的可能是正确的
+             </div>
+             <div class="quiz-option" onclick="handleQuiz(this, true, 'quiz-feedback-2', 3)">
+               <div class="opt-letter">B</div> 若原假设成立，出现刚才数据的概率只有 1%
+             </div>
+             
+             <div id="quiz-feedback-2" style="display: none; padding: 16px; border-radius: var(--radius-sm); box-shadow: var(--neu-in); margin-top: 16px; font-size: 14px; font-weight: 700; line-height: 1.5;"></div>
+             <button id="btn-next-lesson-2" class="neu-btn primary" style="margin-top: 24px; display: none;"></button>
+          </div>
         </div>
-        <div class="quiz-option" onclick="handleQuiz(this, true)">
-          <div class="opt-letter">B</div> t 检验 (t 分布)
+
+        <!-- Slide 3: Conclusion -->
+        <div class="slide scroll-area" style="flex: 0 0 100%; width: 100%; scroll-snap-align: start; padding-top: 16px; min-height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-bottom: 150px; box-sizing: border-box;">
+          <div class="node-icon-wrap" style="color: var(--brand-mint); width: 80px; height: 80px; margin-bottom: 24px;">
+              <i data-lucide="check" size="40"></i>
+          </div>
+          <h2 style="font-size: 24px; font-weight: 900; color: var(--text-h); margin-bottom: 12px;">太棒了！</h2>
+          <p style="font-size: 15px; font-weight: 600; color: var(--text-muted); margin-bottom: 40px; text-align: center;">你已经掌握了 t 检验 的稳健性与 P值的核心概念！</p>
+          <button class="neu-btn primary" onclick="switchTab('view-path')" style="width: 80%;">返回学习路线</button>
         </div>
-        <div class="quiz-option" onclick="handleQuiz(this, false)">
-          <div class="opt-letter">C</div> 卡方检验
-        </div>
-        
-        <div id="quiz-feedback" style="display: none; padding: 20px; border-radius: var(--radius-md); box-shadow: var(--neu-in); margin-top: 24px; font-size: 15px; font-weight: 700; line-height: 1.5;"></div>
-        
-        <button id="btn-next-lesson" class="neu-btn primary" style="margin-top: 32px; display: none;">继续下一课</button>
+
       </div>
     </div>
 
@@ -787,41 +855,48 @@
     }
 
     // Quiz Logic
-    let quizAnswered = false;
-    function handleQuiz(el, isCorrect) {
-      if (quizAnswered) return;
-      quizAnswered = true;
+    function handleQuiz(el, isCorrect, feedbackId, nextSlideNum) {
+      const container = el.parentElement;
+      if (container.dataset.answered === "true") return;
+      container.dataset.answered = "true";
       
-      const feedback = document.getElementById('quiz-feedback');
+      const feedback = document.getElementById(feedbackId);
       feedback.style.display = 'block';
-      const nextBtn = document.getElementById('btn-next-lesson');
+      const nextBtn = document.getElementById('btn-next-lesson-' + (nextSlideNum - 1));
       
-      document.querySelectorAll('.quiz-option').forEach(opt => opt.style.pointerEvents = 'none');
+      container.querySelectorAll('.quiz-option').forEach(opt => opt.style.pointerEvents = 'none');
       
       if (isCorrect) {
         el.classList.add('correct');
         feedback.style.color = '#439665';
-        feedback.innerHTML = '<i data-lucide="check-circle" size="20" style="vertical-align:middle; margin-right:8px"></i> 回答正确！对于缺乏总体参数的小样本，t分布有着更稳健的基础。';
-        nextBtn.style.display = 'flex';
+        feedback.innerHTML = '<i data-lucide="check-circle" size="20" style="vertical-align:middle; margin-right:8px"></i> 漂亮！概念抓得很准！';
+        
+        if (nextBtn) {
+            nextBtn.style.display = 'flex';
+            nextBtn.textContent = '进入下一分页';
+            nextBtn.onclick = () => scrollToSlide(nextSlideNum);
+        }
         
         confetti({
           particleCount: 100, spread: 70, origin: { y: 0.6 },
-          colors: ['#A1C4FD', '#FFCCD5', '#C2E9D2', '#DBCDF0'] // Pastel confetti !
+          colors: ['#A1C4FD', '#FFCCD5', '#C2E9D2', '#DBCDF0']
         });
       } else {
         el.classList.add('wrong');
         feedback.style.color = '#D77B90';
-        feedback.innerHTML = '<i data-lucide="x-circle" size="20" style="vertical-align:middle; margin-right:8px"></i> 思考一下！Z检验必须在已知方差或大样本的情况下使用。';
+        feedback.innerHTML = '<i data-lucide="x-circle" size="20" style="vertical-align:middle; margin-right:8px"></i> 思路有点绕进去了，这正是最容易掉坑的地方，请立刻回看上方提示！';
         
-        nextBtn.style.display = 'flex';
-        nextBtn.textContent = '重试本题';
-        nextBtn.onclick = () => {
-          quizAnswered = false;
-          el.classList.remove('wrong');
-          feedback.style.display = 'none';
-          nextBtn.style.display = 'none';
-          document.querySelectorAll('.quiz-option').forEach(opt => opt.style.pointerEvents = 'auto');
-        };
+        if (nextBtn) {
+            nextBtn.style.display = 'flex';
+            nextBtn.textContent = '重新思考';
+            nextBtn.onclick = () => {
+              container.dataset.answered = "false";
+              el.classList.remove('wrong');
+              feedback.style.display = 'none';
+              nextBtn.style.display = 'none';
+              container.querySelectorAll('.quiz-option').forEach(opt => opt.style.pointerEvents = 'auto');
+            };
+        }
       }
       lucide.createIcons();
     }
@@ -860,6 +935,45 @@
           isFlipped = false;
         }, 50);
       }, 400);
+    }
+
+    // Segmented slider scroll logic
+    const lessonSlider = document.getElementById('lessonSlider');
+    const segments = document.querySelectorAll('.segments-container .segment');
+    
+    if(lessonSlider) {
+      lessonSlider.addEventListener('scroll', () => {
+        const slideWidth = lessonSlider.clientWidth;
+        // Adding safety for slideWidth to avoid division by 0 just in case
+        if (slideWidth > 0) {
+          const scrollX = lessonSlider.scrollLeft;
+          const activeIndex = Math.round(scrollX / slideWidth);
+          
+          segments.forEach((seg, index) => {
+            const fill = seg.querySelector('.neu-progress-fill');
+            if (index < activeIndex) {
+              fill.style.width = '100%';
+              seg.style.transform = 'scaleY(1)';
+            } else if (index === activeIndex) {
+              fill.style.width = '100%';
+              seg.style.transform = 'scaleY(1.5)';
+            } else {
+              fill.style.width = '0%';
+              seg.style.transform = 'scaleY(1)';
+            }
+          });
+        }
+      });
+    }
+
+    function scrollToSlide(slideNumber) {
+      const slider = document.getElementById('lessonSlider');
+      if(slider) {
+        slider.scrollTo({
+          left: slider.clientWidth * (slideNumber - 1),
+          behavior: 'smooth'
+        });
+      }
     }
 
     // Chart.js Neo styling
