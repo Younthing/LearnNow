@@ -9,8 +9,13 @@ import XCTest
 
 final class LearnNowUITestsLaunchTests: XCTestCase {
 
+    // ⚠️  Setting this to `false` prevents Xcode from spawning one test-run
+    //     per UI configuration (light / dark / locale / …).  When `true` and
+    //     the project has even two configurations, Xcode launches multiple
+    //     simulator instances in parallel and they race for the same app
+    //     bundle — the #1 root cause of flaky launch-screenshot tests.
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
-        true
+        false
     }
 
     override func setUpWithError() throws {
@@ -20,10 +25,16 @@ final class LearnNowUITestsLaunchTests: XCTestCase {
     @MainActor
     func testLaunch() throws {
         let app = XCUIApplication()
+        app.launchArguments += ["-UIAnimationsDisabled", "YES"]
         app.launch()
 
-        // Insert steps here to perform after app launch but before taking a screenshot,
-        // such as logging into a test account or navigating somewhere in the app
+        // Give the first screen enough time to fully render before
+        // capturing the screenshot (SwiftData init + view layout).
+        let home = app.descendants(matching: .any)["screen.home"]
+        XCTAssertTrue(
+            home.waitForExistence(timeout: 10),
+            "Home screen did not appear within 10s of launch."
+        )
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "Launch Screen"
