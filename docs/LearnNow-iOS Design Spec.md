@@ -179,7 +179,7 @@ Dashboard
 | Routes     | Tab 根页面              | Tab                | Path                   |
 | Path       | 二级页面                | Routes             | Lesson / 返回 Routes   |
 | Lesson     | 二级流程页面            | Home 或 Path       | Completion / 返回 Path |
-| Completion | 流程结果页              | Lesson             | Path / Anki            |
+| Completion | 流程结果页              | Lesson             | 下一章节 Lesson / Path / Anki |
 | Anki       | Tab 根页面 / 流程可直达 | Tab / Completion   | 下一张卡 / Tab 切换    |
 | Dashboard  | Tab 根页面              | Tab                | Tab 切换               |
 
@@ -192,11 +192,11 @@ Dashboard
 
 #### 主流程 A：从首页继续学习
 
-`Home → 切换至 Routes 栈中的 Lesson → Completion → Path 或 Anki`
+`Home → 切换至 Routes 栈中的 Lesson → Completion → 下一章节 Lesson / Path / Anki`
 
 #### 主流程 B：从路线进入学习
 
-`Routes → Path → Lesson → Completion → Path`
+`Routes → Path → Lesson → Completion → 下一章节 Lesson / Path / Anki`
 
 #### 主流程 C：复习闭环
 
@@ -241,7 +241,7 @@ Dashboard
 | Home       | App 启动、Tab 切换                            |
 | Routes     | Tab 切换                                      |
 | Path       | 点击 RouteCard                                |
-| Lesson     | Home 的 ContinueLearningCard；Path 的当前节点 |
+| Lesson     | Home 的 ContinueLearningCard；Path 的当前节点；Completion 的继续学习 CTA |
 | Completion | Lesson 完成                                   |
 | Anki       | Tab 切换；Completion CTA                      |
 | Dashboard  | Tab 切换                                      |
@@ -254,7 +254,7 @@ Dashboard
 | Routes     | Path；其他 Tab                     |
 | Path       | 返回 Routes；进入 Lesson；其他 Tab |
 | Lesson     | 返回 Path；完成后进入 Completion   |
-| Completion | 返回 Path；跳转 Anki               |
+| Completion | 进入下一 Lesson；返回 Path；跳转 Anki |
 | Anki       | 下一张卡；其他 Tab                 |
 | Dashboard  | 其他 Tab                           |
 
@@ -834,7 +834,7 @@ Lesson 过程状态：
 
 #### 页面目标
 
-在 Lesson 完成后立即给予结果反馈、奖励反馈与下一步引导，形成学习正反馈。
+在 Lesson 完成后立即给予结果反馈、奖励反馈与下一步引导，形成学习正反馈，并优先把用户送往下一章节而不是结束流程。
 
 #### 页面入口
 
@@ -842,6 +842,7 @@ Lesson 过程状态：
 
 #### 页面出口
 
+- 进入下一个可学习章节的 `Lesson`
 - 返回 `Path`
 - 进入 `Anki`
 
@@ -889,17 +890,37 @@ Lesson 过程状态：
 
 ##### D. CompletionActionGroup
 
-包含两个 CTA：
+采用“续学优先、结束次之、复习降级”的 CTA 层级。
 
-- 完成学习（返回 `Path`）
+结构：
+
+- 第一行双按钮布局
+- 第二行轻量辅助动作
+
+第一行双按钮布局：
+
+- 左侧 `2/3` 宽度主按钮：学习下一章节
+- 右侧 `1/3` 宽度次按钮：完成学习
+
+第二行轻量辅助动作：
+
 - 去复习看板看看（进入 `Anki`）
+
+规则：
+
+- `学习下一章节` 是 Completion 页默认主操作，视觉权重最高，应直接进入同一路径下一个可学习 `Lesson`
+- `完成学习` 仅用于结束本轮学习并返回 `Path`，视觉上必须明显弱于 `学习下一章节`
+- `去复习看板看看` 不得与第一行 CTA 同权展示，应以下一行低强调文字动作或轻量胶囊动作呈现
+- 仅当本节实际生成可复习卡片时，才展示或强调 `去复习看板看看`
+- 若当前路径不存在下一可学习章节，第一行应退化为单个全宽 `完成学习`，复习入口继续保持低强调
 
 #### 用户操作
 
 - 查看本次学习奖励
 - 查看生成的知识标签
-- 返回路径继续学习
-- 进入 Anki 复习
+- 学习下一章节
+- 完成本轮学习并返回路径
+- 在有复习价值时进入 Anki 复习
 
 #### 页面状态
 
@@ -918,11 +939,14 @@ Lesson 过程状态：
 
 - 仍展示 Completion 页面
 - GeneratedFlashcardsCard 改为“本节暂无可提炼卡片”
+- `去复习看板看看` 默认隐藏，不单独制造分流噪音
 
 #### 导航行为
 
-- Primary CTA → `Path`
-- Secondary CTA → `Anki`
+- Primary CTA `学习下一章节` → 同一路径下一个可学习 `Lesson`
+- Secondary CTA `完成学习` → `Path`
+- Tertiary CTA `去复习看板看看` → `Anki`
+- 若不存在下一可学习章节，则 Primary CTA 位置退化为 `完成学习` 返回 `Path`
 
 #### 依赖组件
 
@@ -937,6 +961,8 @@ Lesson 过程状态：
 - 完成标题
 - XP 增量
 - 连胜天数
+- 是否存在下一可学习章节
+- 下一章节标题
 - 生成卡片数
 - 卡片标签
 - 调度提示文案
@@ -945,6 +971,7 @@ Lesson 过程状态：
 
 - Completion 展示数据来源于本地 mock / 本地规则计算
 - 不依赖后端返回奖励结果
+- 下一章节 CTA 由本地路径进度规则计算，不依赖服务端即时编排
 
 #### SwiftUI 视图拆分
 
@@ -1261,6 +1288,7 @@ Lesson 过程状态：
 | InlineQuizView          | Lesson     | 题目 + 反馈          |
 | RewardSummaryCard       | Completion | 奖励展示             |
 | GeneratedFlashcardsCard | Completion | 记忆卡生成结果       |
+| CompletionActionGroup   | Completion | 续学优先的 CTA 分流  |
 | FlashcardView           | Anki       | 翻转卡片             |
 | ReviewRatingButtonRow   | Anki       | 评分按钮组           |
 | MemoryCurveCard         | Dashboard  | 图表卡片             |
@@ -2067,6 +2095,7 @@ Home 的月度学习记录遵循以下规则：
 - 全部 7 个页面
 - 四个顶级 Tab 与独立导航栈
 - `Routes → Path → Lesson → Completion` 主流程
+- `Completion → 下一 Lesson` 连续学习分流
 - `Completion → Anki` 复习闭环
 - Lesson 中断后恢复到具体 slide
 - Completion 奖励数据本地生成
@@ -2124,7 +2153,7 @@ Home 的月度学习记录遵循以下规则：
 | Routes     | `HeaderBar` / `RouteCard` / `ProgressBar`                                                                      |
 | Path       | `PathHeader` / `PathStageTabBar` / `PathTimeline` / `PathNodeRow` / `PathCurrentNodeCard`                      |
 | Lesson     | `LessonHeader` / `SegmentProgressBar` / `LessonSlideView` / `CalloutCard` / `CodeBlockView` / `InlineQuizView` |
-| Completion | `CompletionHero` / `RewardSummaryCard` / `GeneratedFlashcardsCard` / `PrimaryButton`                           |
+| Completion | `CompletionHero` / `RewardSummaryCard` / `GeneratedFlashcardsCard` / `CompletionActionGroup`                   |
 | Anki       | `HeaderBar` / `ReviewSummaryPills` / `FlashcardView` / `ReviewRatingButtonRow`                                 |
 | Dashboard  | `HeaderBar` / `MemoryCurveCard` / `MasteryProgressRow`                                                         |
 
