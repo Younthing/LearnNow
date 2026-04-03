@@ -166,6 +166,99 @@ enum LearnNowFlowFixtures {
                 reviewTags: ["回归系数", "残差", "R²"],
                 reviewMessage: "回归模型的关键概念会在你下一轮复习里与假设检验交替出现。"
             ),
+            LearnNowModuleDefinition(
+                id: "confidence-intervals",
+                track: .statistics,
+                title: "置信区间、抽样误差与样本量估计",
+                subtitle: "14课时",
+                lessonTitle: "置信区间、抽样误差与样本量估计",
+                lessonPages: makePlaceholderLessonPages(
+                    moduleID: "confidence-intervals",
+                    title: "置信区间、抽样误差与样本量估计",
+                    accent: .mint
+                ),
+                reviewTags: ["置信区间", "抽样误差", "样本量"],
+                reviewMessage: "这一章目前是示例课程，用来观察长标题在路线页中的排版效果。"
+            ),
+            LearnNowModuleDefinition(
+                id: "anova",
+                track: .statistics,
+                title: "方差分析（ANOVA）与多组均值比较",
+                subtitle: "9课时",
+                lessonTitle: "方差分析（ANOVA）与多组均值比较",
+                lessonPages: makePlaceholderLessonPages(
+                    moduleID: "anova",
+                    title: "方差分析（ANOVA）与多组均值比较",
+                    accent: .blue
+                ),
+                reviewTags: ["ANOVA", "组间差异", "均值比较"],
+                reviewMessage: "这一章目前是示例课程，用来观察中长标题在路线页中的对齐表现。"
+            ),
+            LearnNowModuleDefinition(
+                id: "experiment-design",
+                track: .statistics,
+                title: "实验设计：随机化、分层与 A/B 测试入门",
+                subtitle: "11课时",
+                lessonTitle: "实验设计：随机化、分层与 A/B 测试入门",
+                lessonPages: makePlaceholderLessonPages(
+                    moduleID: "experiment-design",
+                    title: "实验设计：随机化、分层与 A/B 测试入门",
+                    accent: .purple
+                ),
+                reviewTags: ["随机化", "分层", "A/B 测试"],
+                reviewMessage: "这一章目前是示例课程，用来验证多行标题和副标题的节奏是否稳定。"
+            ),
+            LearnNowModuleDefinition(
+                id: "modeling-hypothesis",
+                track: .statistics,
+                title: "从业务问题到统计建模假设的完整推导",
+                subtitle: "7课时",
+                lessonTitle: "从业务问题到统计建模假设的完整推导",
+                lessonPages: makePlaceholderLessonPages(
+                    moduleID: "modeling-hypothesis",
+                    title: "从业务问题到统计建模假设的完整推导",
+                    accent: .amber
+                ),
+                reviewTags: ["业务问题", "建模假设", "推导链路"],
+                reviewMessage: "这一章目前是示例课程，用来覆盖更长中文标题的视觉情况。"
+            ),
+        ]
+    }
+
+    private static func makePlaceholderLessonPages(
+        moduleID: String,
+        title: String,
+        accent: LearnNowAccent
+    ) -> [LearnNowLessonPage] {
+        [
+            LearnNowLessonPage(
+                id: "\(moduleID)-page-1",
+                badge: "示例 1 / 1",
+                accent: accent,
+                title: title,
+                summary: "这是用于观察 Path 页面课程列表排版的占位章节。标题长度和换行方式会更接近真实课程场景。",
+                calloutTitle: "当前用途",
+                calloutBody: "这里保留最小可用课程内容，方便你直接在真实运行链路里查看标题长短不一时的对齐表现。",
+                calloutAccent: .amber,
+                codeSample: nil,
+                question: LearnNowLessonQuestion(
+                    prompt: "这个示例章节目前最主要的作用是什么？",
+                    options: [
+                        LearnNowLessonOption(
+                            id: "\(moduleID)-layout",
+                            badge: "A",
+                            title: "验证课程标题在路径页中的排版、换行与对齐"
+                        ),
+                        LearnNowLessonOption(
+                            id: "\(moduleID)-replace",
+                            badge: "B",
+                            title: "直接替代正式课程内容，不再需要后续补充"
+                        ),
+                    ],
+                    correctOptionID: "\(moduleID)-layout"
+                ),
+                successAction: .completeLesson
+            ),
         ]
     }
 

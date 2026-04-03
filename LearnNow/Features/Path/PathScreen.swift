@@ -141,6 +141,22 @@ private struct PathEmptyStateCard: View {
     }
 }
 
+private enum PathNodeLayout {
+    static let timelineSpacing: CGFloat = 20
+    static let badgeColumnWidth: CGFloat = 56
+    static let connectorWidth: CGFloat = 4
+    static let connectorInset: CGFloat = 10
+    static let rowGap: CGFloat = 18
+    static let cardPadding: CGFloat = 18
+    static let featuredCardPadding: CGFloat = 20
+    static let cardCornerRadius: CGFloat = 22
+    static let compactRowVerticalPadding: CGFloat = 14
+    static let compactRowMinHeight: CGFloat = 76
+    static let currentCardMinHeight: CGFloat = 138
+    static let regularBadgeSize: CGFloat = 48
+    static let currentBadgeSize: CGFloat = 56
+}
+
 private struct PathNodeRow: View {
     let node: PathScreenModel.Node
     let showsLineBelow: Bool
@@ -149,23 +165,24 @@ private struct PathNodeRow: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        HStack(alignment: .top, spacing: 20) {
+        HStack(alignment: .top, spacing: PathNodeLayout.timelineSpacing) {
             VStack(spacing: 0) {
                 nodeBadge
 
                 if showsLineBelow {
                     Capsule()
                         .fill(lineColor)
-                        .frame(width: 4)
+                        .frame(width: PathNodeLayout.connectorWidth)
                         .frame(maxHeight: .infinity)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, PathNodeLayout.connectorInset)
                 }
             }
-            .frame(width: 48)
+            .frame(width: PathNodeLayout.badgeColumnWidth)
 
             content
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.bottom, node.status == .current ? 24 : 0)
+        .padding(.bottom, showsLineBelow ? PathNodeLayout.rowGap : 0)
     }
 
     private var lineColor: Color {
@@ -177,19 +194,11 @@ private struct PathNodeRow: View {
     @ViewBuilder
     private var content: some View {
         if node.isInteractive {
-            if node.status == .current {
-                Button(action: onTap) {
-                    moduleContent
-                }
-                .buttonStyle(SoftPressStyle(cornerRadius: 22))
-                .accessibilityIdentifier("path.module.\(node.id)")
-            } else {
-                Button(action: onTap) {
-                    moduleContent
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("path.module.\(node.id)")
+            Button(action: onTap) {
+                moduleContent
             }
+            .buttonStyle(PathModulePressStyle())
+            .accessibilityIdentifier("path.module.\(node.id)")
         } else {
             moduleContent
                 .accessibilityIdentifier("path.module.\(node.id)")
@@ -209,42 +218,62 @@ private struct PathNodeRow: View {
     }
 
     private var currentModuleCard: some View {
-        InsetCard(contentPadding: 22) {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack {
-                    Text(node.title)
-                        .font(.system(size: 22, weight: .black, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.color(for: .blue))
+        PathModuleSurface(accent: .blue, isInset: true, contentPadding: PathNodeLayout.featuredCardPadding) {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .center, spacing: 12) {
+                    NeumorphicPill(
+                        text: "正在学习",
+                        accent: .blue,
+                        isSelected: true
+                    )
+                    .fixedSize()
 
-                    Spacer()
+                    Spacer(minLength: 0)
 
                     Image(systemName: "play.circle.fill")
-                        .font(.system(size: 24))
+                        .font(.system(size: 26))
                         .foregroundStyle(LearnNowPalette.color(for: .blue))
                 }
 
-                Text(node.subtitle)
-                    .font(LearnNowTypography.body)
-                    .foregroundStyle(LearnNowPalette.textMuted)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(node.title)
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundStyle(LearnNowPalette.color(for: .blue))
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text(node.subtitle)
+                        .font(LearnNowTypography.body)
+                        .foregroundStyle(LearnNowPalette.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 if let progress = node.progress {
-                    ProgressTrack(progress: progress, accent: .blue, height: 10)
+                    VStack(alignment: .leading, spacing: 8) {
+                        ProgressTrack(progress: progress, accent: .blue, height: 10)
+
+                        Text("已完成 \(Int(progress * 100))%")
+                            .font(LearnNowTypography.label)
+                            .foregroundStyle(LearnNowPalette.textMuted)
+                    }
                 }
             }
+            .frame(maxWidth: .infinity, minHeight: PathNodeLayout.currentCardMinHeight, alignment: .topLeading)
         }
         .accessibilityIdentifier("path.currentModule")
     }
 
     private func compactModuleRow(showsChevron: Bool) -> some View {
         HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(node.title)
-                    .font(.system(size: 18, weight: .heavy, design: .rounded))
-                    .foregroundStyle(LearnNowPalette.textPrimary.opacity(node.status == .locked ? 0.5 : 1))
+                    .font(LearnNowTypography.cardTitle)
+                    .foregroundStyle(LearnNowPalette.textPrimary.opacity(node.status == .locked ? 0.5 : 0.92))
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(node.subtitle)
                     .font(LearnNowTypography.body)
-                    .foregroundStyle(LearnNowPalette.textMuted.opacity(node.status == .locked ? 0.5 : 1))
+                    .foregroundStyle(LearnNowPalette.textMuted.opacity(node.status == .locked ? 0.5 : 0.82))
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer(minLength: 0)
@@ -252,12 +281,14 @@ private struct PathNodeRow: View {
             if showsChevron {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(LearnNowPalette.textMuted.opacity(0.75))
+                    .foregroundStyle(LearnNowPalette.textMuted.opacity(0.7))
                     .padding(.top, 2)
             }
         }
-        .padding(.top, 12)
-        .padding(.bottom, node.status == .locked ? 24 : 0)
+        .padding(.vertical, PathNodeLayout.compactRowVerticalPadding)
+        .padding(.horizontal, PathNodeLayout.cardPadding)
+        .frame(maxWidth: .infinity, minHeight: PathNodeLayout.compactRowMinHeight, alignment: .topLeading)
+        .opacity(node.status == .locked ? 0.74 : 1)
         .contentShape(Rectangle())
     }
 
@@ -265,7 +296,7 @@ private struct PathNodeRow: View {
     private var nodeBadge: some View {
         switch node.status {
         case .done:
-            InsetCircle(size: 48) {
+            InsetCircle(size: PathNodeLayout.regularBadgeSize) {
                 Image(systemName: "checkmark")
                     .font(.system(size: 18, weight: .black))
                     .foregroundStyle(LearnNowPalette.color(for: .mint))
@@ -275,28 +306,86 @@ private struct PathNodeRow: View {
             ZStack {
                 Circle()
                     .fill(LearnNowPalette.color(for: .blue).opacity(colorScheme == .dark ? 0.3 : 0.15))
-                    .frame(width: 48, height: 48)
-                    .blur(radius: 8)
+                    .frame(width: PathNodeLayout.currentBadgeSize, height: PathNodeLayout.currentBadgeSize)
+                    .blur(radius: 12)
 
                 Circle()
                     .fill(LearnNowPalette.base)
-                    .modifier(OuterSurface(cornerRadius: 24))
-                    .frame(width: 48, height: 48)
+                    .modifier(OuterSurface(cornerRadius: PathNodeLayout.currentBadgeSize / 2))
+                    .frame(width: PathNodeLayout.currentBadgeSize, height: PathNodeLayout.currentBadgeSize)
                     .overlay(
                         Circle().stroke(LearnNowPalette.gradient(for: .blue), lineWidth: 2)
                     )
                     .overlay {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 18, weight: .black))
+                            .font(.system(size: 20, weight: .black))
                             .foregroundStyle(LearnNowPalette.color(for: .blue))
                     }
             }
         case .locked:
-            InsetCircle(size: 48) {
+            InsetCircle(size: PathNodeLayout.regularBadgeSize) {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(LearnNowPalette.textMuted.opacity(0.6))
             }
+        }
+    }
+}
+
+private struct PathModulePressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
+            .opacity(configuration.isPressed ? 0.94 : 1)
+            .animation(.spring(response: 0.24, dampingFraction: 0.8), value: configuration.isPressed)
+    }
+}
+
+private struct PathModuleSurface<Content: View>: View {
+    let accent: LearnNowAccent?
+    let isInset: Bool
+    let contentPadding: CGFloat
+    @ViewBuilder let content: Content
+
+    init(
+        accent: LearnNowAccent? = nil,
+        isInset: Bool = false,
+        contentPadding: CGFloat = 18,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.accent = accent
+        self.isInset = isInset
+        self.contentPadding = contentPadding
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .padding(contentPadding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(surface)
+            .overlay(borderOverlay)
+    }
+
+    private var surface: some View {
+        Group {
+            if isInset {
+                RoundedRectangle(cornerRadius: PathNodeLayout.cardCornerRadius, style: .continuous)
+                    .fill(LearnNowPalette.base)
+                    .modifier(InsetSurface(cornerRadius: PathNodeLayout.cardCornerRadius))
+            } else {
+                RoundedRectangle(cornerRadius: PathNodeLayout.cardCornerRadius, style: .continuous)
+                    .fill(LearnNowPalette.base)
+                    .modifier(OuterSurface(cornerRadius: PathNodeLayout.cardCornerRadius))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var borderOverlay: some View {
+        if let accent {
+            RoundedRectangle(cornerRadius: PathNodeLayout.cardCornerRadius, style: .continuous)
+                .stroke(LearnNowPalette.gradient(for: accent), lineWidth: 1)
         }
     }
 }

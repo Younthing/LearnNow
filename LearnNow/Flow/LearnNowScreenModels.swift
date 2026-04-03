@@ -414,12 +414,12 @@ extension LearnNowFlowState {
     var reviewFiltersSheetModel: ReviewFiltersSheetModel {
         ReviewFiltersSheetModel(
             title: "卡池浏览",
-            subtitle: "按主题、时间与模块收窄范围，再开始这一轮复习。",
+            subtitle: "先浏览这一轮卡池，再按需收窄范围。",
             stagedResultSummary: stagedResultSummary,
             activeFilterCount: stagedFilterBadgeCount,
             summaryMessage: draftReviewFilters.isDefault
-                ? "未启用筛选时，将按全部卡池的默认顺序开始复习。"
-                : "筛选只在你点击主按钮后生效；直接关闭不会改动当前复习队列。",
+                ? "你现在看到的是全部卡池，可以直接浏览，或先用时间范围快速收窄。"
+                : "结果会即时刷新；只有点击底部主按钮后，才会真正替换当前复习队列。",
             canReset: stagedFilterBadgeCount > 0,
             timeOptions: LearnNowReviewTimeFilter.allCases.map {
                 .init(filter: $0, title: $0.title, isSelected: draftReviewFilters.time == $0)
@@ -448,9 +448,9 @@ extension LearnNowFlowState {
             favoriteOptions: LearnNowReviewFavoriteFilter.allCases.map {
                 .init(filter: $0, title: $0.title, isSelected: draftReviewFilters.favorite == $0)
             },
-            resultsTitle: "筛选结果",
+            resultsTitle: "卡片浏览",
             emptyResultsTitle: "当前筛选下暂无卡片",
-            emptyResultsMessage: "可以放宽时间窗口，或取消主题 / 模块限制。",
+            emptyResultsMessage: "可以放宽时间窗口，或展开高级筛选取消主题 / 模块限制。",
             resultCards: stagedReviewCards.map {
                 .init(
                     id: $0.id,
@@ -467,7 +467,7 @@ extension LearnNowFlowState {
                 )
             },
             footerCountText: stagedReviewCards.isEmpty ? "暂无结果" : "\(stagedReviewCards.count) 张卡片",
-            footerSummary: draftReviewFilters.isDefault ? "将从全部卡池开始" : "仅应用到本轮复习",
+            footerSummary: draftReviewFilters.isDefault ? "将按当前卡池开始" : "仅应用到本轮复习",
             applyButtonTitle: applyFiltersCTA,
             canApply: !stagedReviewCards.isEmpty
         )

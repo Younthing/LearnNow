@@ -12,10 +12,38 @@ struct ReviewFiltersSheet: View {
     let onToggleMastered: (String) -> Void
     let onApply: () -> Void
 
+    @State private var showsAdvancedFilters: Bool
+
+    init(
+        model: ReviewFiltersSheetModel,
+        onReset: @escaping () -> Void,
+        onSelectTime: @escaping (LearnNowReviewTimeFilter) -> Void,
+        onToggleTopic: @escaping (String) -> Void,
+        onToggleModule: @escaping (String) -> Void,
+        onSelectMastery: @escaping (LearnNowReviewMasteryFilter) -> Void,
+        onSelectFavorite: @escaping (LearnNowReviewFavoriteFilter) -> Void,
+        onToggleFavorite: @escaping (String) -> Void,
+        onToggleMastered: @escaping (String) -> Void,
+        onApply: @escaping () -> Void
+    ) {
+        self.model = model
+        self.onReset = onReset
+        self.onSelectTime = onSelectTime
+        self.onToggleTopic = onToggleTopic
+        self.onToggleModule = onToggleModule
+        self.onSelectMastery = onSelectMastery
+        self.onSelectFavorite = onSelectFavorite
+        self.onToggleFavorite = onToggleFavorite
+        self.onToggleMastered = onToggleMastered
+        self.onApply = onApply
+        _showsAdvancedFilters = State(initialValue: model.hasAdvancedSelections || model.resultCards.isEmpty)
+    }
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             ReviewFiltersContent(
                 model: model,
+                showsAdvancedFilters: $showsAdvancedFilters,
                 onReset: onReset,
                 onSelectTime: onSelectTime,
                 onToggleTopic: onToggleTopic,
@@ -43,6 +71,7 @@ struct ReviewFiltersSheet: View {
 
 private struct ReviewFiltersContent: View {
     let model: ReviewFiltersSheetModel
+    @Binding var showsAdvancedFilters: Bool
     let onReset: () -> Void
     let onSelectTime: (LearnNowReviewTimeFilter) -> Void
     let onToggleTopic: (String) -> Void
@@ -64,17 +93,20 @@ private struct ReviewFiltersContent: View {
             ReviewFiltersSummaryCard(
                 stagedResultSummary: model.stagedResultSummary,
                 activeFilterCount: model.activeFilterCount,
-                summaryMessage: model.summaryMessage
+                summaryMessage: model.summaryMessage,
+                activeFilterLabels: model.activeFilterLabels
             )
 
-            timeSection
-            topicSection
-            moduleSection
-            masterySection
-            favoriteSection
+            quickFiltersSection
+
+            if showsAdvancedFilters {
+                advancedFiltersSection
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
 
             ReviewFiltersResultsSection(
                 title: model.resultsTitle,
+                countText: model.footerCountText,
                 emptyTitle: model.emptyResultsTitle,
                 emptyMessage: model.emptyResultsMessage,
                 resultCards: model.resultCards,
@@ -85,10 +117,34 @@ private struct ReviewFiltersContent: View {
         .padding(.horizontal, LearnNowSpacing.screenHorizontal)
         .padding(.top, LearnNowSpacing.screenTop)
         .padding(.bottom, 24)
+        .animation(.spring(response: 0.36, dampingFraction: 0.84), value: showsAdvancedFilters)
     }
 
-    private var timeSection: some View {
-        FilterSection(title: "时间范围", subtitle: "用到期窗口切分本轮卡池") {
+    private var quickFiltersSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("快速筛选")
+                        .font(.system(size: 18, weight: .heavy, design: .rounded))
+                        .foregroundStyle(LearnNowPalette.textPrimary)
+
+                    Text("先用时间范围快速收窄，再浏览下方卡池。")
+                        .font(LearnNowTypography.body)
+                        .foregroundStyle(LearnNowPalette.textMuted)
+                }
+
+                Spacer(minLength: 0)
+
+                AdvancedFiltersToggleControl(
+                    isExpanded: showsAdvancedFilters,
+                    activeCount: model.advancedFilterCount
+                ) {
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+                        showsAdvancedFilters.toggle()
+                    }
+                }
+            }
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(model.timeOptions) { option in
@@ -101,6 +157,27 @@ private struct ReviewFiltersContent: View {
                     }
                 }
                 .padding(.vertical, 2)
+            }
+        }
+    }
+
+    private var advancedFiltersSection: some View {
+        SoftCard(contentPadding: 18) {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("高级筛选")
+                        .font(.system(size: 18, weight: .heavy, design: .rounded))
+                        .foregroundStyle(LearnNowPalette.textPrimary)
+
+                    Text("按主题、课程模块和卡片状态继续收窄范围，结果会即时刷新。")
+                        .font(LearnNowTypography.body)
+                        .foregroundStyle(LearnNowPalette.textMuted)
+                }
+
+                topicSection
+                moduleSection
+                masterySection
+                favoriteSection
             }
         }
     }
@@ -200,14 +277,22 @@ private struct ReviewFiltersSummaryCard: View {
     let stagedResultSummary: String
     let activeFilterCount: Int
     let summaryMessage: String
+    let activeFilterLabels: [String]
 
     var body: some View {
         SoftCard(contentPadding: 18) {
             VStack(alignment: .leading, spacing: 14) {
-                HStack {
-                    Text(stagedResultSummary)
-                        .font(LearnNowTypography.cardTitle)
-                        .foregroundStyle(LearnNowPalette.textPrimary)
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("当前范围")
+                            .font(.system(size: 12, weight: .black, design: .rounded))
+                            .foregroundStyle(LearnNowPalette.textMuted)
+
+                        Text(stagedResultSummary)
+                            .font(LearnNowTypography.cardHeadline)
+                            .foregroundStyle(LearnNowPalette.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
                     Spacer()
 
@@ -217,6 +302,10 @@ private struct ReviewFiltersSummaryCard: View {
                             accent: .blue
                         )
                     }
+                }
+
+                FlowLayout(items: activeFilterLabels) { label in
+                    SummaryFilterChip(text: label)
                 }
 
                 Text(summaryMessage)
@@ -230,6 +319,7 @@ private struct ReviewFiltersSummaryCard: View {
 
 private struct ReviewFiltersResultsSection: View {
     let title: String
+    let countText: String
     let emptyTitle: String
     let emptyMessage: String
     let resultCards: [ReviewFiltersSheetModel.ResultCard]
@@ -238,9 +328,21 @@ private struct ReviewFiltersResultsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(title)
-                .font(LearnNowTypography.sectionTitle)
-                .foregroundStyle(LearnNowPalette.textPrimary)
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(LearnNowTypography.sectionTitle)
+                        .foregroundStyle(LearnNowPalette.textPrimary)
+
+                    Text("按当前条件实时刷新，默认按到期时间排序。")
+                        .font(LearnNowTypography.body)
+                        .foregroundStyle(LearnNowPalette.textMuted)
+                }
+
+                Spacer(minLength: 0)
+
+                SummaryFilterChip(text: countText)
+            }
 
             if resultCards.isEmpty {
                 InsetCard(contentPadding: 18) {
@@ -375,50 +477,114 @@ private struct FilterChip: View {
     }
 }
 
+private struct AdvancedFiltersToggleControl: View {
+    let isExpanded: Bool
+    let activeCount: Int
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.system(size: 13, weight: .bold))
+
+                Text(isExpanded ? "收起高级" : "高级筛选")
+                    .font(.system(size: 13, weight: .heavy, design: .rounded))
+
+                if activeCount > 0 {
+                    Text("\(activeCount)")
+                        .font(.system(size: 11, weight: .black, design: .rounded))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule(style: .continuous)
+                                .fill(LearnNowPalette.color(for: .blue).opacity(0.14))
+                        )
+                }
+
+                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                    .font(.system(size: 11, weight: .bold))
+            }
+            .foregroundStyle(
+                activeCount > 0 || isExpanded
+                    ? LearnNowPalette.color(for: .blue)
+                    : LearnNowPalette.textMuted
+            )
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(
+                Group {
+                    if activeCount > 0 || isExpanded {
+                        Capsule(style: .continuous)
+                            .fill(LearnNowPalette.base)
+                            .modifier(InsetSurface(cornerRadius: 999))
+                    } else {
+                        Capsule(style: .continuous)
+                            .fill(LearnNowPalette.base)
+                            .modifier(OuterSurface(cornerRadius: 999))
+                    }
+                }
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct SummaryFilterChip: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 12, weight: .black, design: .rounded))
+            .foregroundStyle(LearnNowPalette.textSecondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(LearnNowPalette.base)
+                    .modifier(OuterSurface(cornerRadius: 999))
+            )
+    }
+}
+
 private struct ReviewCardPoolRow: View {
     let card: ReviewFiltersSheetModel.ResultCard
     let onToggleFavorite: () -> Void
     let onToggleMastered: () -> Void
 
     var body: some View {
-        SoftCard(contentPadding: 16) {
+        SoftCard(contentPadding: 18) {
             VStack(alignment: .leading, spacing: 14) {
+                Text(card.frontTitle)
+                    .font(.system(size: 20, weight: .heavy, design: .rounded))
+                    .foregroundStyle(LearnNowPalette.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+
                 HStack(alignment: .top, spacing: 10) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 8) {
-                            MetaCapsule(text: card.topic, accent: card.topicAccent)
-                            MetaCapsule(text: card.bucketTitle, accent: card.bucketAccent, subdued: true)
-                        }
-
-                        Text(card.frontTitle)
-                            .font(.system(size: 19, weight: .heavy, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Text(card.moduleTitle)
-                            .font(LearnNowTypography.screenSubtitle)
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
+                    Text(card.moduleTitle)
+                        .font(LearnNowTypography.body)
+                        .foregroundStyle(LearnNowPalette.textMuted)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     Spacer(minLength: 0)
 
-                    Text(card.dueLabel)
-                        .font(LearnNowTypography.label)
+                    Label(card.dueLabel, systemImage: "clock")
+                        .font(LearnNowTypography.screenSubtitle)
                         .foregroundStyle(LearnNowPalette.color(for: card.topicAccent))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(
-                            Capsule(style: .continuous)
-                                .fill(LearnNowPalette.base)
-                                .modifier(InsetSurface(cornerRadius: 999))
-                        )
                 }
 
-                Text(card.highlight)
-                    .font(LearnNowTypography.body)
-                    .foregroundStyle(LearnNowPalette.textSecondary)
-                    .lineSpacing(3)
-                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 8) {
+                    MetaCapsule(text: card.topic, accent: card.topicAccent)
+                    MetaCapsule(text: card.bucketTitle, accent: card.bucketAccent, subdued: true)
+                }
+
+                InsetCard(contentPadding: 14) {
+                    Text(card.highlight)
+                        .font(LearnNowTypography.body)
+                        .foregroundStyle(LearnNowPalette.textSecondary)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 HStack(spacing: 10) {
                     ReviewStatusButton(
@@ -493,5 +659,64 @@ private struct MetaCapsule: View {
                     .fill(LearnNowPalette.base)
                     .modifier(OuterSurface(cornerRadius: 999))
             )
+    }
+}
+
+private extension ReviewFiltersSheetModel {
+    var selectedTopicCount: Int {
+        topicOptions.filter { $0.isSelected }.count
+    }
+
+    var selectedModuleCount: Int {
+        moduleOptions.filter { $0.isSelected }.count
+    }
+
+    var selectedTimeTitle: String? {
+        timeOptions.first { $0.isSelected && $0.filter != .all }?.title
+    }
+
+    var selectedMasteryTitle: String? {
+        masteryOptions.first { $0.isSelected && $0.filter != .all }?.title
+    }
+
+    var selectedFavoriteTitle: String? {
+        favoriteOptions.first { $0.isSelected && $0.filter != .all }?.title
+    }
+
+    var advancedFilterCount: Int {
+        selectedTopicCount +
+        selectedModuleCount +
+        (selectedMasteryTitle == nil ? 0 : 1) +
+        (selectedFavoriteTitle == nil ? 0 : 1)
+    }
+
+    var hasAdvancedSelections: Bool {
+        advancedFilterCount > 0
+    }
+
+    var activeFilterLabels: [String] {
+        var labels: [String] = []
+
+        if let selectedTimeTitle {
+            labels.append(selectedTimeTitle)
+        }
+
+        if selectedTopicCount > 0 {
+            labels.append("\(selectedTopicCount) 个主题")
+        }
+
+        if selectedModuleCount > 0 {
+            labels.append("\(selectedModuleCount) 个模块")
+        }
+
+        if let selectedMasteryTitle {
+            labels.append(selectedMasteryTitle)
+        }
+
+        if let selectedFavoriteTitle {
+            labels.append(selectedFavoriteTitle)
+        }
+
+        return labels.isEmpty ? ["全部卡池"] : labels
     }
 }
