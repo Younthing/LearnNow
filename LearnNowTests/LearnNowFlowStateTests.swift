@@ -81,15 +81,28 @@ struct LearnNowFlowStateTests {
         #expect(sut.currentScreen == .completion)
         #expect(sut.totalXP == 1_255)
         #expect(sut.generatedReviewTags == ["t 检验", "P值定义", "数据稳健性"])
+        #expect(sut.hasNextLesson)
+        #expect(sut.nextLessonTitle == "线性回归模型")
+        #expect(sut.pathNodes[2].status == .done)
+        #expect(sut.pathNodes[3].status == .current)
     }
 
     @Test
-    func completionActionsNavigateToPathOrReviewBoard() {
+    func completionActionsNavigateToNextLessonPathOrReviewBoard() {
         var sut = LearnNowFlowState.completionPreview
 
+        sut.openNextLesson()
+        #expect(sut.selectedTab == .routes)
+        #expect(sut.currentScreen == .lesson)
+        #expect(sut.currentLessonTitle == "线性回归模型")
+        #expect(sut.currentLessonPageIndex == 0)
+
+        sut = .completionPreview
         sut.finishLearning()
         #expect(sut.selectedTab == .routes)
         #expect(sut.currentScreen == .path)
+        #expect(sut.pathNodes[2].status == .done)
+        #expect(sut.pathNodes[3].status == .current)
 
         sut = .completionPreview
         sut.openReviewBoard()

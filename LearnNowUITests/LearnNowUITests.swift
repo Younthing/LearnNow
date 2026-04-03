@@ -44,28 +44,18 @@ final class LearnNowUITests: XCTestCase {
 
     @MainActor
     func testHappyPathFromHomeToCompletion() throws {
-        // 1  Home → Routes tab
-        tapWhenHittable(element(matchingIdentifier: "tab.routes"))
-        assertExists(element(matchingIdentifier: "screen.routes"))
-
-        // 2  Routes → Path (data-science route)
-        tapWhenHittable(element(matchingIdentifier: "route.datascience"))
-        assertExists(element(matchingIdentifier: "screen.path"))
-
-        // 3  Path → Lesson (current module)
-        tapWhenHittable(element(matchingIdentifier: "path.currentModule"))
-        assertExists(element(matchingIdentifier: "screen.lesson"))
-
-        // 4  Lesson page 1: answer + advance
-        tapWhenHittable(element(matchingIdentifier: "lesson.option.t-test-robust"))
-        tapWhenHittable(element(matchingIdentifier: "lesson.cta"))
-
-        // 5  Lesson page 2: answer + complete
-        tapWhenHittable(element(matchingIdentifier: "lesson.option.p-value-meaning"))
-        tapWhenHittable(element(matchingIdentifier: "lesson.cta"))
-
-        // 6  Completion screen
+        navigateToCompletion()
         assertExists(element(matchingIdentifier: "screen.completion"))
+    }
+
+    @MainActor
+    func testCompletionPrimaryCTAContinuesIntoNextLesson() throws {
+        navigateToCompletion()
+
+        tapWhenHittable(element(matchingIdentifier: "completion.cta.next"))
+
+        assertExists(element(matchingIdentifier: "screen.lesson"))
+        assertExists(app.staticTexts["线性回归模型"])
     }
 
     // MARK: - Helpers
@@ -132,5 +122,31 @@ final class LearnNowUITests: XCTestCase {
             app.swipeUp()
             remainingSwipes -= 1
         }
+    }
+
+    @MainActor
+    private func navigateToCompletion() {
+        // 1  Home → Routes tab
+        tapWhenHittable(element(matchingIdentifier: "tab.routes"))
+        assertExists(element(matchingIdentifier: "screen.routes"))
+
+        // 2  Routes → Path (data-science route)
+        tapWhenHittable(element(matchingIdentifier: "route.datascience"))
+        assertExists(element(matchingIdentifier: "screen.path"))
+
+        // 3  Path → Lesson (current module)
+        tapWhenHittable(element(matchingIdentifier: "path.currentModule"))
+        assertExists(element(matchingIdentifier: "screen.lesson"))
+
+        // 4  Lesson page 1: answer + advance
+        tapWhenHittable(element(matchingIdentifier: "lesson.option.t-test-robust"))
+        tapWhenHittable(element(matchingIdentifier: "lesson.cta"))
+
+        // 5  Lesson page 2: answer + complete
+        tapWhenHittable(element(matchingIdentifier: "lesson.option.p-value-meaning"))
+        tapWhenHittable(element(matchingIdentifier: "lesson.cta"))
+
+        // 6  Completion screen
+        assertExists(element(matchingIdentifier: "screen.completion"))
     }
 }

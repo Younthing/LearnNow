@@ -19,9 +19,10 @@ struct LessonScreen: View {
 
                 Spacer()
 
-                Text("假设检验")
+                Text(flow.currentLessonTitle)
                     .font(.system(size: 18, weight: .heavy, design: .rounded))
                     .foregroundStyle(LearnNowPalette.textPrimary)
+                    .accessibilityIdentifier("lesson.title")
 
                 Spacer()
 

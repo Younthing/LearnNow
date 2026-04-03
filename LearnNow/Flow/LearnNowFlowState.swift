@@ -205,7 +205,26 @@ struct LearnNowKnowledgeMetric: Identifiable, Equatable {
     let accent: LearnNowAccent
 }
 
+struct LearnNowModuleDefinition: Identifiable, Equatable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let lessonTitle: String
+    let lessonPages: [LearnNowLessonPage]
+    let reviewTags: [String]
+    let reviewMessage: String
+}
+
+struct LearnNowCompletionSummary: Equatable {
+    let completedModuleTitle: String
+    let reviewTags: [String]
+    let reviewMessage: String
+    let nextModuleTitle: String?
+}
+
 struct LearnNowFlowState: Equatable {
+    private static let modules = makeModules()
+
     var selectedTab: LearnNowTab = .home
     var currentScreen: LearnNowScreen = .home
     var totalXP: Int = 1_240
@@ -215,9 +234,11 @@ struct LearnNowFlowState: Equatable {
     var todayLabel: String = "星期五 · 四月三日"
     var routeCategoryTitle: String = "数据科学与人工智能"
     var routeTabs: [String] = ["统计基础", "机器学习", "深度学习"]
+    var nextAvailableModuleIndex: Int = 2
+    var loadedLessonModuleIndex: Int = 2
     var currentLessonPageIndex: Int = 0
-    var lessonPages: [LearnNowLessonPage] = LearnNowFlowState.makeLessonPages()
-    var generatedReviewTags: [String] = ["t 检验", "P值定义", "数据稳健性"]
+    var lessonPages: [LearnNowLessonPage] = LearnNowFlowState.modules[2].lessonPages
+    var completionSummary: LearnNowCompletionSummary?
     var reviewCards: [LearnNowReviewCard] = LearnNowFlowState.makeReviewCards()
     var currentReviewCardIndex: Int = 0
     var isCurrentReviewCardFlipped = false
@@ -243,12 +264,14 @@ struct LearnNowFlowState: Equatable {
     }
 
     var routes: [LearnNowRoute] {
-        [
+        let primaryProgress = min(0.2 + (Double(nextAvailableModuleIndex) / Double(Self.modules.count)) * 0.45, 0.95)
+
+        return [
             LearnNowRoute(
                 id: "datascience",
                 title: "数据科学与人工智能",
                 subtitle: "统计 · 机器学习 · 深度学习",
-                progress: 0.35,
+                progress: primaryProgress,
                 accent: .blue,
                 cta: "继续学习",
                 interactive: true
@@ -275,12 +298,24 @@ struct LearnNowFlowState: Equatable {
     }
 
     var pathNodes: [LearnNowPathNode] {
-        [
-            LearnNowPathNode(id: "stats", title: "描述统计与数据探索", subtitle: "6课时 · 已掌握", status: .done),
-            LearnNowPathNode(id: "probability", title: "概率论基础", subtitle: "8课时 · 已掌握", status: .done),
-            LearnNowPathNode(id: "hypothesis", title: "假设检验", subtitle: "10课时 · 进行中", status: .current),
-            LearnNowPathNode(id: "regression", title: "线性回归模型", subtitle: "12课时 · 未解锁", status: .locked),
-        ]
+        Self.modules.enumerated().map { index, module in
+            let status: LearnNowPathNode.Status
+
+            if index < nextAvailableModuleIndex {
+                status = .done
+            } else if index == nextAvailableModuleIndex {
+                status = .current
+            } else {
+                status = .locked
+            }
+
+            return LearnNowPathNode(
+                id: module.id,
+                title: module.title,
+                subtitle: pathNodeSubtitle(for: index, baseSubtitle: module.subtitle, status: status),
+                status: status
+            )
+        }
     }
 
     var heatmap: [LearnNowHeatCell] {
@@ -322,6 +357,30 @@ struct LearnNowFlowState: Equatable {
         reviewCards[currentReviewCardIndex]
     }
 
+    var currentLessonTitle: String {
+        Self.modules[loadedLessonModuleIndex].lessonTitle
+    }
+
+    var generatedReviewTags: [String] {
+        completionSummary?.reviewTags ?? Self.modules[loadedLessonModuleIndex].reviewTags
+    }
+
+    var generatedReviewCount: Int {
+        generatedReviewTags.count
+    }
+
+    var completionReviewMessage: String {
+        completionSummary?.reviewMessage ?? Self.modules[loadedLessonModuleIndex].reviewMessage
+    }
+
+    var nextLessonTitle: String? {
+        completionSummary?.nextModuleTitle
+    }
+
+    var hasNextLesson: Bool {
+        nextLessonTitle != nil
+    }
+
     mutating func selectTab(_ tab: LearnNowTab) {
         selectedTab = tab
 
@@ -348,6 +407,12 @@ struct LearnNowFlowState: Equatable {
     }
 
     mutating func openLesson() {
+        guard nextAvailableModuleIndex < Self.modules.count else { return }
+
+        if loadedLessonModuleIndex != nextAvailableModuleIndex {
+            loadLesson(for: nextAvailableModuleIndex)
+        }
+
         selectedTab = .routes
         currentScreen = .lesson
     }
@@ -386,8 +451,29 @@ struct LearnNowFlowState: Equatable {
             didAwardCompletionXP = true
         }
 
+        let completedModule = Self.modules[loadedLessonModuleIndex]
+        let upcomingIndex = loadedLessonModuleIndex + 1
+        let nextModuleTitle = upcomingIndex < Self.modules.count ? Self.modules[upcomingIndex].lessonTitle : nil
+
+        completionSummary = LearnNowCompletionSummary(
+            completedModuleTitle: completedModule.title,
+            reviewTags: completedModule.reviewTags,
+            reviewMessage: completedModule.reviewMessage,
+            nextModuleTitle: nextModuleTitle
+        )
+
+        nextAvailableModuleIndex = min(upcomingIndex, Self.modules.count)
         currentScreen = .completion
         selectedTab = .routes
+    }
+
+    mutating func openNextLesson() {
+        guard hasNextLesson else {
+            finishLearning()
+            return
+        }
+
+        openLesson()
     }
 
     mutating func finishLearning() {
@@ -406,6 +492,29 @@ struct LearnNowFlowState: Equatable {
         _ = rating
         isCurrentReviewCardFlipped = false
         currentReviewCardIndex = (currentReviewCardIndex + 1) % reviewCards.count
+    }
+
+    private func pathNodeSubtitle(
+        for index: Int,
+        baseSubtitle: String,
+        status: LearnNowPathNode.Status
+    ) -> String {
+        switch status {
+        case .done:
+            return "\(baseSubtitle) · 已掌握"
+        case .current:
+            return "\(baseSubtitle) · 进行中"
+        case .locked:
+            return "\(baseSubtitle) · 未解锁"
+        }
+    }
+
+    private mutating func loadLesson(for moduleIndex: Int) {
+        guard Self.modules.indices.contains(moduleIndex) else { return }
+
+        loadedLessonModuleIndex = moduleIndex
+        lessonPages = Self.modules[moduleIndex].lessonPages
+        currentLessonPageIndex = 0
     }
 
     static func feedback(for page: LearnNowLessonPage) -> LearnNowLessonFeedback? {
@@ -427,10 +536,51 @@ struct LearnNowFlowState: Equatable {
         }
     }
 
-    private static func makeLessonPages() -> [LearnNowLessonPage] {
+    private static func makeModules() -> [LearnNowModuleDefinition] {
+        [
+            LearnNowModuleDefinition(
+                id: "stats",
+                title: "描述统计与数据探索",
+                subtitle: "6课时",
+                lessonTitle: "描述统计与数据探索",
+                lessonPages: [],
+                reviewTags: ["均值", "方差", "分布偏态"],
+                reviewMessage: "本章的基础统计概念已归档到复习池。"
+            ),
+            LearnNowModuleDefinition(
+                id: "probability",
+                title: "概率论基础",
+                subtitle: "8课时",
+                lessonTitle: "概率论基础",
+                lessonPages: [],
+                reviewTags: ["条件概率", "贝叶斯", "随机变量"],
+                reviewMessage: "概率基础卡片会在后续复习中与统计推断一起混编出现。"
+            ),
+            LearnNowModuleDefinition(
+                id: "hypothesis",
+                title: "假设检验",
+                subtitle: "10课时",
+                lessonTitle: "假设检验",
+                lessonPages: makeHypothesisLessonPages(),
+                reviewTags: ["t 检验", "P值定义", "数据稳健性"],
+                reviewMessage: "智能调度系统已将考点放入你的明日复习池中。"
+            ),
+            LearnNowModuleDefinition(
+                id: "regression",
+                title: "线性回归模型",
+                subtitle: "12课时",
+                lessonTitle: "线性回归模型",
+                lessonPages: makeRegressionLessonPages(),
+                reviewTags: ["回归系数", "残差", "R²"],
+                reviewMessage: "回归模型的关键概念会在你下一轮复习里与假设检验交替出现。"
+            ),
+        ]
+    }
+
+    private static func makeHypothesisLessonPages() -> [LearnNowLessonPage] {
         [
             LearnNowLessonPage(
-                id: "lesson-page-1",
+                id: "hypothesis-page-1",
                 badge: "小节 1 / 2",
                 accent: .blue,
                 title: "t检验与小样本",
@@ -456,7 +606,7 @@ struct LearnNowFlowState: Equatable {
                 successAction: .nextPage
             ),
             LearnNowLessonPage(
-                id: "lesson-page-2",
+                id: "hypothesis-page-2",
                 badge: "小节 2 / 2",
                 accent: .pink,
                 title: "P值 的终极意义",
@@ -472,6 +622,55 @@ struct LearnNowFlowState: Equatable {
                         LearnNowLessonOption(id: "p-value-meaning", badge: "B", title: "若原假设成立，出现当前数据的概率只有 1%"),
                     ],
                     correctOptionID: "p-value-meaning"
+                ),
+                successAction: .completeLesson
+            ),
+        ]
+    }
+
+    private static func makeRegressionLessonPages() -> [LearnNowLessonPage] {
+        [
+            LearnNowLessonPage(
+                id: "regression-page-1",
+                badge: "小节 1 / 2",
+                accent: .purple,
+                title: "回归系数的方向",
+                summary: "在线性回归里，系数的正负先回答的是“方向”，即自变量变化时因变量是上升还是下降。",
+                calloutTitle: "阅读顺序",
+                calloutBody: "先看系数符号，再看绝对值大小，最后再结合显著性判断它是否值得相信。",
+                calloutAccent: .blue,
+                codeSample: """
+                # 线性回归
+                model.fit(X, y)
+                print(model.coef_, model.intercept_)
+                """,
+                question: LearnNowLessonQuestion(
+                    prompt: "如果某个特征的回归系数为 -2.1，最先可以确定的结论是什么？",
+                    options: [
+                        LearnNowLessonOption(id: "reg-negative-direction", badge: "A", title: "该特征增加时，目标值整体倾向下降"),
+                        LearnNowLessonOption(id: "reg-strong-causality", badge: "B", title: "它一定会强力导致目标值下降"),
+                    ],
+                    correctOptionID: "reg-negative-direction"
+                ),
+                successAction: .nextPage
+            ),
+            LearnNowLessonPage(
+                id: "regression-page-2",
+                badge: "小节 2 / 2",
+                accent: .amber,
+                title: "R² 的边界",
+                summary: "R² 衡量的是模型解释方差的能力，不是预测一定准确的保证，更不是因果强度证明。",
+                calloutTitle: "常见误解",
+                calloutBody: "高 R² 只能说明训练集上的拟合程度较高，仍需结合残差、验证集与业务语境一起判断。",
+                calloutAccent: .pink,
+                codeSample: nil,
+                question: LearnNowLessonQuestion(
+                    prompt: "当一个模型的 R² = 0.82 时，最稳妥的理解是什么？",
+                    options: [
+                        LearnNowLessonOption(id: "r2-variance-explained", badge: "A", title: "模型解释了约 82% 的目标波动"),
+                        LearnNowLessonOption(id: "r2-perfect-prediction", badge: "B", title: "模型对新样本一定有 82% 的预测准确率"),
+                    ],
+                    correctOptionID: "r2-variance-explained"
                 ),
                 successAction: .completeLesson
             ),

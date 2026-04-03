@@ -55,6 +55,7 @@ struct AppShellView: View {
         case .completion:
             CompletionScreen(
                 flow: flow,
+                onContinueLearning: { flow.openNextLesson() },
                 onFinish: { flow.finishLearning() },
                 onOpenReviewBoard: { flow.openReviewBoard() }
             )

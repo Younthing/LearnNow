@@ -25,8 +25,11 @@ extension LearnNowFlowState {
 
     static var completionPreview: Self {
         var flow = Self()
-        flow.selectedTab = .routes
-        flow.currentScreen = .completion
+        flow.openLesson()
+        flow.answerCurrentLesson(with: "t-test-robust")
+        flow.advanceLesson()
+        flow.answerCurrentLesson(with: "p-value-meaning")
+        flow.completeLesson()
         return flow
     }
 
