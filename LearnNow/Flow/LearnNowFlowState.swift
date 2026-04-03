@@ -108,6 +108,80 @@ enum LearnNowReviewRating: String, CaseIterable, Equatable, Identifiable {
     }
 }
 
+enum LearnNowReviewBucket: String, CaseIterable, Equatable, Identifiable {
+    case new
+    case reinforce
+    case review
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .new: "新卡"
+        case .reinforce: "巩固"
+        case .review: "待复习"
+        }
+    }
+
+    var accent: LearnNowAccent {
+        switch self {
+        case .new: .blue
+        case .reinforce: .mint
+        case .review: .pink
+        }
+    }
+}
+
+enum LearnNowReviewTimeFilter: String, CaseIterable, Equatable, Identifiable {
+    case all
+    case overdue
+    case today
+    case nextThreeDays
+    case thisWeek
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .all: "全部时间"
+        case .overdue: "已到期"
+        case .today: "今天"
+        case .nextThreeDays: "3天内"
+        case .thisWeek: "本周"
+        }
+    }
+}
+
+enum LearnNowReviewMasteryFilter: String, CaseIterable, Equatable, Identifiable {
+    case all
+    case masteredOnly
+    case unmasteredOnly
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .all: "掌握状态"
+        case .masteredOnly: "仅已掌握"
+        case .unmasteredOnly: "仅未掌握"
+        }
+    }
+}
+
+enum LearnNowReviewFavoriteFilter: String, CaseIterable, Equatable, Identifiable {
+    case all
+    case favoritedOnly
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .all: "收藏状态"
+        case .favoritedOnly: "仅已收藏"
+        }
+    }
+}
+
 struct LearnNowHeaderMetric: Identifiable, Equatable {
     let id: String
     let title: String
@@ -189,14 +263,54 @@ struct LearnNowLessonFeedback: Equatable {
     let accent: LearnNowAccent
 }
 
+struct LearnNowReviewFilters: Equatable {
+    var topics: Set<String> = []
+    var moduleIDs: Set<String> = []
+    var time: LearnNowReviewTimeFilter = .all
+    var mastery: LearnNowReviewMasteryFilter = .all
+    var favorite: LearnNowReviewFavoriteFilter = .all
+
+    static let empty = Self()
+
+    var isDefault: Bool {
+        topics.isEmpty &&
+        moduleIDs.isEmpty &&
+        time == .all &&
+        mastery == .all &&
+        favorite == .all
+    }
+
+    var activeFilterCount: Int {
+        topics.count +
+        moduleIDs.count +
+        (time == .all ? 0 : 1) +
+        (mastery == .all ? 0 : 1) +
+        (favorite == .all ? 0 : 1)
+    }
+}
+
+struct LearnNowReviewFacet: Identifiable, Equatable, Hashable {
+    let id: String
+    let title: String
+    let accent: LearnNowAccent
+    let count: Int
+}
+
 struct LearnNowReviewCard: Identifiable, Equatable {
     let id: String
     let topic: String
+    let moduleID: String
+    let moduleTitle: String
+    let bucket: LearnNowReviewBucket
+    let accent: LearnNowAccent
     let frontTitle: String
-    let frontSubtitle: String
+    let frontSubtitle: String?
     let backTitle: String
     let backBody: String
     let backHighlight: String
+    var dueAt: Date
+    var isMastered: Bool
+    var isFavorited: Bool
 }
 
 struct LearnNowKnowledgeMetric: Identifiable, Equatable {
@@ -230,7 +344,6 @@ struct LearnNowFlowState: Equatable {
     var currentScreen: LearnNowScreen = .home
     var totalXP: Int = 1_240
     var streakDays: Int = 12
-    var dailyReviewCount: Int = 25
     var mastery: Double = 0.61
     var todayLabel: String = "星期五 · 四月三日"
     var routeCategoryTitle: String = "数据科学与人工智能"
@@ -243,6 +356,9 @@ struct LearnNowFlowState: Equatable {
     var reviewCards: [LearnNowReviewCard] = LearnNowFlowState.makeReviewCards()
     var currentReviewCardIndex: Int = 0
     var isCurrentReviewCardFlipped = false
+    var appliedReviewFilters: LearnNowReviewFilters = .empty
+    var draftReviewFilters: LearnNowReviewFilters = .empty
+    var isReviewCardPoolPresented = false
     private var didAwardCompletionXP = false
 
     var homeMetrics: [LearnNowHeaderMetric] {
@@ -250,7 +366,7 @@ struct LearnNowFlowState: Equatable {
             LearnNowHeaderMetric(
                 id: "review",
                 title: "今日待复习",
-                value: "\(dailyReviewCount)",
+                value: "\(reviewCardsDueTodayCount)",
                 unit: "卡",
                 accent: .blue
             ),
@@ -355,8 +471,23 @@ struct LearnNowFlowState: Equatable {
         lessonPages[currentLessonPageIndex]
     }
 
-    var currentReviewCard: LearnNowReviewCard {
-        reviewCards[currentReviewCardIndex]
+    var activeReviewCards: [LearnNowReviewCard] {
+        filteredReviewCards(using: appliedReviewFilters)
+    }
+
+    var stagedReviewCards: [LearnNowReviewCard] {
+        filteredReviewCards(using: draftReviewFilters)
+    }
+
+    var currentReviewCard: LearnNowReviewCard? {
+        let cards = activeReviewCards
+        guard !cards.isEmpty else { return nil }
+        return cards[min(currentReviewCardIndex, cards.count - 1)]
+    }
+
+    var currentReviewPosition: Int {
+        guard !activeReviewCards.isEmpty else { return 0 }
+        return min(currentReviewCardIndex + 1, activeReviewCards.count)
     }
 
     var currentLessonTitle: String {
@@ -383,6 +514,86 @@ struct LearnNowFlowState: Equatable {
         nextLessonTitle != nil
     }
 
+    var reviewCardsDueTodayCount: Int {
+        let calendar = Calendar.current
+        return reviewCards.filter { card in
+            card.dueAt < calendar.startOfDay(for: Date()) || calendar.isDateInToday(card.dueAt)
+        }.count
+    }
+
+    var reviewScopeTitle: String {
+        guard !appliedReviewFilters.isDefault else { return "全卡池复习" }
+
+        var labels: [String] = []
+        if !appliedReviewFilters.topics.isEmpty {
+            labels.append("\(appliedReviewFilters.topics.count) 个主题")
+        }
+        if !appliedReviewFilters.moduleIDs.isEmpty {
+            labels.append("\(appliedReviewFilters.moduleIDs.count) 个模块")
+        }
+        if appliedReviewFilters.time != .all {
+            labels.append(appliedReviewFilters.time.title)
+        }
+        if appliedReviewFilters.mastery != .all {
+            labels.append(appliedReviewFilters.mastery.title)
+        }
+        if appliedReviewFilters.favorite == .favoritedOnly {
+            labels.append("已收藏")
+        }
+        return labels.joined(separator: " · ")
+    }
+
+    var reviewScopeSubtitle: String {
+        guard let currentReviewCard else {
+            return "当前范围暂无可复习卡片"
+        }
+
+        let dueLabel = Self.dueLabel(for: currentReviewCard.dueAt)
+        return "\(currentReviewCard.moduleTitle) · \(dueLabel)"
+    }
+
+    var reviewFilterBadgeCount: Int {
+        appliedReviewFilters.activeFilterCount
+    }
+
+    var stagedFilterBadgeCount: Int {
+        draftReviewFilters.activeFilterCount
+    }
+
+    var reviewSummaryByBucket: [LearnNowReviewBucket: Int] {
+        Dictionary(grouping: activeReviewCards, by: \.bucket).mapValues(\.count)
+    }
+
+    var reviewTopicFacets: [LearnNowReviewFacet] {
+        facets(
+            groupedBy: \.topic,
+            title: \.topic
+        )
+    }
+
+    var reviewModuleFacets: [LearnNowReviewFacet] {
+        facets(
+            groupedBy: \.moduleID,
+            title: \.moduleTitle
+        )
+    }
+
+    var stagedResultSummary: String {
+        if stagedReviewCards.isEmpty {
+            return "当前筛选下暂无卡片"
+        }
+
+        if draftReviewFilters.isDefault {
+            return "全部卡池 · \(stagedReviewCards.count) 张卡片"
+        }
+
+        return "筛选结果 · \(stagedReviewCards.count) 张卡片"
+    }
+
+    var applyFiltersCTA: String {
+        stagedReviewCards.isEmpty ? "当前范围暂无可复习卡片" : "按当前筛选开始复习"
+    }
+
     mutating func selectTab(_ tab: LearnNowTab) {
         selectedTab = tab
 
@@ -393,6 +604,7 @@ struct LearnNowFlowState: Equatable {
             currentScreen = .routes
         case .anki:
             currentScreen = .anki
+            normalizeReviewState()
         case .dash:
             currentScreen = .dash
         }
@@ -493,16 +705,99 @@ struct LearnNowFlowState: Equatable {
 
     mutating func openReviewBoard() {
         selectTab(.anki)
+        normalizeReviewState()
+    }
+
+    mutating func openReviewCardPool() {
+        draftReviewFilters = appliedReviewFilters
+        isReviewCardPoolPresented = true
+    }
+
+    mutating func dismissReviewCardPool() {
+        draftReviewFilters = appliedReviewFilters
+        isReviewCardPoolPresented = false
+    }
+
+    mutating func resetDraftReviewFilters() {
+        draftReviewFilters = .empty
+    }
+
+    mutating func toggleDraftTopic(_ topic: String) {
+        if draftReviewFilters.topics.contains(topic) {
+            draftReviewFilters.topics.remove(topic)
+        } else {
+            draftReviewFilters.topics.insert(topic)
+        }
+    }
+
+    mutating func toggleDraftModule(_ moduleID: String) {
+        if draftReviewFilters.moduleIDs.contains(moduleID) {
+            draftReviewFilters.moduleIDs.remove(moduleID)
+        } else {
+            draftReviewFilters.moduleIDs.insert(moduleID)
+        }
+    }
+
+    mutating func setDraftTimeFilter(_ filter: LearnNowReviewTimeFilter) {
+        draftReviewFilters.time = filter
+    }
+
+    mutating func setDraftMasteryFilter(_ filter: LearnNowReviewMasteryFilter) {
+        draftReviewFilters.mastery = filter
+    }
+
+    mutating func setDraftFavoriteFilter(_ filter: LearnNowReviewFavoriteFilter) {
+        draftReviewFilters.favorite = filter
+    }
+
+    mutating func applyReviewCardPoolFilters() {
+        appliedReviewFilters = draftReviewFilters
+        isReviewCardPoolPresented = false
+        isCurrentReviewCardFlipped = false
+        currentReviewCardIndex = 0
+        normalizeReviewState()
     }
 
     mutating func flipCurrentReviewCard() {
+        guard currentReviewCard != nil else { return }
         isCurrentReviewCardFlipped = true
     }
 
-    mutating func rateCurrentReviewCard(_ rating: LearnNowReviewRating) {
-        _ = rating
+    mutating func showCurrentReviewQuestion() {
+        guard currentReviewCard != nil else { return }
         isCurrentReviewCardFlipped = false
-        currentReviewCardIndex = (currentReviewCardIndex + 1) % reviewCards.count
+    }
+
+    mutating func toggleCurrentReviewCardMastered() {
+        guard let currentID = currentReviewCard?.id else { return }
+        toggleMastered(for: currentID)
+        normalizeReviewState()
+    }
+
+    mutating func toggleCurrentReviewCardFavorited() {
+        guard let currentID = currentReviewCard?.id else { return }
+        toggleFavorited(for: currentID)
+        normalizeReviewState()
+    }
+
+    mutating func toggleReviewCardMastered(id: String) {
+        toggleMastered(for: id)
+        normalizeReviewState()
+    }
+
+    mutating func toggleReviewCardFavorited(id: String) {
+        toggleFavorited(for: id)
+        normalizeReviewState()
+    }
+
+    mutating func rateCurrentReviewCard(_ rating: LearnNowReviewRating) {
+        guard let currentID = currentReviewCard?.id else { return }
+        let previousVisibleCards = activeReviewCards
+        let previousPosition = min(currentReviewCardIndex, max(previousVisibleCards.count - 1, 0))
+
+        updateScheduling(for: currentID, rating: rating)
+        isCurrentReviewCardFlipped = false
+        moveToNextReviewCard(after: currentID, previousPosition: previousPosition)
     }
 
     private func pathNodeSubtitle(
@@ -533,6 +828,158 @@ struct LearnNowFlowState: Equatable {
         currentLessonPageIndex = 0
     }
 
+    private func filteredReviewCards(using filters: LearnNowReviewFilters) -> [LearnNowReviewCard] {
+        reviewCards
+            .filter { card in
+                matchesTopic(card, filters: filters) &&
+                matchesModule(card, filters: filters) &&
+                matchesTime(card, filter: filters.time) &&
+                matchesMastery(card, filter: filters.mastery) &&
+                matchesFavorite(card, filter: filters.favorite)
+            }
+            .sorted(by: Self.reviewSort)
+    }
+
+    private func facets(
+        groupedBy keyPath: KeyPath<LearnNowReviewCard, String>,
+        title titleKeyPath: KeyPath<LearnNowReviewCard, String>
+    ) -> [LearnNowReviewFacet] {
+        Dictionary(grouping: reviewCards, by: { $0[keyPath: keyPath] })
+            .values
+            .compactMap { cards in
+                guard let first = cards.first else { return nil }
+                return LearnNowReviewFacet(
+                    id: first[keyPath: keyPath],
+                    title: first[keyPath: titleKeyPath],
+                    accent: first.accent,
+                    count: cards.count
+                )
+            }
+            .sorted { lhs, rhs in
+                if lhs.count == rhs.count {
+                    return lhs.title < rhs.title
+                }
+                return lhs.count > rhs.count
+            }
+    }
+
+    private mutating func toggleMastered(for id: String) {
+        guard let index = reviewCards.firstIndex(where: { $0.id == id }) else { return }
+        reviewCards[index].isMastered.toggle()
+    }
+
+    private mutating func toggleFavorited(for id: String) {
+        guard let index = reviewCards.firstIndex(where: { $0.id == id }) else { return }
+        reviewCards[index].isFavorited.toggle()
+    }
+
+    private mutating func updateScheduling(for id: String, rating: LearnNowReviewRating) {
+        guard let index = reviewCards.firstIndex(where: { $0.id == id }) else { return }
+        let now = Date()
+        let calendar = Calendar.current
+
+        switch rating {
+        case .again:
+            reviewCards[index].dueAt = now.addingTimeInterval(60)
+            reviewCards[index].isMastered = false
+        case .hard:
+            reviewCards[index].dueAt = now.addingTimeInterval(6 * 60)
+        case .good:
+            reviewCards[index].dueAt = calendar.date(byAdding: .day, value: 1, to: now) ?? now
+        case .easy:
+            reviewCards[index].dueAt = calendar.date(byAdding: .day, value: 4, to: now) ?? now
+            reviewCards[index].isMastered = true
+        }
+    }
+
+    private mutating func moveToNextReviewCard(after currentID: String, previousPosition: Int) {
+        let cards = activeReviewCards
+        guard !cards.isEmpty else {
+            currentReviewCardIndex = 0
+            return
+        }
+
+        if let currentPosition = cards.firstIndex(where: { $0.id == currentID }) {
+            if cards.count == 1 {
+                currentReviewCardIndex = currentPosition
+                return
+            }
+
+            for offset in 1..<cards.count {
+                let candidateIndex = (currentPosition + offset) % cards.count
+                if cards[candidateIndex].id != currentID {
+                    currentReviewCardIndex = candidateIndex
+                    return
+                }
+            }
+
+            currentReviewCardIndex = currentPosition
+            return
+        }
+
+        currentReviewCardIndex = min(previousPosition, cards.count - 1)
+    }
+
+    private mutating func normalizeReviewState() {
+        let cards = activeReviewCards
+        if cards.isEmpty {
+            currentReviewCardIndex = 0
+            isCurrentReviewCardFlipped = false
+            return
+        }
+
+        currentReviewCardIndex = min(currentReviewCardIndex, cards.count - 1)
+    }
+
+    private func matchesTopic(_ card: LearnNowReviewCard, filters: LearnNowReviewFilters) -> Bool {
+        filters.topics.isEmpty || filters.topics.contains(card.topic)
+    }
+
+    private func matchesModule(_ card: LearnNowReviewCard, filters: LearnNowReviewFilters) -> Bool {
+        filters.moduleIDs.isEmpty || filters.moduleIDs.contains(card.moduleID)
+    }
+
+    private func matchesMastery(_ card: LearnNowReviewCard, filter: LearnNowReviewMasteryFilter) -> Bool {
+        switch filter {
+        case .all:
+            true
+        case .masteredOnly:
+            card.isMastered
+        case .unmasteredOnly:
+            !card.isMastered
+        }
+    }
+
+    private func matchesFavorite(_ card: LearnNowReviewCard, filter: LearnNowReviewFavoriteFilter) -> Bool {
+        switch filter {
+        case .all:
+            true
+        case .favoritedOnly:
+            card.isFavorited
+        }
+    }
+
+    private func matchesTime(_ card: LearnNowReviewCard, filter: LearnNowReviewTimeFilter) -> Bool {
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfToday = calendar.startOfDay(for: now)
+
+        switch filter {
+        case .all:
+            return true
+        case .overdue:
+            return card.dueAt < startOfToday
+        case .today:
+            return calendar.isDate(card.dueAt, inSameDayAs: now)
+        case .nextThreeDays:
+            guard let end = calendar.date(byAdding: .day, value: 3, to: startOfToday) else { return true }
+            return card.dueAt >= startOfToday && card.dueAt < end
+        case .thisWeek:
+            guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: now) else { return true }
+            return weekInterval.contains(card.dueAt)
+        }
+    }
+
     static func feedback(for page: LearnNowLessonPage) -> LearnNowLessonFeedback? {
         switch page.answerState {
         case .unanswered:
@@ -550,6 +997,43 @@ struct LearnNowFlowState: Equatable {
                 accent: .pink
             )
         }
+    }
+
+    static func dueLabel(for date: Date) -> String {
+        let calendar = Calendar.current
+        let now = Date()
+
+        if date < calendar.startOfDay(for: now) {
+            return "已到期"
+        }
+
+        if calendar.isDateInToday(date) {
+            return "今天复习"
+        }
+
+        if calendar.isDateInTomorrow(date) {
+            return "明天复习"
+        }
+
+        let dayDistance = calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: date)).day ?? 0
+        if dayDistance > 1 && dayDistance < 7 {
+            return "\(dayDistance) 天后"
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "M月d日"
+        return formatter.string(from: date)
+    }
+
+    private static let reviewSort: (LearnNowReviewCard, LearnNowReviewCard) -> Bool = { lhs, rhs in
+        if lhs.dueAt == rhs.dueAt {
+            if lhs.moduleTitle == rhs.moduleTitle {
+                return lhs.frontTitle < rhs.frontTitle
+            }
+            return lhs.moduleTitle < rhs.moduleTitle
+        }
+        return lhs.dueAt < rhs.dueAt
     }
 
     private static func makeModules() -> [LearnNowModuleDefinition] {
@@ -694,24 +1178,122 @@ struct LearnNowFlowState: Equatable {
     }
 
     private static func makeReviewCards() -> [LearnNowReviewCard] {
-        [
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfToday = calendar.startOfDay(for: now)
+
+        return [
+            LearnNowReviewCard(
+                id: "mean",
+                topic: "描述统计",
+                moduleID: "stats",
+                moduleTitle: "描述统计与数据探索",
+                bucket: .new,
+                accent: .mint,
+                frontTitle: "均值",
+                frontSubtitle: "平均数的中心位置",
+                backTitle: "核心定义",
+                backBody: "均值是所有样本值之和除以样本个数，用来描述一组数据的平均中心。",
+                backHighlight: "极端值会显著拉动均值，偏态分布下要搭配中位数一起看。",
+                dueAt: startOfToday.addingTimeInterval(-3_600),
+                isMastered: false,
+                isFavorited: false
+            ),
+            LearnNowReviewCard(
+                id: "variance",
+                topic: "描述统计",
+                moduleID: "stats",
+                moduleTitle: "描述统计与数据探索",
+                bucket: .reinforce,
+                accent: .mint,
+                frontTitle: "方差",
+                frontSubtitle: "波动程度的平方度量",
+                backTitle: "理解方式",
+                backBody: "方差衡量样本与均值的偏离程度，值越大说明整体离散程度越高。",
+                backHighlight: "标准差 = 方差的平方根，更适合与原始数据量纲一起理解。",
+                dueAt: startOfToday.addingTimeInterval(60 * 60 * 2),
+                isMastered: false,
+                isFavorited: true
+            ),
+            LearnNowReviewCard(
+                id: "bayes",
+                topic: "条件概率",
+                moduleID: "probability",
+                moduleTitle: "概率论基础",
+                bucket: .new,
+                accent: .purple,
+                frontTitle: "贝叶斯公式",
+                frontSubtitle: "先验 × 似然 / 证据",
+                backTitle: "应用视角",
+                backBody: "贝叶斯公式用于在新证据出现后，动态更新事件发生的后验概率。",
+                backHighlight: "先验不是偏见，而是更新前的初始信息；关键是证据到来后持续修正。",
+                dueAt: startOfToday.addingTimeInterval(60 * 60 * 18),
+                isMastered: false,
+                isFavorited: false
+            ),
             LearnNowReviewCard(
                 id: "p-value",
                 topic: "假设检验",
+                moduleID: "hypothesis",
+                moduleTitle: "假设检验",
+                bucket: .review,
+                accent: .blue,
                 frontTitle: "P值",
-                frontSubtitle: "(p-value)",
+                frontSubtitle: "原假设为真时的极端性概率",
                 backTitle: "解析",
-                backBody: "在原假设为真时，观测到当前统计结果的概率。",
-                backHighlight: "p < 0.05 → 拒绝原假设"
+                backBody: "P 值表示在原假设成立时，观测到当前统计结果或更极端结果的概率。",
+                backHighlight: "p < 0.05 常用于拒绝原假设，但并不代表原假设只有 5% 的概率为真。",
+                dueAt: startOfToday.addingTimeInterval(-60 * 60 * 10),
+                isMastered: false,
+                isFavorited: true
             ),
             LearnNowReviewCard(
                 id: "type-one-error",
                 topic: "统计推断",
-                frontTitle: "Type I Error",
-                frontSubtitle: "(第一类错误)",
+                moduleID: "hypothesis",
+                moduleTitle: "假设检验",
+                bucket: .review,
+                accent: .pink,
+                frontTitle: "第一类错误",
+                frontSubtitle: "弃真错误",
                 backTitle: "解析",
-                backBody: "弃真错误。原假设为真，但被错误地拒绝了。",
-                backHighlight: "牢记：拒真不等于原假设本来就是错的。"
+                backBody: "第一类错误指原假设其实为真，但你却错误地拒绝了它。",
+                backHighlight: "显著性水平 α 控制的就是第一类错误的长期上限风险。",
+                dueAt: startOfToday.addingTimeInterval(60 * 60 * 6),
+                isMastered: true,
+                isFavorited: false
+            ),
+            LearnNowReviewCard(
+                id: "regression-coef",
+                topic: "线性回归",
+                moduleID: "regression",
+                moduleTitle: "线性回归模型",
+                bucket: .reinforce,
+                accent: .purple,
+                frontTitle: "回归系数",
+                frontSubtitle: "先看方向，再看大小",
+                backTitle: "阅读顺序",
+                backBody: "回归系数的正负决定变量与目标值变化的方向，绝对值描述影响幅度。",
+                backHighlight: "方向不等于因果，显著性与业务语境必须一起看。",
+                dueAt: calendar.date(byAdding: .day, value: 1, to: startOfToday) ?? now,
+                isMastered: false,
+                isFavorited: false
+            ),
+            LearnNowReviewCard(
+                id: "r2",
+                topic: "线性回归",
+                moduleID: "regression",
+                moduleTitle: "线性回归模型",
+                bucket: .review,
+                accent: .amber,
+                frontTitle: "R²",
+                frontSubtitle: "解释方差，不是预测准确率",
+                backTitle: "常见误解",
+                backBody: "R² 衡量模型解释目标变量波动的能力，不直接代表新样本预测准确率。",
+                backHighlight: "高 R² 也可能过拟合，仍需结合残差与验证集表现判断。",
+                dueAt: calendar.date(byAdding: .day, value: 3, to: startOfToday) ?? now,
+                isMastered: true,
+                isFavorited: true
             ),
         ]
     }

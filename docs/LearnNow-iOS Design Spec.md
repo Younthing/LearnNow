@@ -120,7 +120,7 @@
 | Path       | 某一条学习路线下的阶段性路径与节点结构   |
 | Lesson     | 一个可学习的具体课时内容                 |
 | Completion | Lesson 完成后的反馈与奖励页              |
-| Anki       | 复习卡片执行页，采用翻卡 + 评分式交互    |
+| Anki       | 复习卡片执行页；保持翻卡 + 评分主循环，并支持轻入口进入卡池浏览态 |
 | Dashboard  | 学习数据概览页                           |
 | Token      | 视觉基础变量，如颜色、圆角、阴影、间距等 |
 
@@ -987,28 +987,46 @@ Lesson 过程状态：
 
 #### 页面目标
 
-执行记忆复习任务，让用户聚焦于“翻卡—回忆—评分—进入下一张”的单任务循环。
+执行记忆复习任务时保持“翻卡—回忆—评分—进入下一张”的单任务循环，并通过轻入口进入卡池浏览态，完成按主题、时间、课程模块与卡片状态的过滤，再回到执行态按当前范围继续复习。
 
 #### 页面入口
 
 - 底部 Tab
 - `Completion` 页面 CTA
+- 页面右上角轻入口打开卡池浏览态
 
 #### 页面出口
 
 - 继续下一张卡
+- 打开 / 关闭卡池浏览态
+- 按当前过滤范围开始复习
 - 切换其他 Tab
 
 #### 页面层级
 
 - Tab 根页面
+- 卡池浏览态以 sheet / overlay 形式覆盖在 `AnkiView` 之上，不新增底部 Tab 层级
 
 #### 页面结构
 
+执行态：
+
 1. 顶部标题区
 2. 卡片类型统计标签
-3. 中央 Flashcard 区
-4. 评分按钮区
+3. 当前复习进度与范围摘要文案
+4. 中央 Flashcard 区
+5. 翻面后评分按钮区
+
+浏览态（Card Pool Sheet）：
+
+1. Sheet Header
+2. 当前过滤摘要
+3. Topic 过滤区
+4. 时间过滤区
+5. 课程模块过滤区
+6. 卡片状态过滤区（已掌握 / 已收藏）
+7. 过滤结果列表
+8. 底部主 CTA
 
 说明：
 
@@ -1021,6 +1039,8 @@ Lesson 过程状态：
 包含：
 
 - 居中标题“复习卡片”
+- 右上角轻量入口按钮，用于打开卡池浏览态
+- 当存在激活中的过滤条件时，入口按钮显示过滤数量或高亮状态
 
 ##### B. ReviewSummaryPills
 
@@ -1030,14 +1050,35 @@ Lesson 过程状态：
 - 巩固数量
 - 待复习数量
 
-##### C. FlashcardView
+说明：
+
+- 默认展示当前复习范围内的数量
+- 当启用过滤范围时，Pill 反映过滤后的队列结果，而非全量卡池总数
+
+##### C. ReviewScopeCaption
+
+展示：
+
+- 当前进度，例如“第 3 / 18 张”
+- 当前范围摘要，例如“假设检验 · 今日到期”
+- 当前卡片所属模块或到期信息的辅助信息
+
+##### D. FlashcardView
 
 采用双面卡片翻转：
 
 - Front：术语 / 问题
-- Back：解释 / 规则 / 提示
+- Back：解释 / 规则 / 提示 / 高亮记忆点
 
-##### D. ReviewRatingButtonRow
+执行态卡片优化规则：
+
+- Front 顶部仅显示 `topic` 作为轻量上下文提示
+- Front 中心保留单一主问题 / 主术语，避免与辅助信息竞争
+- Front 底部仅保留低强调翻转提示，不出现与评分同层级的噪音动作
+- Back 以“答案标题 + 答案正文 + 重点高亮”三段式组织内容
+- 执行态卡片不承载“收藏 / 已掌握”等管理动作，保持翻卡心流完整
+
+##### E. ReviewRatingGrid
 
 四档评分：
 
@@ -1050,12 +1091,39 @@ Lesson 过程状态：
 
 - 四档评分的标题与间隔文案由本地静态配置提供
 - 不依赖服务端动态返回评分区间
+- 评分按钮区仅在翻到背面后出现，继续保持单任务心流
+- 每个评分按钮同时展示间隔说明，避免用户在记忆判断时额外猜测调度结果
+
+##### F. CardPoolSheet
+
+作用：
+
+- 承担浏览态卡池能力，不打断执行态主循环
+
+包含：
+
+- 过滤摘要区
+- Topic 多选过滤
+- 时间过滤
+- 课程模块多选过滤
+- 状态过滤（仅看已掌握 / 仅看未掌握 / 仅看已收藏）
+- 结果列表与底部 CTA
+
+默认规则：
+
+- 默认按 `dueAt` 升序排序，同优先级时按模块分组
+- 点击底部主 CTA 后，以当前过滤结果重新构建本轮复习队列并回到执行态
+- 关闭 Sheet 但未点击主 CTA 时，不修改当前执行队列
 
 #### 用户操作
 
 - 点击卡片进行翻转
 - 翻转后出现评分区
 - 点击评分进入下一张卡
+- 点击 Header 轻入口打开卡池浏览态
+- 在卡池浏览态中设置 / 清除过滤条件
+- 使用当前过滤结果开始一轮定向复习
+- 在卡池浏览态中切换“收藏 / 已掌握”状态
 - 切换其他 Tab
 
 #### 页面状态
@@ -1067,11 +1135,18 @@ Lesson 过程状态：
 - `empty`
 - `error`
 
-卡片状态：
+执行态卡片状态：
 
 - `front`
 - `back`
 - `submitted`
+
+浏览态状态：
+
+- `hidden`
+- `presented`
+- `filtering`
+- `emptyResults`
 
 #### 异常状态 / 空状态
 
@@ -1081,40 +1156,65 @@ Lesson 过程状态：
 - 文案：“今日复习已完成”
 - CTA 可引导回 `Home` 或 `Dashboard`
 
+##### 过滤后无结果
+
+- 保持卡池浏览态结构不塌陷
+- 结果区显示“当前筛选下暂无卡片”
+- 提供 `清除筛选` 或 `返回全部卡池` 动作
+
 #### 导航行为
 
-- 无二级页面跳转
+- 执行态内部无二级 push 跳转
+- 卡池浏览态通过 sheet / overlay 呈现，不引入新的底部层级
 - 通过评分推进卡片队列
+- 应用过滤后，执行态从过滤结果的第一张卡开始，默认重置为 `front`
 
 #### 依赖组件
 
 - `HeaderBar`
 - `SummaryPill`
+- `ReviewScopeCaption`
 - `FlashcardView`
 - `ReviewRatingButton`
-- `ReviewRatingButtonRow`
+- `ReviewRatingGrid`
+- `CardPoolSheet`
+- `CardPoolFilterSection`
+- `CardPoolListItem`
 
 #### 数据需求
 
 - 当前卡片正面文案
+- 当前卡片主题 / 所属模块
 - 当前卡片背面文案
+- 当前卡片高亮记忆点
 - 调度区间文案
-- 新卡/巩固/待复习数量
+- 当前进度与当前范围总量
+- 新卡 / 巩固 / 待复习数量
+- 卡池中的 `dueAt` / 时间分桶信息
+- `isMastered` / `isFavorited` 状态
+- 过滤后的卡片结果集
 - 下一张卡信息
 
 数据规则：
 
 - 评分按钮文案、调度区间和卡片队列可完全使用本地 mock / 本地配置
 - 不依赖后端接入
+- 过滤条件仅作用于本地卡池派生结果，不直接改写原始卡池数据
+- 卡池浏览态默认不提供自由文本搜索，优先使用结构化过滤
 
 #### SwiftUI 视图拆分
 
 - `AnkiView`
   - `AnkiHeaderView`
   - `ReviewSummaryPills`
-  - `FlashcardContainerView`
+  - `ReviewScopeCaption`
   - `FlashcardView`
-  - `ReviewRatingButtonRow`
+  - `ReviewRatingGrid`
+  - `CardPoolSheet`
+    - `CardPoolHeader`
+    - `CardPoolFilterSection`
+    - `CardPoolResultList`
+    - `CardPoolListItem`
 
 ---
 
@@ -1290,7 +1390,10 @@ Lesson 过程状态：
 | GeneratedFlashcardsCard | Completion | 记忆卡生成结果       |
 | CompletionActionGroup   | Completion | 续学优先的 CTA 分流  |
 | FlashcardView           | Anki       | 翻转卡片             |
-| ReviewRatingButtonRow   | Anki       | 评分按钮组           |
+| ReviewScopeCaption      | Anki       | 当前复习进度与范围摘要 |
+| ReviewRatingGrid        | Anki       | 评分按钮组           |
+| CardPoolSheet           | Anki       | 浏览态卡池与过滤容器 |
+| CardPoolListItem        | Anki       | 卡池浏览态单卡摘要行 |
 | MemoryCurveCard         | Dashboard  | 图表卡片             |
 | MasteryProgressRow      | Dashboard  | 单条知识点掌握度     |
 
@@ -1455,13 +1558,16 @@ Lesson 过程状态：
 
 ##### 组件目标
 
-提供前后翻转式记忆卡体验。
+提供前后翻转式记忆卡体验，在不打断心流的前提下承载主题上下文、答案正文与重点提示。
 
 ##### 输入参数
 
+- `topic`
 - `frontTitle`
 - `frontSubtitle`
+- `backTitle`
 - `backContent`
+- `backHighlight`
 - `isFlipped`
 
 ##### 输出事件
@@ -1477,6 +1583,45 @@ Lesson 过程状态：
 
 - 首次进入默认展示 `front`
 - 翻转到 `back` 后才显示评分按钮区
+- 执行态不放置卡片管理动作，避免与评分按钮争夺主操作层级
+
+#### 4.4.7 CardPoolSheet
+
+##### 组件目标
+
+承载复习卡池的浏览与过滤能力，并在确认后将当前过滤结果应用到执行态。
+
+##### 输入参数
+
+- `cards`
+- `selectedTopics`
+- `selectedModules`
+- `selectedTimeFilter`
+- `masteryFilter`
+- `favoriteFilter`
+- `sortMode: FlashcardSortMode`
+
+##### 输出事件
+
+- `onUpdateFilters`
+- `onResetFilters`
+- `onApplyFilteredQueue`
+- `onDismiss`
+- `onToggleMastered`
+- `onToggleFavorited`
+
+##### 内部状态
+
+- `presented`
+- `filtering`
+- `emptyResults`
+
+##### 交互规则
+
+- 打开时继承当前 `activeReviewScope` 与已选过滤条件
+- 任一过滤条件变化后，结果列表即时刷新
+- 点击主 CTA 才真正应用过滤结果并重建执行队列
+- 关闭、下滑 dismiss 或点按遮罩仅关闭浏览态，不改动当前执行队列
 
 ### 4.5 组件状态规范
 
@@ -1518,6 +1663,8 @@ Lesson 过程状态：
 | PrimaryButton      |      |        |      | ✓      | ✓          |      |           |
 | IconButton         | ✓    |        | ✓    | ✓      |            |      |           |
 | FlashcardView      |      |        |      |        |            | ✓    |           |
+| ReviewScopeCaption |      |        |      |        |            | ✓    |           |
+| CardPoolSheet      |      |        |      |        |            | ✓    |           |
 | MasteryProgressRow |      |        |      |        |            |      | ✓         |
 
 ---
@@ -1535,7 +1682,7 @@ Lesson 过程状态：
 | Path       | `loading` / `loaded` / `error`           | `selectedStage` / `timelineSectionState`                             |
 | Lesson     | `loading` / `loaded` / `error`           | `currentSlideIndex` / `lastVisitedSlideIndex` / `quizAnswerStates` / `isReadyForNextSlide` |
 | Completion | `loading` / `loaded` / `error`           | `rewardSectionState` / `generatedFlashcardsSectionState`             |
-| Anki       | `loading` / `loaded` / `empty` / `error` | `front` / `back` / `submitted`                                       |
+| Anki       | `loading` / `loaded` / `empty` / `error` | `currentFace` / `cardPoolPresentationState` / `activeReviewScope` / `selectedCardFilters` |
 | Dashboard  | `loading` / `loaded` / `error`           | `memoryCurveSectionState` / `knowledgeSectionState`                  |
 
 ### 5.2 组件级状态定义
@@ -1548,6 +1695,9 @@ Lesson 过程状态：
 | QuizOptionCard     | `normal` / `selected` / `correct` / `wrong` / `disabled` |
 | FlashcardView      | `front` / `back`                                         |
 | ReviewRatingButton | `normal` / `pressed` / `disabled`                        |
+| ReviewScopeCaption | `default` / `filtered`                                   |
+| CardPoolFilterChip | `default` / `selected`                                   |
+| CardPoolListItem   | `default` / `mastered` / `favorited`                     |
 
 ### 5.3 业务实体模型
 
@@ -1604,9 +1754,30 @@ struct LessonContent: Identifiable {
 ```swift
 struct Flashcard: Identifiable {
     let id: String
+    let topic: String
+    let moduleID: String
+    let moduleTitle: String
+    let bucket: FlashcardBucket
     let frontTitle: String
     let frontSubtitle: String?
+    let backTitle: String
     let backContent: String
+    let backHighlight: String?
+    let dueAt: Date
+    var isMastered: Bool
+    var isFavorited: Bool
+}
+```
+
+#### FlashcardFilterSet
+
+```swift
+struct FlashcardFilterSet {
+    var topics: Set<String>
+    var moduleIDs: Set<String>
+    var time: FlashcardTimeFilter
+    var mastery: FlashcardMasteryFilter
+    var favorite: FlashcardFavoriteFilter
 }
 ```
 
@@ -1653,6 +1824,47 @@ enum QuizOptionState {
 enum FlashcardFace {
     case front
     case back
+    case submitted
+}
+
+enum CardPoolPresentationState {
+    case hidden
+    case presented
+}
+
+enum FlashcardBucket {
+    case new
+    case reinforce
+    case review
+}
+
+enum FlashcardTimeFilter {
+    case all
+    case overdue
+    case today
+    case nextThreeDays
+    case thisWeek
+}
+
+enum FlashcardMasteryFilter {
+    case all
+    case masteredOnly
+    case unmasteredOnly
+}
+
+enum FlashcardFavoriteFilter {
+    case all
+    case favoritedOnly
+}
+
+enum FlashcardSortMode {
+    case dueAtAscending
+    case module
+}
+
+enum ActiveReviewScope {
+    case fullDeck
+    case filtered(FlashcardFilterSet)
 }
 
 struct LessonResumeState {
@@ -1677,10 +1889,14 @@ struct LessonResumeState {
 
 1. 默认显示 `front`
 2. 点击翻转到 `back`
-3. 展示评分按钮
+3. 翻转后展示答案、高亮记忆点与评分按钮
 4. 点击评分后提交结果
-5. 加载下一张卡
-6. 若无下一张卡，进入 `empty`
+5. 加载当前范围内的下一张卡
+6. 用户可随时打开卡池浏览态，调整 Topic / 时间 / 模块 / 状态过滤
+7. 用户可在卡池浏览态切换 `收藏 / 已掌握` 状态
+8. 点击“按当前筛选开始复习”后，更新 `activeReviewScope` 与执行队列，并回到第一张匹配卡
+9. 若过滤后无结果，卡池浏览态进入 `emptyResults`
+10. 若当前范围无下一张卡，执行态进入 `empty`
 
 ### 5.6 异常与空状态规范
 
@@ -2154,7 +2370,7 @@ Home 的月度学习记录遵循以下规则：
 | Path       | `PathHeader` / `PathStageTabBar` / `PathTimeline` / `PathNodeRow` / `PathCurrentNodeCard`                      |
 | Lesson     | `LessonHeader` / `SegmentProgressBar` / `LessonSlideView` / `CalloutCard` / `CodeBlockView` / `InlineQuizView` |
 | Completion | `CompletionHero` / `RewardSummaryCard` / `GeneratedFlashcardsCard` / `CompletionActionGroup`                   |
-| Anki       | `HeaderBar` / `ReviewSummaryPills` / `FlashcardView` / `ReviewRatingButtonRow`                                 |
+| Anki       | `HeaderBar` / `ReviewSummaryPills` / `ReviewScopeCaption` / `FlashcardView` / `ReviewRatingGrid` / `CardPoolSheet` |
 | Dashboard  | `HeaderBar` / `MemoryCurveCard` / `MasteryProgressRow`                                                         |
 
 ### 9.3 页面 - 状态映射表
@@ -2166,7 +2382,7 @@ Home 的月度学习记录遵循以下规则：
 | Path       | `loading` / `loaded` / `error`               | `selectedStage`                         |
 | Lesson     | `loading` / `loaded` / `error`               | `currentSlideIndex` / `lastVisitedSlideIndex` / `quizAnswerStates` |
 | Completion | `loading` / `loaded` / `error`               | `rewardSectionState` / `generatedFlashcardsSectionState` |
-| Anki       | `loading` / `loaded` / `empty` / `error`     | `front` / `back` / `submitted`          |
+| Anki       | `loading` / `loaded` / `empty` / `error`     | `currentFace` / `cardPoolPresentationState` / `activeReviewScope` / `selectedCardFilters` |
 | Dashboard  | `loading` / `loaded` / `error`               | `memoryCurveSectionState` / `knowledgeSectionState` |
 
 ### 9.4 Token 快速索引
