@@ -3,10 +3,6 @@ import SwiftUI
 struct HomeScreen: View {
     let model: HomeScreenModel
     let onContinueLearning: () -> Void
-    let onOpenReviewBoard: () -> Void
-    let onOpenRoutes: () -> Void
-    let onOpenFavorites: () -> Void
-    let onOpenProfile: () -> Void
 
     var body: some View {
         ScreenScaffold {
@@ -22,9 +18,8 @@ struct HomeScreen: View {
                 detail: model.spotlightBody
             )
 
-            SectionHeader(title: model.continueSectionTitle)
-
             HeroProgressCard(
+                sectionTitle: model.continueSectionTitle,
                 badge: model.continueCard.badge,
                 title: model.continueCard.title,
                 progress: model.continueCard.progress,
@@ -32,14 +27,6 @@ struct HomeScreen: View {
                 accent: .blue,
                 action: onContinueLearning
             )
-
-            SectionHeader(title: model.quickActionSectionTitle)
-
-            MetricGridSection(items: model.quickActions) { action in
-                HomeQuickActionCard(action: action) {
-                    handleQuickAction(action.id)
-                }
-            }
 
             InsightCard(title: model.rhythmTitle) {
                 VStack(spacing: 14) {
@@ -55,21 +42,6 @@ struct HomeScreen: View {
             }
         }
         .accessibilityIdentifier("screen.home")
-    }
-
-    private func handleQuickAction(_ id: String) {
-        switch id {
-        case "review":
-            onOpenReviewBoard()
-        case "routes":
-            onOpenRoutes()
-        case "favorites":
-            onOpenFavorites()
-        case "profile":
-            onOpenProfile()
-        default:
-            break
-        }
     }
 }
 
@@ -103,48 +75,6 @@ private struct TodaySpotlightCard: View {
                 }
             }
         }
-    }
-}
-
-private struct HomeQuickActionCard: View {
-    let action: HomeScreenModel.QuickAction
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            InsetCard {
-                VStack(alignment: .leading, spacing: 14) {
-                    HStack(alignment: .center) {
-                        Image(systemName: action.systemImage)
-                            .font(.system(size: 16, weight: .black))
-                            .foregroundStyle(LearnNowPalette.color(for: action.accent))
-
-                        Spacer()
-
-                        Image(systemName: "arrow.up.right")
-                            .font(.system(size: 12, weight: .black))
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
-
-                    Text(action.title)
-                        .font(LearnNowTypography.screenSubtitle)
-                        .foregroundStyle(LearnNowPalette.textMuted)
-
-                    Text(action.value)
-                        .font(.system(size: 24, weight: .black, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-
-                    Text(action.subtitle)
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-        .buttonStyle(.plain)
     }
 }
 
@@ -205,11 +135,7 @@ private struct AvatarBadge: View {
         LearnNowPalette.canvas.ignoresSafeArea()
         HomeScreen(
             model: LearnNowFlowState.homePreview.homeScreenModel,
-            onContinueLearning: {},
-            onOpenReviewBoard: {},
-            onOpenRoutes: {},
-            onOpenFavorites: {},
-            onOpenProfile: {}
+            onContinueLearning: {}
         )
     }
 }

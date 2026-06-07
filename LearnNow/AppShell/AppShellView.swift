@@ -20,11 +20,7 @@ struct AppShellView: View {
                 tabStage(tab: .home) {
                     HomeScreen(
                         model: flow.homeScreenModel,
-                        onContinueLearning: { flow.openLesson() },
-                        onOpenReviewBoard: { flow.openReviewBoard() },
-                        onOpenRoutes: { flow.showRoutes() },
-                        onOpenFavorites: { flow.openFavoritedReviewBoard() },
-                        onOpenProfile: { flow.selectTab(.profile) }
+                        onContinueLearning: { flow.openLesson() }
                     )
                 }
 

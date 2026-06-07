@@ -8,15 +8,6 @@ struct HomeScreenModel: Equatable {
         let progressText: String
     }
 
-    struct QuickAction: Identifiable, Equatable {
-        let id: String
-        let title: String
-        let value: String
-        let subtitle: String
-        let systemImage: String
-        let accent: LearnNowAccent
-    }
-
     struct RhythmItem: Identifiable, Equatable {
         let id: String
         let title: String
@@ -32,8 +23,6 @@ struct HomeScreenModel: Equatable {
     let spotlightBody: String
     let continueSectionTitle: String
     let continueCard: ContinueCard
-    let quickActionSectionTitle: String
-    let quickActions: [QuickAction]
     let rhythmTitle: String
     let rhythmItems: [RhythmItem]
 }
@@ -314,41 +303,6 @@ extension LearnNowFlowState {
                 progress: 0.40,
                 progressText: "完成 40%"
             ),
-            quickActionSectionTitle: "快捷入口",
-            quickActions: [
-                .init(
-                    id: "review",
-                    title: "今日复习",
-                    value: "\(reviewCardsDueTodayCount) 张",
-                    subtitle: "处理今天到期的卡片",
-                    systemImage: "bolt.fill",
-                    accent: .blue
-                ),
-                .init(
-                    id: "routes",
-                    title: "学习路线",
-                    value: selectedRouteTrackTitle,
-                    subtitle: "返回课程路径",
-                    systemImage: "map.fill",
-                    accent: .mint
-                ),
-                .init(
-                    id: "favorites",
-                    title: "我的收藏",
-                    value: "\(favoritedReviewCardsCount) 张",
-                    subtitle: "快速回看重点内容",
-                    systemImage: "bookmark.fill",
-                    accent: .pink
-                ),
-                .init(
-                    id: "profile",
-                    title: "个人中心",
-                    value: remindersEnabled ? reminderTimeText : "已关闭",
-                    subtitle: "提醒与外观设置",
-                    systemImage: "person.crop.circle.fill",
-                    accent: .purple
-                ),
-            ],
             rhythmTitle: "今天的节奏",
             rhythmItems: [
                 .init(

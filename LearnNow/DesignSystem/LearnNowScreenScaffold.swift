@@ -99,6 +99,7 @@ struct MetricGridSection<Item: Identifiable, Content: View>: View {
 }
 
 struct HeroProgressCard: View {
+    let sectionTitle: String
     let badge: String
     let title: String
     let progress: Double
@@ -108,7 +109,15 @@ struct HeroProgressCard: View {
 
     var body: some View {
         SoftCard(contentPadding: 20) {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: LearnNowSpacing.itemGap) {
+                HStack {
+                    Text(sectionTitle)
+                        .font(LearnNowTypography.cardTitle)
+                        .foregroundStyle(LearnNowPalette.textPrimary)
+
+                    Spacer()
+                }
+
                 HStack(alignment: .top, spacing: 16) {
                     VStack(alignment: .leading, spacing: 10) {
                         NeumorphicPill(text: badge, accent: accent)
@@ -116,7 +125,9 @@ struct HeroProgressCard: View {
                         Text(title)
                             .font(LearnNowTypography.cardHeadline)
                             .foregroundStyle(LearnNowPalette.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                     Spacer(minLength: 0)
 
