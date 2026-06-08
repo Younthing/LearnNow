@@ -39,9 +39,9 @@ struct HomeScreen: View {
                 .frame(height: HomeLayout.estimatedHeaderHeight, alignment: .center)
 
                 TodayStatusCard(
-                    title: model.todayStatusTitle,
                     metrics: model.statusMetrics,
-                    contentHeight: HomeLayout.contentHeight(for: cardHeights.status)
+                    contentHeight: HomeLayout.contentHeight(for: cardHeights.status),
+                    action: onContinueLearning
                 )
 
                 ContinueLearningCard(
@@ -70,9 +70,9 @@ struct HomeScreen: View {
 }
 
 private struct TodayStatusCard: View {
-    let title: String
     let metrics: [LearnNowMetric]
     let contentHeight: CGFloat
+    let action: () -> Void
 
     private var primaryMetric: LearnNowMetric? {
         metrics.first { $0.id == "streak" } ?? metrics.first
@@ -84,125 +84,142 @@ private struct TodayStatusCard: View {
     }
 
     var body: some View {
-        SoftCard(contentPadding: 20) {
-            VStack(alignment: .leading, spacing: 18) {
-                HStack(alignment: .center) {
-                    Text(title)
-                        .font(LearnNowTypography.cardTitle)
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-
-                    Spacer(minLength: 12)
-
+        Button(action: action) {
+            SoftCard(contentPadding: 20) {
+                VStack(alignment: .leading, spacing: 20) {
                     if let primaryMetric {
-                        NeumorphicPill(
-                            text: "\(primaryMetric.value)\(primaryMetric.unit ?? "") 连续",
-                            accent: primaryMetric.accent
-                        )
+                        StreakAchievementHero(metric: primaryMetric)
+                    }
+
+                    if !supportingMetrics.isEmpty {
+                        StatusMetricsBand(metrics: Array(supportingMetrics.prefix(2)))
                     }
                 }
-
-                ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .center, spacing: 20) {
-                        if let primaryMetric {
-                            PrimaryStatusMetric(metric: primaryMetric)
-                        }
-
-                        Spacer(minLength: 0)
-
-                        VStack(alignment: .leading, spacing: 14) {
-                            ForEach(supportingMetrics) { metric in
-                                SupportingStatusMetric(metric: metric)
-                            }
-                        }
-                        .frame(maxWidth: 150, alignment: .leading)
-                    }
-
-                    VStack(alignment: .leading, spacing: 16) {
-                        if let primaryMetric {
-                            PrimaryStatusMetric(metric: primaryMetric)
-                        }
-
-                        Divider()
-                            .overlay(LearnNowPalette.shadowDark.opacity(0.18))
-
-                        ForEach(supportingMetrics) { metric in
-                            SupportingStatusMetric(metric: metric)
-                        }
-                    }
-                }
+                .frame(height: contentHeight, alignment: .center)
             }
-            .frame(height: contentHeight, alignment: .center)
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("继续学习，保持连续学习")
         .accessibilityElement(children: .combine)
     }
 }
 
-private struct PrimaryStatusMetric: View {
+private struct StreakAchievementHero: View {
     let metric: LearnNowMetric
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(LearnNowPalette.gradient(for: metric.accent))
-                    .frame(width: 48, height: 48)
-                    .softOuter(radius: 10, x: 0, y: 6)
+        HStack(alignment: .center, spacing: 16) {
+            StreakIconBadge(systemImage: metric.systemImage, accent: metric.accent)
 
-                if let systemImage = metric.systemImage {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 18, weight: .black))
-                        .foregroundStyle(.white.opacity(0.95))
-                }
-            }
-
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(metric.value)
-                        .font(.system(size: 48, weight: .black, design: .rounded))
+                        .font(.system(size: 54, weight: .black, design: .rounded))
                         .foregroundStyle(LearnNowPalette.textPrimary)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.75)
+                        .minimumScaleFactor(0.7)
 
-                    if let unit = metric.unit {
-                        Text(unit)
-                            .font(.system(size: 16, weight: .heavy, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
+                    Text(streakSuffix)
+                        .font(.system(size: 21, weight: .heavy, design: .rounded))
+                        .foregroundStyle(LearnNowPalette.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
                 }
 
-                Text(metric.title)
+                Text(milestoneText)
                     .font(LearnNowTypography.label)
-                    .foregroundStyle(LearnNowPalette.textSecondary)
+                    .foregroundStyle(LearnNowPalette.textMuted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minWidth: 112, alignment: .leading)
+    }
+
+    private var streakSuffix: String {
+        if let unit = metric.unit {
+            return "\(unit)连续"
+        }
+
+        return "连续"
+    }
+
+    private var milestoneText: String {
+        let targets = [7, 14, 30, 60, 100]
+        guard
+            let current = Int(metric.value),
+            let nextTarget = targets.first(where: { current < $0 })
+        else {
+            return "保持节奏"
+        }
+
+        return "距 \(nextTarget) 天还 \(nextTarget - current) 天"
     }
 }
 
-private struct SupportingStatusMetric: View {
+private struct StreakIconBadge: View {
+    let systemImage: String?
+    let accent: LearnNowAccent
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(LearnNowPalette.gradient(for: accent))
+                .frame(width: 68, height: 68)
+                .softOuter(radius: 14, x: 0, y: 8)
+
+            Circle()
+                .stroke(Color.white.opacity(0.45), lineWidth: 1)
+                .frame(width: 68, height: 68)
+
+            if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.system(size: 28, weight: .black))
+                    .foregroundStyle(.white.opacity(0.96))
+            }
+        }
+        .frame(width: 68, height: 68)
+    }
+}
+
+private struct StatusMetricsBand: View {
+    let metrics: [LearnNowMetric]
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(metrics) { metric in
+                StatusSummaryMetric(metric: metric)
+
+                if metric.id != metrics.last?.id {
+                    StatusMetricDivider()
+                }
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(LearnNowPalette.base.opacity(0.55))
+                .modifier(InsetSurface(cornerRadius: 24))
+        )
+    }
+}
+
+private struct StatusSummaryMetric: View {
     let metric: LearnNowMetric
 
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(LearnNowPalette.base)
-                    .frame(width: 36, height: 36)
-                    .modifier(InsetSurface(cornerRadius: 18))
-
-                if let systemImage = metric.systemImage {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 14, weight: .black))
-                        .foregroundStyle(LearnNowPalette.color(for: metric.accent))
-                }
-            }
+            StatusIconBadge(systemImage: metric.systemImage, accent: metric.accent)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(metric.title)
-                    .font(LearnNowTypography.screenSubtitle)
+                    .font(.system(size: 12, weight: .heavy, design: .rounded))
                     .foregroundStyle(LearnNowPalette.textMuted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
 
-                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(metric.value)
                         .font(.system(size: 18, weight: .black, design: .rounded))
                         .foregroundStyle(LearnNowPalette.textPrimary)
@@ -216,9 +233,43 @@ private struct SupportingStatusMetric: View {
                     }
                 }
             }
-
-            Spacer(minLength: 0)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(.horizontal, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct StatusIconBadge: View {
+    let systemImage: String?
+    let accent: LearnNowAccent
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(LearnNowPalette.color(for: accent).opacity(0.14))
+                .frame(width: 40, height: 40)
+                .overlay {
+                    Circle()
+                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                }
+
+            if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.system(size: 17, weight: .black))
+                    .foregroundStyle(LearnNowPalette.color(for: accent))
+            }
+        }
+        .frame(width: 40, height: 40)
+    }
+}
+
+private struct StatusMetricDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(LearnNowPalette.shadowDark.opacity(0.18))
+            .frame(width: 1, height: 38)
+            .padding(.horizontal, 4)
     }
 }
 

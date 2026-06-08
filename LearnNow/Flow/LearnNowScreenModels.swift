@@ -10,7 +10,6 @@ struct HomeScreenModel: Equatable {
 
     let title: String
     let subtitle: String
-    let todayStatusTitle: String
     let statusMetrics: [LearnNowMetric]
     let continueSectionTitle: String
     let continueCard: LearnNowLearningSummary
@@ -291,7 +290,7 @@ extension LearnNowFlowState {
     var streakMetric: LearnNowMetric {
         LearnNowMetric(
             id: "streak",
-            title: "持续时间",
+            title: "连续学习",
             value: "\(streakDays)",
             unit: "天",
             systemImage: "flame.fill",
@@ -305,7 +304,7 @@ extension LearnNowFlowState {
             title: "经验",
             value: "\(totalXP)",
             unit: "XP",
-            systemImage: "sparkles",
+            systemImage: "bolt.fill",
             accent: .purple
         )
     }
@@ -316,7 +315,7 @@ extension LearnNowFlowState {
             title: "今日待复习",
             value: "\(reviewCardsDueTodayCount)",
             unit: "张",
-            systemImage: "rectangle.stack.fill",
+            systemImage: "calendar.badge.clock",
             accent: .blue
         )
     }
@@ -349,7 +348,6 @@ extension LearnNowFlowState {
         return HomeScreenModel(
             title: "今日学习",
             subtitle: todayLabel,
-            todayStatusTitle: "今日状态",
             statusMetrics: [streakMetric, xpMetric, reviewDueMetric],
             continueSectionTitle: "继续学习",
             continueCard: learningSummary,
