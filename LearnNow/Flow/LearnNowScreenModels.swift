@@ -8,23 +8,30 @@ struct HomeScreenModel: Equatable {
         let progressText: String
     }
 
-    struct RhythmItem: Identifiable, Equatable {
+    struct TodayStatusMetric: Identifiable, Equatable {
         let id: String
         let title: String
         let value: String
+        let unit: String?
+        let systemImage: String
+        let accent: LearnNowAccent
+    }
+
+    struct KnowledgeTip: Equatable {
+        let title: String
+        let body: String
         let systemImage: String
         let accent: LearnNowAccent
     }
 
     let title: String
     let subtitle: String
-    let spotlightBadge: String
-    let spotlightTitle: String
-    let spotlightBody: String
+    let todayStatusTitle: String
+    let statusMetrics: [TodayStatusMetric]
     let continueSectionTitle: String
     let continueCard: ContinueCard
-    let rhythmTitle: String
-    let rhythmItems: [RhythmItem]
+    let tipSectionTitle: String
+    let knowledgeTip: KnowledgeTip
 }
 
 struct RoutesOverviewModel: Equatable {
@@ -287,15 +294,40 @@ struct ProfileScreenModel: Equatable {
 extension LearnNowFlowState {
     var homeScreenModel: HomeScreenModel {
         let safePageIndex = min(currentLessonPageIndex, max(lessonPages.count - 1, 0))
+        let currentPage = lessonPages.indices.contains(safePageIndex) ? lessonPages[safePageIndex] : nil
         let currentLessonBadge = "第\(loadedLessonModuleIndex + 1)单元 · 课时\(safePageIndex + 1)"
-        let currentLessonTitle = lessonPages.isEmpty ? self.currentLessonTitle : lessonPages[safePageIndex].title
+        let currentLessonTitle = currentPage?.title ?? self.currentLessonTitle
 
         return HomeScreenModel(
             title: "今日学习",
             subtitle: todayLabel,
-            spotlightBadge: remindersEnabled ? "提醒时间 \(reminderTimeText)" : "提醒已关闭",
-            spotlightTitle: "先推进主线，再处理 \(reviewCardsDueTodayCount) 张待复习卡片",
-            spotlightBody: "当前在 \(selectedRouteTrackTitle) 路线上，保持 \(streakDays) 天连续学习，节奏已经很稳。",
+            todayStatusTitle: "今日状态",
+            statusMetrics: [
+                .init(
+                    id: "streak",
+                    title: "持续时间",
+                    value: "\(streakDays)",
+                    unit: "天",
+                    systemImage: "flame.fill",
+                    accent: .amber
+                ),
+                .init(
+                    id: "xp",
+                    title: "经验",
+                    value: "\(totalXP)",
+                    unit: "XP",
+                    systemImage: "sparkles",
+                    accent: .purple
+                ),
+                .init(
+                    id: "review",
+                    title: "待复习",
+                    value: "\(reviewCardsDueTodayCount)",
+                    unit: "张",
+                    systemImage: "rectangle.stack.fill",
+                    accent: .blue
+                ),
+            ],
             continueSectionTitle: "继续学习",
             continueCard: .init(
                 badge: currentLessonBadge,
@@ -303,30 +335,13 @@ extension LearnNowFlowState {
                 progress: 0.40,
                 progressText: "完成 40%"
             ),
-            rhythmTitle: "今天的节奏",
-            rhythmItems: [
-                .init(
-                    id: "route",
-                    title: "当前主线",
-                    value: selectedRouteTrackTitle,
-                    systemImage: "point.topleft.down.curvedto.point.bottomright.up",
-                    accent: .mint
-                ),
-                .init(
-                    id: "streak",
-                    title: "连续学习",
-                    value: "\(streakDays) 天",
-                    systemImage: "flame.fill",
-                    accent: .amber
-                ),
-                .init(
-                    id: "reminder",
-                    title: "晚间提醒",
-                    value: remindersEnabled ? reminderTimeText : "已关闭",
-                    systemImage: "bell.fill",
-                    accent: .blue
-                ),
-            ]
+            tipSectionTitle: "今日知识点 Tips",
+            knowledgeTip: .init(
+                title: "p 值不是「原假设为真的概率」",
+                body: "它表示：在 H0 成立时，观察到当前结果或更极端结果的概率。",
+                systemImage: "lightbulb",
+                accent: .amber
+            )
         )
     }
 

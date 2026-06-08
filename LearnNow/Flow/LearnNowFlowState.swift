@@ -400,25 +400,6 @@ struct LearnNowFlowState: Equatable {
     var remindersEnabled = true
     var isNightModeEnabled = false
 
-    var homeMetrics: [LearnNowHeaderMetric] {
-        [
-            LearnNowHeaderMetric(
-                id: "review",
-                title: "今日待复习",
-                value: "\(reviewCardsDueTodayCount)",
-                unit: "卡",
-                accent: .blue
-            ),
-            LearnNowHeaderMetric(
-                id: "mastery",
-                title: "掌握度",
-                value: "\(Int(mastery * 100))%",
-                unit: nil,
-                accent: .mint
-            ),
-        ]
-    }
-
     var routes: [LearnNowRoute] {
         let primaryProgress = min(0.2 + (Double(nextAvailableModuleIndex) / Double(Self.modules.count)) * 0.45, 0.95)
 
