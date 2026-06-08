@@ -71,14 +71,14 @@ struct HomeScreen: View {
 
 private struct TodayStatusCard: View {
     let title: String
-    let metrics: [HomeScreenModel.TodayStatusMetric]
+    let metrics: [LearnNowMetric]
     let contentHeight: CGFloat
 
-    private var primaryMetric: HomeScreenModel.TodayStatusMetric? {
+    private var primaryMetric: LearnNowMetric? {
         metrics.first { $0.id == "streak" } ?? metrics.first
     }
 
-    private var supportingMetrics: [HomeScreenModel.TodayStatusMetric] {
+    private var supportingMetrics: [LearnNowMetric] {
         guard let primaryMetric else { return Array(metrics.dropFirst()) }
         return metrics.filter { $0.id != primaryMetric.id }
     }
@@ -138,7 +138,7 @@ private struct TodayStatusCard: View {
 }
 
 private struct PrimaryStatusMetric: View {
-    let metric: HomeScreenModel.TodayStatusMetric
+    let metric: LearnNowMetric
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -148,9 +148,11 @@ private struct PrimaryStatusMetric: View {
                     .frame(width: 48, height: 48)
                     .softOuter(radius: 10, x: 0, y: 6)
 
-                Image(systemName: metric.systemImage)
-                    .font(.system(size: 18, weight: .black))
-                    .foregroundStyle(.white.opacity(0.95))
+                if let systemImage = metric.systemImage {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 18, weight: .black))
+                        .foregroundStyle(.white.opacity(0.95))
+                }
             }
 
             VStack(alignment: .leading, spacing: 0) {
@@ -178,7 +180,7 @@ private struct PrimaryStatusMetric: View {
 }
 
 private struct SupportingStatusMetric: View {
-    let metric: HomeScreenModel.TodayStatusMetric
+    let metric: LearnNowMetric
 
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
@@ -188,9 +190,11 @@ private struct SupportingStatusMetric: View {
                     .frame(width: 36, height: 36)
                     .modifier(InsetSurface(cornerRadius: 18))
 
-                Image(systemName: metric.systemImage)
-                    .font(.system(size: 14, weight: .black))
-                    .foregroundStyle(LearnNowPalette.color(for: metric.accent))
+                if let systemImage = metric.systemImage {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 14, weight: .black))
+                        .foregroundStyle(LearnNowPalette.color(for: metric.accent))
+                }
             }
 
             VStack(alignment: .leading, spacing: 2) {

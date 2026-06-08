@@ -207,7 +207,7 @@ private struct ProfileOverviewCard: View {
 }
 
 private struct ProfileMetricCard: View {
-    let metric: LearnNowHeaderMetric
+    let metric: LearnNowMetric
 
     var body: some View {
         InsetCard(contentPadding: 16) {

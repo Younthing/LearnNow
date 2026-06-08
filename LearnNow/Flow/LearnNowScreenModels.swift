@@ -1,22 +1,6 @@
 import Foundation
 
 struct HomeScreenModel: Equatable {
-    struct ContinueCard: Equatable {
-        let badge: String
-        let title: String
-        let progress: Double
-        let progressText: String
-    }
-
-    struct TodayStatusMetric: Identifiable, Equatable {
-        let id: String
-        let title: String
-        let value: String
-        let unit: String?
-        let systemImage: String
-        let accent: LearnNowAccent
-    }
-
     struct KnowledgeTip: Equatable {
         let title: String
         let body: String
@@ -27,9 +11,9 @@ struct HomeScreenModel: Equatable {
     let title: String
     let subtitle: String
     let todayStatusTitle: String
-    let statusMetrics: [TodayStatusMetric]
+    let statusMetrics: [LearnNowMetric]
     let continueSectionTitle: String
-    let continueCard: ContinueCard
+    let continueCard: LearnNowLearningSummary
     let tipSectionTitle: String
     let knowledgeTip: KnowledgeTip
 }
@@ -256,7 +240,7 @@ struct ProfileScreenModel: Equatable {
         let progressText: String
         let xpText: String
         let heatmap: [LearnNowHeatCell]
-        let metrics: [LearnNowHeaderMetric]
+        let metrics: [LearnNowMetric]
     }
 
     struct FavoriteSummary: Equatable {
@@ -292,49 +276,83 @@ struct ProfileScreenModel: Equatable {
 }
 
 extension LearnNowFlowState {
-    var homeScreenModel: HomeScreenModel {
+    var currentLearningSummary: LearnNowLearningSummary {
         let safePageIndex = min(currentLessonPageIndex, max(lessonPages.count - 1, 0))
         let currentPage = lessonPages.indices.contains(safePageIndex) ? lessonPages[safePageIndex] : nil
-        let currentLessonBadge = "第\(loadedLessonModuleIndex + 1)单元 · 课时\(safePageIndex + 1)"
-        let currentLessonTitle = currentPage?.title ?? self.currentLessonTitle
+
+        return LearnNowLearningSummary(
+            badge: "第\(loadedLessonModuleIndex + 1)单元 · 课时\(safePageIndex + 1)",
+            title: currentPage?.title ?? currentLessonTitle,
+            progress: 0.40,
+            progressText: "完成 40%"
+        )
+    }
+
+    var streakMetric: LearnNowMetric {
+        LearnNowMetric(
+            id: "streak",
+            title: "持续时间",
+            value: "\(streakDays)",
+            unit: "天",
+            systemImage: "flame.fill",
+            accent: .amber
+        )
+    }
+
+    var xpMetric: LearnNowMetric {
+        LearnNowMetric(
+            id: "xp",
+            title: "经验",
+            value: "\(totalXP)",
+            unit: "XP",
+            systemImage: "sparkles",
+            accent: .purple
+        )
+    }
+
+    var reviewDueMetric: LearnNowMetric {
+        LearnNowMetric(
+            id: "review",
+            title: "今日待复习",
+            value: "\(reviewCardsDueTodayCount)",
+            unit: "张",
+            systemImage: "rectangle.stack.fill",
+            accent: .blue
+        )
+    }
+
+    var masteryMetric: LearnNowMetric {
+        LearnNowMetric(
+            id: "mastery",
+            title: "掌握度",
+            value: "\(Int(mastery * 100))%",
+            unit: nil,
+            systemImage: nil,
+            accent: .mint
+        )
+    }
+
+    var favoritesMetric: LearnNowMetric {
+        LearnNowMetric(
+            id: "favorites",
+            title: "已收藏",
+            value: "\(favoritedReviewCardsCount)",
+            unit: "张",
+            systemImage: nil,
+            accent: .pink
+        )
+    }
+
+    var homeScreenModel: HomeScreenModel {
+        let learningSummary = currentLearningSummary
 
         return HomeScreenModel(
             title: "今日学习",
             subtitle: todayLabel,
             todayStatusTitle: "今日状态",
-            statusMetrics: [
-                .init(
-                    id: "streak",
-                    title: "持续时间",
-                    value: "\(streakDays)",
-                    unit: "天",
-                    systemImage: "flame.fill",
-                    accent: .amber
-                ),
-                .init(
-                    id: "xp",
-                    title: "经验",
-                    value: "\(totalXP)",
-                    unit: "XP",
-                    systemImage: "sparkles",
-                    accent: .purple
-                ),
-                .init(
-                    id: "review",
-                    title: "待复习",
-                    value: "\(reviewCardsDueTodayCount)",
-                    unit: "张",
-                    systemImage: "rectangle.stack.fill",
-                    accent: .blue
-                ),
-            ],
+            statusMetrics: [streakMetric, xpMetric, reviewDueMetric],
             continueSectionTitle: "继续学习",
-            continueCard: .init(
-                badge: currentLessonBadge,
-                title: currentLessonTitle,
-                progress: 0.40,
-                progressText: "完成 40%"
-            ),
+            continueCard: learningSummary,
             tipSectionTitle: "今日知识点 Tips",
             knowledgeTip: .init(
                 title: "p 值不是「原假设为真的概率」",
@@ -553,9 +571,7 @@ extension LearnNowFlowState {
     }
 
     var profileScreenModel: ProfileScreenModel {
-        let safePageIndex = min(currentLessonPageIndex, max(lessonPages.count - 1, 0))
-        let currentLessonBadge = "第\(loadedLessonModuleIndex + 1)单元 · 课时\(safePageIndex + 1)"
-        let currentLessonTitle = lessonPages.isEmpty ? self.currentLessonTitle : lessonPages[safePageIndex].title
+        let learningSummary = currentLearningSummary
         let level = max(1, totalXP / 200)
 
         return ProfileScreenModel(
@@ -565,36 +581,14 @@ extension LearnNowFlowState {
             profileHeadline: "\(streakDays) 天连续学习 · 累计 \(totalXP) XP",
             profileLevel: "Lv.\(level)",
             overviewCTA: .init(
-                badge: currentLessonBadge,
-                title: currentLessonTitle,
+                badge: learningSummary.badge,
+                title: learningSummary.title,
                 subtitle: "把原来的学习概览收进这里，作为你的个人学习驾驶舱。",
-                progress: 0.40,
-                progressText: "主线完成 40%",
+                progress: learningSummary.progress,
+                progressText: "主线\(learningSummary.progressText)",
                 xpText: "累计获得 \(totalXP) XP",
                 heatmap: heatmap,
-                metrics: [
-                    LearnNowHeaderMetric(
-                        id: "review",
-                        title: "今日待复习",
-                        value: "\(reviewCardsDueTodayCount)",
-                        unit: "卡",
-                        accent: .blue
-                    ),
-                    LearnNowHeaderMetric(
-                        id: "mastery",
-                        title: "掌握度",
-                        value: "\(Int(mastery * 100))%",
-                        unit: nil,
-                        accent: .mint
-                    ),
-                    LearnNowHeaderMetric(
-                        id: "favorites",
-                        title: "已收藏",
-                        value: "\(favoritedReviewCardsCount)",
-                        unit: "张",
-                        accent: .pink
-                    ),
-                ]
+                metrics: [reviewDueMetric, masteryMetric, favoritesMetric]
             ),
             favoritesTitle: "收藏",
             favoritesSubtitle: "把重点卡片固定在一个入口，随时回看。",

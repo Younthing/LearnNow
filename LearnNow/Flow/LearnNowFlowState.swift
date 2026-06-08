@@ -208,12 +208,20 @@ enum LearnNowReviewFavoriteFilter: String, CaseIterable, Equatable, Identifiable
     }
 }
 
-struct LearnNowHeaderMetric: Identifiable, Equatable {
+struct LearnNowMetric: Identifiable, Equatable {
     let id: String
     let title: String
     let value: String
     let unit: String?
+    let systemImage: String?
     let accent: LearnNowAccent
+}
+
+struct LearnNowLearningSummary: Equatable {
+    let badge: String
+    let title: String
+    let progress: Double
+    let progressText: String
 }
 
 struct LearnNowRoute: Identifiable, Equatable {
