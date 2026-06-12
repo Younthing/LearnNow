@@ -85,7 +85,7 @@ private struct TodayStatusCard: View {
 
     var body: some View {
         Button(action: action) {
-            SoftCard(contentPadding: 20) {
+            LayeredStatusGlassCard(contentHeight: contentHeight) {
                 VStack(alignment: .leading, spacing: 20) {
                     if let primaryMetric {
                         StreakAchievementHero(metric: primaryMetric)
@@ -104,12 +104,191 @@ private struct TodayStatusCard: View {
     }
 }
 
+private struct LayeredStatusGlassCard<Content: View>: View {
+    let contentHeight: CGFloat
+    private let content: Content
+    @Environment(\.colorScheme) private var colorScheme
+
+    init(contentHeight: CGFloat, @ViewBuilder content: () -> Content) {
+        self.contentHeight = contentHeight
+        self.content = content()
+    }
+
+    var body: some View {
+        let cardHeight = contentHeight + HomeLayout.cardContentPadding * 2
+        let cornerRadius: CGFloat = 34
+        let isDark = colorScheme == .dark
+
+        ZStack {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(isDark ? 0.11 : 0.42),
+                            LearnNowPalette.color(for: .blue).opacity(isDark ? 0.12 : 0.16),
+                            LearnNowPalette.color(for: .purple).opacity(isDark ? 0.10 : 0.13)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            StatusAlignedGlassPanels(cornerRadius: cornerRadius - 10, isDark: isDark)
+
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .opacity(isDark ? 0.72 : 0.82)
+
+            StatusGlassHighlights(cornerRadius: cornerRadius, isDark: isDark)
+
+            content
+                .padding(HomeLayout.cardContentPadding)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: cardHeight, alignment: .center)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: cardHeight)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(isDark ? 0.22 : 0.72),
+                            Color.white.opacity(isDark ? 0.08 : 0.24),
+                            LearnNowPalette.color(for: .blue).opacity(isDark ? 0.18 : 0.26)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: LearnNowPalette.shadowLight.opacity(isDark ? 0.05 : 0.65), radius: 10, x: -7, y: -7)
+        .shadow(color: LearnNowPalette.shadowDark.opacity(isDark ? 0.42 : 0.28), radius: 24, x: 0, y: 16)
+        .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+    }
+}
+
+private struct StatusAlignedGlassPanels: View {
+    let cornerRadius: CGFloat
+    let isDark: Bool
+
+    var body: some View {
+        GeometryReader { geometry in
+            let inset: CGFloat = 14
+            let width = max(0, geometry.size.width - inset * 2)
+            let topHeight = geometry.size.height * 0.52
+            let bottomHeight = geometry.size.height * 0.34
+
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                LearnNowPalette.color(for: .mint).opacity(isDark ? 0.16 : 0.22),
+                                LearnNowPalette.color(for: .blue).opacity(isDark ? 0.08 : 0.12),
+                                .clear
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: width, height: topHeight)
+                    .offset(x: inset, y: inset)
+
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(isDark ? 0.08 : 0.26),
+                                LearnNowPalette.color(for: .purple).opacity(isDark ? 0.15 : 0.18),
+                                LearnNowPalette.color(for: .pink).opacity(isDark ? 0.12 : 0.16)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: width, height: bottomHeight)
+                    .offset(x: inset, y: geometry.size.height - bottomHeight - inset)
+
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Color.white.opacity(isDark ? 0.07 : 0.24))
+                    .frame(width: 96, height: 118)
+                    .offset(x: geometry.size.width - 116, y: 34)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+private struct StatusGlassHighlights: View {
+    let cornerRadius: CGFloat
+    let isDark: Bool
+
+    var body: some View {
+        ZStack {
+            RadialGradient(
+                colors: [
+                    LearnNowPalette.color(for: .blue).opacity(isDark ? 0.30 : 0.26),
+                    .clear
+                ],
+                center: .topLeading,
+                startRadius: 8,
+                endRadius: 230
+            )
+
+            RadialGradient(
+                colors: [
+                    LearnNowPalette.color(for: .pink).opacity(isDark ? 0.14 : 0.16),
+                    .clear
+                ],
+                center: .bottomTrailing,
+                startRadius: 12,
+                endRadius: 200
+            )
+
+            VStack {
+                Capsule(style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(isDark ? 0.22 : 0.58),
+                                Color.white.opacity(0.03)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(height: 9)
+                    .padding(.horizontal, 36)
+                    .padding(.top, 15)
+
+                Spacer()
+            }
+
+            HStack {
+                Spacer()
+
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Color.white.opacity(isDark ? 0.06 : 0.28))
+                    .frame(width: 92, height: 132)
+                    .rotationEffect(.degrees(-18))
+                    .offset(x: 22, y: -20)
+                    .blur(radius: 0.2)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .allowsHitTesting(false)
+    }
+}
+
 private struct StreakAchievementHero: View {
     let metric: LearnNowMetric
 
     var body: some View {
-        HStack(alignment: .center, spacing: 16) {
-            StreakIconBadge(systemImage: metric.systemImage, accent: metric.accent)
+        HStack(alignment: .center, spacing: 18) {
+            StreakIconBadge(accent: metric.accent)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -128,9 +307,20 @@ private struct StreakAchievementHero: View {
 
                 Text(milestoneText)
                     .font(LearnNowTypography.label)
-                    .foregroundStyle(LearnNowPalette.textMuted)
+                    .foregroundStyle(LearnNowPalette.textSecondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(Color.white.opacity(0.20))
+                            .background(.thinMaterial, in: Capsule(style: .continuous))
+                            .overlay {
+                                Capsule(style: .continuous)
+                                    .stroke(Color.white.opacity(0.34), lineWidth: 0.8)
+                            }
+                    )
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -158,27 +348,252 @@ private struct StreakAchievementHero: View {
 }
 
 private struct StreakIconBadge: View {
-    let systemImage: String?
     let accent: LearnNowAccent
 
     var body: some View {
         ZStack {
             Circle()
-                .fill(LearnNowPalette.gradient(for: accent))
-                .frame(width: 68, height: 68)
-                .softOuter(radius: 14, x: 0, y: 8)
+                .fill(.ultraThinMaterial)
+                .frame(width: 84, height: 84)
+                .overlay {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.46),
+                                    LearnNowPalette.color(for: accent).opacity(0.18)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+                .overlay {
+                    Circle()
+                        .stroke(Color.white.opacity(0.54), lineWidth: 1)
+                }
+                .softOuter(radius: 16, x: 0, y: 10)
 
             Circle()
-                .stroke(Color.white.opacity(0.45), lineWidth: 1)
-                .frame(width: 68, height: 68)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color(hex: 0xFFE8A3),
+                            Color(hex: 0xFFAB1F),
+                            Color(hex: 0xF66A18)
+                        ],
+                        center: .topLeading,
+                        startRadius: 3,
+                        endRadius: 44
+                    )
+                )
+                .frame(width: 60, height: 60)
+                .shadow(color: Color(hex: 0xF59E0B).opacity(0.34), radius: 16, x: 0, y: 8)
 
-            if let systemImage {
-                Image(systemName: systemImage)
-                    .font(.system(size: 28, weight: .black))
-                    .foregroundStyle(.white.opacity(0.96))
-            }
+            RoundedFlameGlyph(accent: accent)
+                .frame(width: 42, height: 47)
+                .offset(y: 1)
+
+            Circle()
+                .fill(Color.white.opacity(0.48))
+                .frame(width: 18, height: 18)
+                .offset(x: 25, y: -24)
+                .blur(radius: 0.3)
+
+            Circle()
+                .fill(Color.white.opacity(0.24))
+                .frame(width: 9, height: 9)
+                .offset(x: -28, y: 24)
         }
-        .frame(width: 68, height: 68)
+        .frame(width: 86, height: 86)
+    }
+}
+
+private struct RoundedFlameGlyph: View {
+    let accent: LearnNowAccent
+
+    var body: some View {
+        ZStack {
+            OrganicFlameShape()
+                .fill(LearnNowPalette.color(for: accent).opacity(0.30))
+                .blur(radius: 8)
+                .offset(y: 4)
+
+            OrganicFlameShape()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(hex: 0xFFF4B8),
+                            Color(hex: 0xFFC342),
+                            Color(hex: 0xFF8A1C),
+                            Color(hex: 0xF15C22)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay {
+                    OrganicFlameShape()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.white.opacity(0.58),
+                                    Color.white.opacity(0.16),
+                                    .clear
+                                ],
+                                center: .topLeading,
+                                startRadius: 1,
+                                endRadius: 30
+                            )
+                        )
+                }
+                .overlay {
+                    OrganicFlameShape()
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.66),
+                                    Color.white.opacity(0.08),
+                                    Color(hex: 0xD9480F).opacity(0.22)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.2
+                        )
+                }
+
+            InnerFlameShape()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.96),
+                            Color(hex: 0xFFE77A),
+                            Color(hex: 0xFFB21A)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 19, height: 28)
+                .offset(x: -1, y: 8)
+                .shadow(color: Color.white.opacity(0.28), radius: 5, x: -1, y: -2)
+
+            FlameHighlightShape()
+                .fill(Color.white.opacity(0.38))
+                .frame(width: 13, height: 18)
+                .offset(x: -7, y: -7)
+                .blur(radius: 0.2)
+        }
+    }
+}
+
+private struct OrganicFlameShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+
+        path.move(to: CGPoint(x: w * 0.52, y: h * 0.98))
+        path.addCurve(
+            to: CGPoint(x: w * 0.15, y: h * 0.70),
+            control1: CGPoint(x: w * 0.32, y: h * 0.98),
+            control2: CGPoint(x: w * 0.10, y: h * 0.88)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.34, y: h * 0.18),
+            control1: CGPoint(x: w * 0.20, y: h * 0.50),
+            control2: CGPoint(x: w * 0.25, y: h * 0.37)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.50, y: h * 0.34),
+            control1: CGPoint(x: w * 0.42, y: h * 0.20),
+            control2: CGPoint(x: w * 0.45, y: h * 0.28)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.66, y: h * 0.04),
+            control1: CGPoint(x: w * 0.58, y: h * 0.24),
+            control2: CGPoint(x: w * 0.55, y: h * 0.08)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.86, y: h * 0.62),
+            control1: CGPoint(x: w * 0.80, y: h * 0.20),
+            control2: CGPoint(x: w * 0.90, y: h * 0.38)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.52, y: h * 0.98),
+            control1: CGPoint(x: w * 0.84, y: h * 0.84),
+            control2: CGPoint(x: w * 0.73, y: h * 0.98)
+        )
+        path.closeSubpath()
+
+        return path
+    }
+}
+
+private struct InnerFlameShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+
+        path.move(to: CGPoint(x: w * 0.52, y: h * 0.98))
+        path.addCurve(
+            to: CGPoint(x: w * 0.16, y: h * 0.68),
+            control1: CGPoint(x: w * 0.31, y: h * 0.97),
+            control2: CGPoint(x: w * 0.14, y: h * 0.83)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.50, y: h * 0.08),
+            control1: CGPoint(x: w * 0.18, y: h * 0.45),
+            control2: CGPoint(x: w * 0.40, y: h * 0.31)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.84, y: h * 0.66),
+            control1: CGPoint(x: w * 0.70, y: h * 0.27),
+            control2: CGPoint(x: w * 0.86, y: h * 0.43)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.52, y: h * 0.98),
+            control1: CGPoint(x: w * 0.82, y: h * 0.84),
+            control2: CGPoint(x: w * 0.68, y: h * 0.98)
+        )
+        path.closeSubpath()
+
+        return path
+    }
+}
+
+private struct FlameHighlightShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+
+        path.move(to: CGPoint(x: w * 0.54, y: h * 0.04))
+        path.addCurve(
+            to: CGPoint(x: w * 0.18, y: h * 0.62),
+            control1: CGPoint(x: w * 0.30, y: h * 0.24),
+            control2: CGPoint(x: w * 0.15, y: h * 0.42)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.54, y: h * 0.96),
+            control1: CGPoint(x: w * 0.20, y: h * 0.80),
+            control2: CGPoint(x: w * 0.34, y: h * 0.94)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.74, y: h * 0.54),
+            control1: CGPoint(x: w * 0.72, y: h * 0.82),
+            control2: CGPoint(x: w * 0.78, y: h * 0.66)
+        )
+        path.addCurve(
+            to: CGPoint(x: w * 0.54, y: h * 0.04),
+            control1: CGPoint(x: w * 0.68, y: h * 0.32),
+            control2: CGPoint(x: w * 0.56, y: h * 0.22)
+        )
+        path.closeSubpath()
+
+        return path
     }
 }
 
@@ -186,21 +601,31 @@ private struct StatusMetricsBand: View {
     let metrics: [LearnNowMetric]
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 10) {
             ForEach(metrics) { metric in
                 StatusSummaryMetric(metric: metric)
-
-                if metric.id != metrics.last?.id {
-                    StatusMetricDivider()
-                }
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 12)
+        .padding(8)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(LearnNowPalette.base.opacity(0.55))
-                .modifier(InsetSurface(cornerRadius: 24))
+                .fill(Color.white.opacity(0.14))
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.48),
+                                    Color.white.opacity(0.12)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 0.8
+                        )
+                }
+                .shadow(color: LearnNowPalette.shadowDark.opacity(0.16), radius: 10, x: 0, y: 7)
         )
     }
 }
@@ -236,7 +661,17 @@ private struct StatusSummaryMetric: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 6)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.16))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(Color.white.opacity(0.24), lineWidth: 0.7)
+                }
+        )
     }
 }
 
@@ -247,11 +682,12 @@ private struct StatusIconBadge: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(LearnNowPalette.color(for: accent).opacity(0.14))
+                .fill(Color.white.opacity(0.20))
+                .background(.thinMaterial, in: Circle())
                 .frame(width: 40, height: 40)
                 .overlay {
                     Circle()
-                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.44), lineWidth: 1)
                 }
 
             if let systemImage {
@@ -261,15 +697,6 @@ private struct StatusIconBadge: View {
             }
         }
         .frame(width: 40, height: 40)
-    }
-}
-
-private struct StatusMetricDivider: View {
-    var body: some View {
-        Rectangle()
-            .fill(LearnNowPalette.shadowDark.opacity(0.18))
-            .frame(width: 1, height: 38)
-            .padding(.horizontal, 4)
     }
 }
 
