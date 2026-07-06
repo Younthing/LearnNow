@@ -13,7 +13,7 @@ struct RoutesScreen: View {
                     RouteCard(route: route) {
                         onOpenRoute(route.id)
                     }
-                    .accessibilityIdentifier(route.id == "datascience" ? "route.datascience" : "")
+                    .accessibilityIdentifier("route.\(route.id)")
                 }
             }
         }
@@ -69,6 +69,8 @@ private struct RouteCard: View {
 
     private var iconName: String {
         switch route.id {
+        case LearnNowFlowState.computerScienceCourseID:
+            "desktopcomputer"
         case "datascience":
             "cpu"
         case "design":

@@ -1,6 +1,10 @@
 import Foundation
 
 enum LearnNowFlowFixtures {
+    static let computerScienceCourseID = "computer-science"
+    private static let computerScienceCourse = try? LearnNowCourseResourceLoader.load(courseID: computerScienceCourseID)
+    static let computerScienceBaseInfo: LearnNowCourseBaseInfo? = computerScienceCourse?.baseInfo
+
     static let modules = makeModules()
 
     static func makeReviewCards() -> [LearnNowReviewCard] {
@@ -8,7 +12,7 @@ enum LearnNowFlowFixtures {
         let now = Date()
         let startOfToday = calendar.startOfDay(for: now)
 
-        return [
+        let hardcodedReviewCards = [
             LearnNowReviewCard(
                 id: "mean",
                 topic: "描述统计",
@@ -122,10 +126,17 @@ enum LearnNowFlowFixtures {
                 isFavorited: true
             ),
         ]
+
+        if let course = computerScienceCourse,
+           let computerScienceReviewCards = try? course.makeReviewCards(startOfToday: startOfToday) {
+            return computerScienceReviewCards + hardcodedReviewCards
+        }
+
+        return hardcodedReviewCards
     }
 
     private static func makeModules() -> [LearnNowModuleDefinition] {
-        [
+        let hardcodedModules = [
             LearnNowModuleDefinition(
                 id: "stats",
                 track: .statistics,
@@ -223,6 +234,13 @@ enum LearnNowFlowFixtures {
                 reviewMessage: "这一章目前是示例课程，用来覆盖更长中文标题的视觉情况。"
             ),
         ]
+
+        if let course = computerScienceCourse,
+           let computerScienceModules = try? course.makeModules() {
+            return computerScienceModules + hardcodedModules.filter { $0.track != .computerScience }
+        }
+
+        return hardcodedModules
     }
 
     private static func makePlaceholderLessonPages(

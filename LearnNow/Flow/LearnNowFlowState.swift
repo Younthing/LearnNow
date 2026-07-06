@@ -55,6 +55,7 @@ enum LearnNowReviewSheet: String, Equatable, Identifiable {
 }
 
 enum LearnNowRouteTrack: String, CaseIterable, Equatable, Identifiable {
+    case computerScience
     case statistics
     case machineLearning
     case deepLearning
@@ -63,6 +64,7 @@ enum LearnNowRouteTrack: String, CaseIterable, Equatable, Identifiable {
 
     var title: String {
         switch self {
+        case .computerScience: "计算机导论"
         case .statistics: "统计基础"
         case .machineLearning: "机器学习"
         case .deepLearning: "深度学习"
@@ -382,6 +384,8 @@ struct LearnNowCompletionSummary: Equatable {
 
 struct LearnNowFlowState: Equatable {
     static let modules = LearnNowFlowFixtures.modules
+    static let computerScienceCourseID = LearnNowFlowFixtures.computerScienceCourseID
+    static let computerScienceBaseInfo = LearnNowFlowFixtures.computerScienceBaseInfo
 
     var selectedTab: LearnNowTab = .home
     var currentScreen: LearnNowScreen = .home
@@ -390,12 +394,12 @@ struct LearnNowFlowState: Equatable {
     var streakDays: Int = 12
     var mastery: Double = 0.61
     var todayLabel: String = "星期五 · 四月三日"
-    var routeCategoryTitle: String = "数据科学与人工智能"
-    var selectedRouteTrack: LearnNowRouteTrack = .statistics
-    var nextAvailableModuleIndex: Int = 2
-    var loadedLessonModuleIndex: Int = 2
+    var selectedRouteID: String = Self.computerScienceBaseInfo?.id ?? Self.computerScienceCourseID
+    var selectedRouteTrack: LearnNowRouteTrack = .computerScience
+    var nextAvailableModuleIndex: Int = 0
+    var loadedLessonModuleIndex: Int = 0
     var currentLessonPageIndex: Int = 0
-    var lessonPages: [LearnNowLessonPage] = LearnNowFlowState.modules[2].lessonPages
+    var lessonPages: [LearnNowLessonPage] = LearnNowFlowState.modules[0].lessonPages
     var completionSummary: LearnNowCompletionSummary?
     var reviewCards: [LearnNowReviewCard] = LearnNowFlowFixtures.makeReviewCards()
     var currentReviewCardIndex: Int = 0
@@ -409,15 +413,25 @@ struct LearnNowFlowState: Equatable {
     var isNightModeEnabled = false
 
     var routes: [LearnNowRoute] {
-        let primaryProgress = min(0.2 + (Double(nextAvailableModuleIndex) / Double(Self.modules.count)) * 0.45, 0.95)
+        let computerProgress = routeProgress(for: [.computerScience])
+        let dataScienceProgress = routeProgress(for: [.statistics, .machineLearning, .deepLearning])
 
         return [
+            LearnNowRoute(
+                id: Self.computerScienceCourseID,
+                title: Self.computerScienceBaseInfo?.title ?? "-",
+                subtitle: Self.computerScienceBaseInfo?.subtitle ?? "-",
+                progress: computerProgress,
+                accent: .blue,
+                cta: "开始学习",
+                interactive: true
+            ),
             LearnNowRoute(
                 id: "datascience",
                 title: "数据科学与人工智能",
                 subtitle: "统计 · 机器学习 · 深度学习",
-                progress: primaryProgress,
-                accent: .blue,
+                progress: dataScienceProgress,
+                accent: .purple,
                 cta: "继续学习",
                 interactive: true
             ),
@@ -443,7 +457,22 @@ struct LearnNowFlowState: Equatable {
     }
 
     var routeTracks: [LearnNowRouteTrack] {
-        LearnNowRouteTrack.allCases
+        routeTracks(for: selectedRouteID)
+    }
+
+    var routeCategoryTitle: String {
+        switch selectedRouteID {
+        case Self.computerScienceCourseID:
+            Self.computerScienceBaseInfo?.title ?? "-"
+        case "datascience":
+            "数据科学与人工智能"
+        case "design":
+            "UI/UX 设计进阶"
+        case "web":
+            "全栈 Web 开发"
+        default:
+            "学习"
+        }
     }
 
     var pathNodes: [LearnNowPathNode] {
@@ -494,9 +523,9 @@ struct LearnNowFlowState: Equatable {
 
     var knowledgeMetrics: [LearnNowKnowledgeMetric] {
         [
-            LearnNowKnowledgeMetric(id: "desc", title: "描述统计", progress: 0.92, accent: .mint),
-            LearnNowKnowledgeMetric(id: "test", title: "假设检验", progress: mastery, accent: .blue),
-            LearnNowKnowledgeMetric(id: "reg", title: "回归算法", progress: 0.25, accent: .pink),
+            LearnNowKnowledgeMetric(id: "state", title: "状态变换", progress: mastery, accent: .blue),
+            LearnNowKnowledgeMetric(id: "encoding", title: "编码规则", progress: 0.34, accent: .mint),
+            LearnNowKnowledgeMetric(id: "execution", title: "程序执行", progress: 0.18, accent: .pink),
         ]
     }
 

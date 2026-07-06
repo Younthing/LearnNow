@@ -55,7 +55,7 @@ final class LearnNowUITests: XCTestCase {
         tapWhenHittable(element(matchingIdentifier: "completion.cta.next"))
 
         assertExists(element(matchingIdentifier: "screen.lesson"))
-        assertExists(app.staticTexts["线性回归模型"])
+        assertExists(app.staticTexts["二进制为什么可靠"])
     }
 
     @MainActor
@@ -65,9 +65,9 @@ final class LearnNowUITests: XCTestCase {
         tapWhenHittable(element(matchingIdentifier: "completion.cta.finish"))
         assertExists(element(matchingIdentifier: "screen.path"))
 
-        tapWhenHittable(element(matchingIdentifier: "path.module.hypothesis"))
+        tapWhenHittable(element(matchingIdentifier: "path.module.cs-state-machine"))
         assertExists(element(matchingIdentifier: "screen.lesson"))
-        assertExists(app.staticTexts["假设检验"])
+        assertExists(app.staticTexts["计算机的本质：状态变换"])
     }
 
     @MainActor
@@ -155,20 +155,20 @@ final class LearnNowUITests: XCTestCase {
         tapWhenHittable(element(matchingIdentifier: "tab.routes"))
         assertExists(element(matchingIdentifier: "screen.routes"))
 
-        // 2  Routes → Path (data-science route)
-        tapWhenHittable(element(matchingIdentifier: "route.datascience"))
+        // 2  Routes → Path (computer-science route)
+        tapWhenHittable(element(matchingIdentifier: "route.computer-science"))
         assertExists(element(matchingIdentifier: "screen.path"))
 
         // 3  Path → Lesson (current module)
-        tapWhenHittable(element(matchingIdentifier: "path.module.hypothesis"))
+        tapWhenHittable(element(matchingIdentifier: "path.module.cs-state-machine"))
         assertExists(element(matchingIdentifier: "screen.lesson"))
 
         // 4  Lesson page 1: answer + advance
-        tapWhenHittable(element(matchingIdentifier: "lesson.option.t-test-robust"))
+        tapWhenHittable(element(matchingIdentifier: "lesson.option.state-machine"))
         tapWhenHittable(element(matchingIdentifier: "lesson.cta"))
 
         // 5  Lesson page 2: answer + complete
-        tapWhenHittable(element(matchingIdentifier: "lesson.option.p-value-meaning"))
+        tapWhenHittable(element(matchingIdentifier: "lesson.option.state-rules"))
         tapWhenHittable(element(matchingIdentifier: "lesson.cta"))
 
         // 6  Completion screen

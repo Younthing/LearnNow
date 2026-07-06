@@ -26,14 +26,28 @@ extension LearnNowFlowState {
     mutating func openPath() {
         selectedTab = .routes
         currentScreen = .routes
-        selectedRouteTrack = trackForModuleIndex(nextAvailableModuleIndex) ?? selectedRouteTrack
+        if let track = trackForModuleIndex(nextAvailableModuleIndex) {
+            selectedRouteTrack = track
+            selectedRouteID = routeID(for: track)
+        }
+        routesDestination = .path
+    }
+
+    mutating func openPath(routeID: String) {
+        selectedTab = .routes
+        currentScreen = .routes
+        selectedRouteID = routeID
+        selectedRouteTrack = defaultTrack(for: routeID)
         routesDestination = .path
     }
 
     mutating func openPathForLoadedLesson() {
         selectedTab = .routes
         currentScreen = .routes
-        selectedRouteTrack = trackForModuleIndex(loadedLessonModuleIndex) ?? selectedRouteTrack
+        if let track = trackForModuleIndex(loadedLessonModuleIndex) {
+            selectedRouteTrack = track
+            selectedRouteID = routeID(for: track)
+        }
         routesDestination = .path
     }
 
@@ -50,7 +64,10 @@ extension LearnNowFlowState {
 
         selectedTab = .routes
         currentScreen = .routes
-        selectedRouteTrack = trackForModuleIndex(loadedLessonModuleIndex) ?? selectedRouteTrack
+        if let track = trackForModuleIndex(loadedLessonModuleIndex) {
+            selectedRouteTrack = track
+            selectedRouteID = routeID(for: track)
+        }
         routesDestination = .lesson
     }
 
@@ -61,7 +78,10 @@ extension LearnNowFlowState {
         loadLesson(for: moduleIndex)
         selectedTab = .routes
         currentScreen = .routes
-        selectedRouteTrack = trackForModuleIndex(moduleIndex) ?? selectedRouteTrack
+        if let track = trackForModuleIndex(moduleIndex) {
+            selectedRouteTrack = track
+            selectedRouteID = routeID(for: track)
+        }
         routesDestination = .lesson
     }
 
@@ -168,6 +188,46 @@ extension LearnNowFlowState {
     func trackForModuleIndex(_ moduleIndex: Int) -> LearnNowRouteTrack? {
         guard Self.modules.indices.contains(moduleIndex) else { return nil }
         return Self.modules[moduleIndex].track
+    }
+
+    func routeID(for track: LearnNowRouteTrack) -> String {
+        switch track {
+        case .computerScience:
+            Self.computerScienceCourseID
+        case .statistics, .machineLearning, .deepLearning:
+            "datascience"
+        }
+    }
+
+    func routeTracks(for routeID: String) -> [LearnNowRouteTrack] {
+        switch routeID {
+        case Self.computerScienceCourseID:
+            [.computerScience]
+        case "datascience":
+            [.statistics, .machineLearning, .deepLearning]
+        default:
+            []
+        }
+    }
+
+    func defaultTrack(for routeID: String) -> LearnNowRouteTrack {
+        if let currentTrack = trackForModuleIndex(nextAvailableModuleIndex),
+           self.routeID(for: currentTrack) == routeID {
+            return currentTrack
+        }
+
+        return routeTracks(for: routeID).first ?? .computerScience
+    }
+
+    func routeProgress(for tracks: [LearnNowRouteTrack]) -> Double {
+        let moduleIndexes = Self.modules.indices.filter { tracks.contains(Self.modules[$0].track) }
+        guard !moduleIndexes.isEmpty else { return 0 }
+
+        let completedCount = moduleIndexes.filter { $0 < nextAvailableModuleIndex }.count
+
+        let currentProgress = moduleIndexes.contains(nextAvailableModuleIndex) ? 0.4 : 0
+
+        return min((Double(completedCount) + currentProgress) / Double(moduleIndexes.count), 1)
     }
 }
 

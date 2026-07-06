@@ -26,9 +26,9 @@ extension LearnNowFlowState {
     static var completionPreview: Self {
         var flow = Self()
         flow.openLesson()
-        flow.answerCurrentLesson(with: "t-test-robust")
+        flow.answerCurrentLesson(with: "state-machine")
         flow.advanceLesson()
-        flow.answerCurrentLesson(with: "p-value-meaning")
+        flow.answerCurrentLesson(with: "state-rules")
         flow.completeLesson()
         return flow
     }

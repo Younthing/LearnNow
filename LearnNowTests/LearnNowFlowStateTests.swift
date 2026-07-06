@@ -52,6 +52,13 @@ struct LearnNowFlowStateTests {
         var sut = LearnNowFlowState()
         sut.openPath()
 
+        #expect(sut.selectedRouteTrack == .computerScience)
+        #expect(
+            sut.visiblePathNodes.map(\.id) ==
+            ["cs-state-machine", "cs-binary-switch", "cs-logic-gates", "cs-encoding", "cs-program-execution"]
+        )
+
+        sut.openPath(routeID: "datascience")
         #expect(sut.selectedRouteTrack == .statistics)
         #expect(
             sut.visiblePathNodes.map(\.id) ==
@@ -72,12 +79,12 @@ struct LearnNowFlowStateTests {
         sut.finishLearning()
         #expect(sut.currentScreen == .routes)
         #expect(sut.routesDestination == .path)
-        #expect(sut.selectedRouteTrack == .statistics)
+        #expect(sut.selectedRouteTrack == .computerScience)
 
-        sut.openLesson(moduleID: "hypothesis")
+        sut.openLesson(moduleID: "cs-state-machine")
         #expect(sut.currentScreen == .routes)
         #expect(sut.routesDestination == .lesson)
-        #expect(sut.currentLessonTitle == "假设检验")
+        #expect(sut.currentLessonTitle == "计算机的本质：状态变换")
         #expect(sut.currentLessonPageIndex == 0)
     }
 
@@ -86,9 +93,9 @@ struct LearnNowFlowStateTests {
         var sut = LearnNowFlowState()
         sut.openLesson()
 
-        sut.answerCurrentLesson(with: "strict-normality")
+        sut.answerCurrentLesson(with: "world-understanding")
 
-        #expect(sut.currentLessonPage.answerState == .incorrect(optionID: "strict-normality"))
+        #expect(sut.currentLessonPage.answerState == .incorrect(optionID: "world-understanding"))
         #expect(sut.currentLessonPage.callToAction == .retry)
 
         sut.retryCurrentLessonQuestion()
@@ -102,15 +109,15 @@ struct LearnNowFlowStateTests {
         var sut = LearnNowFlowState()
         sut.openLesson()
 
-        sut.answerCurrentLesson(with: "t-test-robust")
-        #expect(sut.currentLessonPage.answerState == .correct(optionID: "t-test-robust"))
+        sut.answerCurrentLesson(with: "state-machine")
+        #expect(sut.currentLessonPage.answerState == .correct(optionID: "state-machine"))
         #expect(sut.currentLessonPage.callToAction == .nextPage)
 
         sut.advanceLesson()
         #expect(sut.currentLessonPageIndex == 1)
 
-        sut.answerCurrentLesson(with: "p-value-meaning")
-        #expect(sut.currentLessonPage.answerState == .correct(optionID: "p-value-meaning"))
+        sut.answerCurrentLesson(with: "state-rules")
+        #expect(sut.currentLessonPage.answerState == .correct(optionID: "state-rules"))
         #expect(sut.currentLessonPage.callToAction == .completeLesson)
 
         sut.completeLesson()
@@ -118,11 +125,11 @@ struct LearnNowFlowStateTests {
         #expect(sut.currentScreen == .routes)
         #expect(sut.routesDestination == .completion)
         #expect(sut.totalXP == 1_255)
-        #expect(sut.generatedReviewTags == ["t 检验", "P值定义", "数据稳健性"])
+        #expect(sut.generatedReviewTags == ["状态变换", "输入处理输出", "自动化规则"])
         #expect(sut.hasNextLesson)
-        #expect(sut.nextLessonTitle == "线性回归模型")
-        #expect(sut.pathNodes[2].status == .done)
-        #expect(sut.pathNodes[3].status == .current)
+        #expect(sut.nextLessonTitle == "二进制为什么可靠")
+        #expect(sut.pathNodes[0].status == .done)
+        #expect(sut.pathNodes[1].status == .current)
     }
 
     @Test
@@ -133,7 +140,7 @@ struct LearnNowFlowStateTests {
         #expect(sut.selectedTab == .routes)
         #expect(sut.currentScreen == .routes)
         #expect(sut.routesDestination == .lesson)
-        #expect(sut.currentLessonTitle == "线性回归模型")
+        #expect(sut.currentLessonTitle == "二进制为什么可靠")
         #expect(sut.currentLessonPageIndex == 0)
 
         sut = .completionPreview
@@ -141,8 +148,8 @@ struct LearnNowFlowStateTests {
         #expect(sut.selectedTab == .routes)
         #expect(sut.currentScreen == .routes)
         #expect(sut.routesDestination == .path)
-        #expect(sut.pathNodes[2].status == .done)
-        #expect(sut.pathNodes[3].status == .current)
+        #expect(sut.pathNodes[0].status == .done)
+        #expect(sut.pathNodes[1].status == .current)
 
         sut = .completionPreview
         sut.openReviewBoard()

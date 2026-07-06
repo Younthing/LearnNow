@@ -98,15 +98,14 @@ private struct RouteTrackTabs: View {
                     NeumorphicPill(
                         text: tab.title,
                         accent: tab.isSelected ? .blue : .mint,
-                        isSelected: tab.isSelected,
-                        isExpanded: true
+                        isSelected: tab.isSelected
                     )
                 }
-                .frame(maxWidth: .infinity)
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("path.track.\(tab.track.rawValue)")
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -152,7 +151,7 @@ private enum PathNodeLayout {
     static let cardCornerRadius: CGFloat = 22
     static let compactRowVerticalPadding: CGFloat = 14
     static let compactRowMinHeight: CGFloat = 76
-    static let currentCardMinHeight: CGFloat = 138
+    static let currentCardMinHeight: CGFloat = 112
     static let regularBadgeSize: CGFloat = 48
     static let currentBadgeSize: CGFloat = 56
 }
@@ -219,43 +218,27 @@ private struct PathNodeRow: View {
 
     private var currentModuleCard: some View {
         PathModuleSurface(accent: .blue, isInset: true, contentPadding: PathNodeLayout.featuredCardPadding) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .center, spacing: 12) {
-                    NeumorphicPill(
-                        text: "正在学习",
-                        accent: .blue,
-                        isSelected: true
-                    )
-                    .fixedSize()
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .top, spacing: 12) {
+                    Text(node.title)
+                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .foregroundStyle(LearnNowPalette.color(for: .blue))
+                        .fixedSize(horizontal: false, vertical: true)
 
                     Spacer(minLength: 0)
 
                     Image(systemName: "play.circle.fill")
                         .font(.system(size: 26))
                         .foregroundStyle(LearnNowPalette.color(for: .blue))
+                        .padding(.top, 1)
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(node.title)
-                        .font(.system(size: 24, weight: .black, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.color(for: .blue))
-                        .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 14)
 
-                    Text(node.subtitle)
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                if let progress = node.progress {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ProgressTrack(progress: progress, accent: .blue, height: 10)
-
-                        Text("已完成 \(Int(progress * 100))%")
-                            .font(LearnNowTypography.label)
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
-                }
+                Text(node.subtitle)
+                    .font(LearnNowTypography.body)
+                    .foregroundStyle(LearnNowPalette.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, minHeight: PathNodeLayout.currentCardMinHeight, alignment: .topLeading)
         }

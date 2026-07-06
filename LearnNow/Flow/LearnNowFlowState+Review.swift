@@ -163,7 +163,7 @@ extension LearnNowFlowState {
         case .correct:
             LearnNowLessonFeedback(
                 title: "漂亮，概念抓得很准。",
-                body: "继续保持这个判断标准，下一页会把 P 值的真实含义彻底钉牢。",
+                body: "继续保持这个判断标准，下一页会在同一条理解链路上继续推进。",
                 accent: .mint
             )
         case .incorrect:
