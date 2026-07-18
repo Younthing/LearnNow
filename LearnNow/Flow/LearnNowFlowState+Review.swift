@@ -121,6 +121,23 @@ extension LearnNowFlowState {
         moveToNextReviewCard(after: currentID, previousPosition: previousPosition)
     }
 
+    mutating func setReviewPreviews(_ previews: [LearnNowReviewRating: ReviewScheduleOutcome]) {
+        reviewIntervalTextByRating = previews.mapValues(\.intervalText)
+    }
+
+    mutating func applyReviewOutcome(_ outcome: ReviewScheduleOutcome) {
+        let currentID = outcome.memory.cardID
+        let previousVisibleCards = activeReviewCards
+        let previousPosition = min(currentReviewCardIndex, max(previousVisibleCards.count - 1, 0))
+        reviewMemoryByCardID[currentID] = outcome.memory
+        if let index = reviewCards.firstIndex(where: { $0.id == currentID }) {
+            reviewCards[index].dueAt = outcome.dueAt
+            reviewCards[index].retrievability = outcome.memory.retrievability
+        }
+        isCurrentReviewCardFlipped = false
+        moveToNextReviewCard(after: currentID, previousPosition: previousPosition)
+    }
+
     func filteredReviewCards(using filters: LearnNowReviewFilters) -> [LearnNowReviewCard] {
         reviewCards
             .filter { card in
@@ -207,11 +224,13 @@ extension LearnNowFlowState {
     mutating func toggleMastered(for id: String) {
         guard let index = reviewCards.firstIndex(where: { $0.id == id }) else { return }
         reviewCards[index].isMastered.toggle()
+        updateMemoryPreference(for: id, cardIndex: index)
     }
 
     mutating func toggleFavorited(for id: String) {
         guard let index = reviewCards.firstIndex(where: { $0.id == id }) else { return }
         reviewCards[index].isFavorited.toggle()
+        updateMemoryPreference(for: id, cardIndex: index)
     }
 
     mutating func updateScheduling(for id: String, rating: LearnNowReviewRating) {
@@ -222,14 +241,12 @@ extension LearnNowFlowState {
         switch rating {
         case .again:
             reviewCards[index].dueAt = now.addingTimeInterval(60)
-            reviewCards[index].isMastered = false
         case .hard:
             reviewCards[index].dueAt = now.addingTimeInterval(6 * 60)
         case .good:
             reviewCards[index].dueAt = calendar.date(byAdding: .day, value: 1, to: now) ?? now
         case .easy:
             reviewCards[index].dueAt = calendar.date(byAdding: .day, value: 4, to: now) ?? now
-            reviewCards[index].isMastered = true
         }
     }
 
@@ -270,6 +287,26 @@ extension LearnNowFlowState {
         }
 
         currentReviewCardIndex = min(currentReviewCardIndex, cards.count - 1)
+    }
+
+    mutating func updateMemoryPreference(for id: String, cardIndex: Int) {
+        guard let memory = reviewMemoryByCardID[id] else { return }
+        reviewMemoryByCardID[id] = ReviewMemorySnapshot(
+            cardID: memory.cardID,
+            dueAt: memory.dueAt,
+            lastReviewAt: memory.lastReviewAt,
+            stability: memory.stability,
+            difficulty: memory.difficulty,
+            elapsedDays: memory.elapsedDays,
+            scheduledDays: memory.scheduledDays,
+            stateRawValue: memory.stateRawValue,
+            learningSteps: memory.learningSteps,
+            reps: memory.reps,
+            lapses: memory.lapses,
+            retrievability: memory.retrievability,
+            isFavorited: reviewCards[cardIndex].isFavorited,
+            isMastered: reviewCards[cardIndex].isMastered
+        )
     }
 
     func matchesTopic(_ card: LearnNowReviewCard, filters: LearnNowReviewFilters) -> Bool {

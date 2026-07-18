@@ -3,6 +3,76 @@ import Foundation
 enum LearnNowFlowFixtures {
     static let modules = makeModules()
 
+    static let learningSnapshot = LearningSnapshot(
+        totalXP: 1_240,
+        streakDays: 12,
+        completedLessonIDs: ["stats", "probability"],
+        lastVisitedLessonID: "hypothesis",
+        lastVisitedPageID: "hypothesis-page-1",
+        syncAvailability: .available
+    )
+
+    static let catalog: CourseCatalog = {
+        let cards = makeReviewCards()
+        return CourseCatalog(
+            schemaVersion: 1,
+            primaryRouteID: "datascience",
+            routes: [
+                LearnNowRoute(
+                    id: "datascience",
+                    title: "数据科学与人工智能",
+                    subtitle: "统计 · 机器学习 · 深度学习",
+                    progress: 0,
+                    accent: .blue,
+                    cta: "继续学习",
+                    interactive: true
+                ),
+                LearnNowRoute(
+                    id: "design",
+                    title: "UI/UX 设计进阶",
+                    subtitle: "色彩体系 · 组件化设计 · 交互",
+                    progress: 0,
+                    accent: .pink,
+                    cta: "即将开放",
+                    interactive: false
+                ),
+                LearnNowRoute(
+                    id: "web",
+                    title: "全栈 Web 开发",
+                    subtitle: "React · Node.js · 数据库架构",
+                    progress: 0,
+                    accent: .mint,
+                    cta: "即将开放",
+                    interactive: false
+                ),
+            ],
+            moduleIDsByRouteID: ["datascience": modules.map(\.id)],
+            modules: modules,
+            reviewCards: cards.map {
+                CatalogReviewCardDefinition(
+                    id: $0.id,
+                    topic: $0.topic,
+                    moduleID: $0.moduleID,
+                    accent: $0.accent,
+                    frontTitle: $0.frontTitle,
+                    frontSubtitle: $0.frontSubtitle,
+                    backTitle: $0.backTitle,
+                    backBody: $0.backBody,
+                    backHighlight: $0.backHighlight
+                )
+            },
+            dailyTips: [
+                .init(
+                    id: "p-value-tip",
+                    title: "p 值不是「原假设为真的概率」",
+                    body: "它表示：在原假设成立时，观察到当前结果或更极端结果的概率。",
+                    systemImage: "lightbulb",
+                    accent: .amber
+                )
+            ]
+        )
+    }()
+
     static func makeReviewCards() -> [LearnNowReviewCard] {
         let calendar = Calendar.current
         let now = Date()

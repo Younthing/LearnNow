@@ -1,6 +1,6 @@
 # LearnNow iOS Design Spec（SwiftUI 实现规格文档）
 
-- 文档版本：v2.0
+- 文档版本：v2.1
 - 文档状态：Draft / 可交接修订版
 - 适用端：iOS（SwiftUI）
 - 最低部署目标：iOS 26.2（与当前工程配置一致，默认采用现代 SwiftUI / Observation）
@@ -36,7 +36,7 @@
 本文档不覆盖以下内容：
 
 - 后端接口协议细节
-- 服务端学习算法与调度算法细节
+- CloudKit Public Database、内容管理后台与服务端调度器
 - 埋点事件字典
 - 商业化策略
 - 运营规则
@@ -877,7 +877,7 @@ Lesson 过程状态：
 
 说明：
 
-- XP、连胜、奖励文案由本地数据或本地规则生成
+- XP、连胜、奖励文案由 Catalog 与个人事件记录派生
 - 不依赖服务端奖励计算结果
 
 ##### C. GeneratedFlashcardsCard
@@ -969,9 +969,9 @@ Lesson 过程状态：
 
 数据规则：
 
-- Completion 展示数据来源于本地 mock / 本地规则计算
-- 不依赖后端返回奖励结果
-- 下一章节 CTA 由本地路径进度规则计算，不依赖服务端即时编排
+- Completion 展示数据来自 SwiftData 个人记录与 Catalog 内容，不使用运行时 mock
+- 完成状态与 XP 事件在同一次本地保存中写入；`eventKey` 保证重复完成不重复奖励
+- 下一章节 CTA 由 Catalog 先修关系和已完成课程集合派生，不依赖服务端即时编排
 
 #### SwiftUI 视图拆分
 
@@ -1089,8 +1089,8 @@ Lesson 过程状态：
 
 说明：
 
-- 四档评分的标题与间隔文案由本地静态配置提供
-- 不依赖服务端动态返回评分区间
+- 四档评分由本地 FSRS-6 调度器实时预览，间隔文案展示本次卡片的真实计算结果
+- 目标记忆率为 0.90；学习步骤为 1m / 10m，重学步骤为 10m
 - 评分按钮区仅在翻到背面后出现，继续保持单任务心流
 - 每个评分按钮同时展示间隔说明，避免用户在记忆判断时额外猜测调度结果
 
@@ -1197,8 +1197,8 @@ Lesson 过程状态：
 
 数据规则：
 
-- 评分按钮文案、调度区间和卡片队列可完全使用本地 mock / 本地配置
-- 不依赖后端接入
+- 评分按钮间隔由本地 FSRS-6 动态计算，卡片队列由 Catalog、完成状态与复习日志派生
+- 第一阶段不依赖远程课程接口或服务端调度器
 - 过滤条件仅作用于本地卡池派生结果，不直接改写原始卡池数据
 - 卡池浏览态默认不提供自由文本搜索，优先使用结构化过滤
 
@@ -1671,6 +1671,15 @@ Lesson 过程状态：
 
 ## 5. 数据与状态模型
 
+### 5.0 数据边界与启动状态
+
+- 课程内容由随 App 发布、带 `schemaVersion` 的 `CatalogV1.json` 提供，使用稳定内容 ID 关联。
+- 个人进度、XP 事件、复习日志和卡片偏好由 SwiftData 保存，并同步到 Private CloudKit。
+- `ReviewScheduleCacheRecord` 仅是本地派生缓存；`ReviewLogRecord` 是复习调度的真相源。
+- 主题和提醒偏好保存在设备 `UserDefaults` / `AppStorage` 边界，不参与 CloudKit 同步。
+- 启动状态明确区分 `loading`、`ready`、`catalogError` 和 `persistenceError`；iCloud 不可用时进入“仅本机”，不阻塞学习。
+- CloudKit 实体不使用唯一约束或持久化对象关系，重复记录在读取快照时按业务规则确定性合并。
+
 ### 5.1 页面级状态定义
 
 页面级状态仅用于“整页无法渲染主要内容”的场景。局部卡片、图表或热力图是否为空，应由 section state 表达，而不是把整页统一打成 `empty`。
@@ -1700,6 +1709,16 @@ Lesson 过程状态：
 | CardPoolListItem   | `default` / `mastered` / `favorited`                     |
 
 ### 5.3 业务实体模型
+
+#### 持久化实体
+
+| 实体 | 职责 | 合并规则 |
+| --- | --- | --- |
+| `LessonProgressRecord` | 最后页面、最高页面、完成时间 | 完成优先、页序取最大 |
+| `LearningEventRecord` | XP、连胜与热力图事件 | 按业务 `eventKey` 幂等聚合 |
+| `ReviewLogRecord` | 评分及 FSRS 调度结果 | append-only，按时间与 UUID 确定顺序 |
+| `CardPreferenceRecord` | 收藏与手动掌握 | 最后写入优先 |
+| `ReviewScheduleCacheRecord` | FSRS 当前状态缓存 | 可由复习日志重建，仅本地保存 |
 
 #### UserLearningSummary
 
@@ -2187,12 +2206,14 @@ LessonView
 
 #### 默认方案
 
-当前工程最低版本为 iOS 26.2，默认采用新式 Observation：
+当前工程最低版本为 iOS 26.2，采用新式 Observation：
 
-- 根层使用 `@State` 持有每个 Tab 的 Router
-- Feature 根视图使用 `@State` 持有 `@Observable` 的 `XxxStore` / `XxxModel`
-- 共享服务通过 `@Environment(Type.self)` 注入
-- 不默认使用 `ObservableObject` / `@EnvironmentObject`
+- 根层使用 `@State` 持有 `@Observable LearnNowAppStore`
+- `LearnNowAppStore` 只编排 Catalog 加载、仓库写入、FSRS 调度和用户动作
+- `LearnNowRouter` 管理顶级 Tab 与 Routes 子流程跳转
+- `CatalogRepository` 和 `LearningRepository` 隔离内容来源与 SwiftData 持久化
+- ScreenModel 保持纯展示模型，视图不直接读取 SwiftData 实体
+- 不使用 `ObservableObject` / `@EnvironmentObject`
 
 #### 何时使用 ViewModel
 
@@ -2212,7 +2233,7 @@ LessonView
 
 #### 跨页面导航状态
 
-跨页面导航状态由每个 Tab 的独立 Router 或路径容器管理，避免用一个全局 `currentScreen` 枚举替代真实导航栈。
+跨页面导航状态由 `LearnNowRouter` 统一解释；当前稳定舞台式 App Shell 保留现有展示模型，后续迁移到独立 `NavigationStack` 时不改变仓库接口。
 
 ### 7.4 组件封装规范
 
@@ -2314,8 +2335,11 @@ Home 的月度学习记录遵循以下规则：
 - `Completion → 下一 Lesson` 连续学习分流
 - `Completion → Anki` 复习闭环
 - Lesson 中断后恢复到具体 slide
-- Completion 奖励数据本地生成
-- Anki 评分区间、按钮文案与调度文案本地配置
+- 版本化随包 Catalog 解码与完整性校验
+- SwiftData 本地优先持久化与 Private CloudKit 最终一致同步
+- Completion 完成状态与 XP 事件幂等写入
+- FSRS-6 动态评分区间、复习日志和可重建本地缓存
+- 卡片收藏、手动掌握、提醒和主题偏好恢复
 - Dashboard 图表与掌握度展示
 - 日间 / 夜间双主题玻璃化 Design System
 
@@ -2323,18 +2347,18 @@ Home 的月度学习记录遵循以下规则：
 
 - 路线搜索
 - 课程收藏
-- 学习提醒与通知
-- 复习历史记录
+- 系统通知授权与真正的定时通知投递（提醒偏好本身已保存）
+- 复习历史明细页面（日志本身已完整保存）
 - Dashboard 时间范围切换
 - Heatmap 单日详情 drill-down
 - Routes 状态筛选
-- 服务端数据接入与缓存恢复
+- CloudKit Public Database、CMS、远程课程下发和 FSRS 参数训练器
 
 ### 8.3 已确定规则
 
 1. Lesson 必须支持中断恢复到具体 slide，并以本地状态保存最近停留位置。
-2. Completion 的 XP、连胜与奖励展示使用本地数据或本地规则，不依赖后端返回。
-3. Anki 的评分区间、按钮文案与调度提示使用本地静态配置，不依赖服务端。
+2. Completion 的 XP、连胜与奖励由 Catalog 和个人事件记录派生，不依赖后端返回。
+3. Anki 的四档间隔由固定参数版本的 FSRS-6 本地计算；手动掌握标记不参与调度。
 4. Heatmap 当前为只读展示，不提供点击进入日级详情。
 5. Dashboard 当前不提供时间范围切换。
 6. Routes 当前不提供筛选器。
@@ -2344,6 +2368,8 @@ Home 的月度学习记录遵循以下规则：
 - 毛玻璃材质、环境光模糊与持续动画会增加渲染成本，需关注低端设备性能。
 - Light / Dark 双主题下的文字对比与 accent 亮度需要逐页验收。
 - Lesson 横向分页与内嵌交互可能增加状态同步复杂度。
+- CloudKit 为最终一致同步，多设备刚完成操作时可能短暂显示不同快照；UI 不承诺即时同步完成。
+- Catalog 的稳定 ID 发布后不可修改或复用，内容发布流程必须先运行目录校验测试。
 
 ---
 

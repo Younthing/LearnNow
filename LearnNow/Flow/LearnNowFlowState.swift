@@ -54,7 +54,7 @@ enum LearnNowReviewSheet: String, Equatable, Identifiable {
     var id: String { rawValue }
 }
 
-enum LearnNowRouteTrack: String, CaseIterable, Equatable, Identifiable {
+enum LearnNowRouteTrack: String, CaseIterable, Codable, Equatable, Identifiable, Sendable {
     case statistics
     case machineLearning
     case deepLearning
@@ -70,7 +70,7 @@ enum LearnNowRouteTrack: String, CaseIterable, Equatable, Identifiable {
     }
 }
 
-enum LearnNowAccent: String, Equatable {
+enum LearnNowAccent: String, Codable, Equatable, Sendable {
     case blue
     case pink
     case mint
@@ -78,13 +78,13 @@ enum LearnNowAccent: String, Equatable {
     case amber
 }
 
-enum LearnNowLessonAnswerState: Equatable {
+enum LearnNowLessonAnswerState: Equatable, Sendable {
     case unanswered
     case correct(optionID: String)
     case incorrect(optionID: String)
 }
 
-enum LearnNowLessonCallToAction: Equatable {
+enum LearnNowLessonCallToAction: Equatable, Sendable {
     case nextPage
     case retry
     case completeLesson
@@ -98,7 +98,7 @@ enum LearnNowLessonCallToAction: Equatable {
     }
 }
 
-enum LearnNowReviewRating: String, CaseIterable, Equatable, Identifiable {
+enum LearnNowReviewRating: String, CaseIterable, Equatable, Hashable, Identifiable, Sendable {
     case again
     case hard
     case good
@@ -224,7 +224,7 @@ struct LearnNowLearningSummary: Equatable {
     let progressText: String
 }
 
-struct LearnNowRoute: Identifiable, Equatable {
+struct LearnNowRoute: Identifiable, Equatable, Sendable {
     let id: String
     let title: String
     let subtitle: String
@@ -254,19 +254,19 @@ struct LearnNowHeatCell: Identifiable, Equatable {
     let level: Int?
 }
 
-struct LearnNowLessonOption: Identifiable, Equatable {
+struct LearnNowLessonOption: Identifiable, Equatable, Sendable {
     let id: String
     let badge: String
     let title: String
 }
 
-struct LearnNowLessonQuestion: Equatable {
+struct LearnNowLessonQuestion: Equatable, Sendable {
     let prompt: String
     let options: [LearnNowLessonOption]
     let correctOptionID: String
 }
 
-struct LearnNowLessonPage: Identifiable, Equatable {
+struct LearnNowLessonPage: Identifiable, Equatable, Sendable {
     let id: String
     let badge: String
     let accent: LearnNowAccent
@@ -331,7 +331,7 @@ struct LearnNowReviewFacet: Identifiable, Equatable, Hashable {
     let count: Int
 }
 
-struct LearnNowReviewCard: Identifiable, Equatable {
+struct LearnNowReviewCard: Identifiable, Equatable, Sendable {
     let id: String
     let topic: String
     let moduleID: String
@@ -344,6 +344,7 @@ struct LearnNowReviewCard: Identifiable, Equatable {
     let backBody: String
     let backHighlight: String
     var dueAt: Date
+    var retrievability: Double = 0
     var isMastered: Bool
     var isFavorited: Bool
 }
@@ -362,7 +363,7 @@ struct LearnNowProfileFavoriteHighlight: Identifiable, Equatable {
     let accent: LearnNowAccent
 }
 
-struct LearnNowModuleDefinition: Identifiable, Equatable {
+struct LearnNowModuleDefinition: Identifiable, Equatable, Sendable {
     let id: String
     let track: LearnNowRouteTrack
     let title: String
@@ -371,6 +372,35 @@ struct LearnNowModuleDefinition: Identifiable, Equatable {
     let lessonPages: [LearnNowLessonPage]
     let reviewTags: [String]
     let reviewMessage: String
+    let prerequisiteModuleIDs: [String]
+    let completionXP: Int
+    let reviewCardIDs: [String]
+
+    init(
+        id: String,
+        track: LearnNowRouteTrack,
+        title: String,
+        subtitle: String,
+        lessonTitle: String,
+        lessonPages: [LearnNowLessonPage],
+        reviewTags: [String],
+        reviewMessage: String,
+        prerequisiteModuleIDs: [String] = [],
+        completionXP: Int = 15,
+        reviewCardIDs: [String] = []
+    ) {
+        self.id = id
+        self.track = track
+        self.title = title
+        self.subtitle = subtitle
+        self.lessonTitle = lessonTitle
+        self.lessonPages = lessonPages
+        self.reviewTags = reviewTags
+        self.reviewMessage = reviewMessage
+        self.prerequisiteModuleIDs = prerequisiteModuleIDs
+        self.completionXP = completionXP
+        self.reviewCardIDs = reviewCardIDs
+    }
 }
 
 struct LearnNowCompletionSummary: Equatable {
@@ -381,65 +411,113 @@ struct LearnNowCompletionSummary: Equatable {
 }
 
 struct LearnNowFlowState: Equatable {
-    static let modules = LearnNowFlowFixtures.modules
-
+    var catalog: CourseCatalog
+    var modules: [LearnNowModuleDefinition]
+    var completedLessonIDs: Set<String>
+    var activityByLocalDay: [String: Int]
+    var reviewMemoryByCardID: [String: ReviewMemorySnapshot]
+    var syncAvailability: LearnNowSyncAvailability
+    var reviewIntervalTextByRating: [LearnNowReviewRating: String]
     var selectedTab: LearnNowTab = .home
     var currentScreen: LearnNowScreen = .home
     var routesDestination: LearnNowRoutesDestination = .overview
-    var totalXP: Int = 1_240
-    var streakDays: Int = 12
-    var mastery: Double = 0.61
-    var todayLabel: String = "星期五 · 四月三日"
-    var routeCategoryTitle: String = "数据科学与人工智能"
+    var totalXP: Int
+    var streakDays: Int
+    var todayLabel: String
     var selectedRouteTrack: LearnNowRouteTrack = .statistics
-    var nextAvailableModuleIndex: Int = 2
-    var loadedLessonModuleIndex: Int = 2
+    var nextAvailableModuleIndex: Int
+    var loadedLessonModuleIndex: Int
     var currentLessonPageIndex: Int = 0
-    var lessonPages: [LearnNowLessonPage] = LearnNowFlowState.modules[2].lessonPages
+    var lessonPages: [LearnNowLessonPage]
     var completionSummary: LearnNowCompletionSummary?
-    var reviewCards: [LearnNowReviewCard] = LearnNowFlowFixtures.makeReviewCards()
+    var reviewCards: [LearnNowReviewCard]
     var currentReviewCardIndex: Int = 0
     var isCurrentReviewCardFlipped = false
     var appliedReviewFilters: LearnNowReviewFilters = .empty
     var draftReviewFilters: LearnNowReviewFilters = .empty
     var activeReviewSheet: LearnNowReviewSheet?
     var didAwardCompletionXP = false
-    var reminderTime = Self.defaultReminderTime()
-    var remindersEnabled = true
-    var isNightModeEnabled = false
+    var reminderTime: Date
+    var remindersEnabled: Bool
+    var isNightModeEnabled: Bool
+
+    init(
+        catalog: CourseCatalog = LearnNowFlowFixtures.catalog,
+        snapshot: LearningSnapshot? = nil,
+        now: Date = Date()
+    ) {
+        let isPreviewFixture = snapshot == nil
+        let resolvedSnapshot = snapshot ?? LearnNowFlowFixtures.learningSnapshot
+        let completedIDs = resolvedSnapshot.completedLessonIDs
+        let firstAvailableIndex = catalog.modules.firstIndex { module in
+            !completedIDs.contains(module.id) &&
+            Set(module.prerequisiteModuleIDs).isSubset(of: completedIDs)
+        } ?? catalog.modules.count
+        let restoredIndex = resolvedSnapshot.lastVisitedLessonID.flatMap { lessonID in
+            catalog.modules.firstIndex(where: { $0.id == lessonID })
+        }
+        let initialIndex = min(
+            restoredIndex ?? firstAvailableIndex,
+            max(catalog.modules.count - 1, 0)
+        )
+        let initialModule = catalog.modules.indices.contains(initialIndex) ? catalog.modules[initialIndex] : nil
+        let restoredPageIndex = initialModule.flatMap { module in
+            resolvedSnapshot.lastVisitedPageID.flatMap { pageID in
+                module.lessonPages.firstIndex(where: { $0.id == pageID })
+            }
+        } ?? 0
+
+        self.catalog = catalog
+        self.modules = catalog.modules
+        self.completedLessonIDs = completedIDs
+        self.activityByLocalDay = resolvedSnapshot.activityByLocalDay
+        self.reviewMemoryByCardID = resolvedSnapshot.reviewMemoryByCardID
+        self.syncAvailability = resolvedSnapshot.syncAvailability
+        self.reviewIntervalTextByRating = Dictionary(
+            uniqueKeysWithValues: LearnNowReviewRating.allCases.map { ($0, $0.interval) }
+        )
+        self.totalXP = resolvedSnapshot.totalXP
+        self.streakDays = resolvedSnapshot.streakDays
+        self.todayLabel = Self.todayFormatter.string(from: now)
+        self.nextAvailableModuleIndex = firstAvailableIndex
+        self.loadedLessonModuleIndex = initialIndex
+        self.currentLessonPageIndex = restoredPageIndex
+        self.lessonPages = initialModule?.lessonPages ?? []
+        self.reviewCards = isPreviewFixture
+            ? LearnNowFlowFixtures.makeReviewCards()
+            : Self.makeReviewCards(catalog: catalog, snapshot: resolvedSnapshot, now: now)
+        self.reminderTime = UserDefaults.standard.object(forKey: Self.reminderTimeKey) as? Date
+            ?? Self.defaultReminderTime()
+        self.remindersEnabled = UserDefaults.standard.object(forKey: Self.remindersEnabledKey) == nil
+            ? true
+            : UserDefaults.standard.bool(forKey: Self.remindersEnabledKey)
+        self.isNightModeEnabled = UserDefaults.standard.bool(forKey: Self.nightModeKey)
+    }
+
+    var routeCategoryTitle: String {
+        catalog.primaryRoute?.title ?? "学习路线"
+    }
+
+    var mastery: Double {
+        guard !reviewCards.isEmpty else { return 0 }
+        return reviewCards.map(\.retrievability).reduce(0, +) / Double(reviewCards.count)
+    }
 
     var routes: [LearnNowRoute] {
-        let primaryProgress = min(0.2 + (Double(nextAvailableModuleIndex) / Double(Self.modules.count)) * 0.45, 0.95)
-
-        return [
-            LearnNowRoute(
-                id: "datascience",
-                title: "数据科学与人工智能",
-                subtitle: "统计 · 机器学习 · 深度学习",
-                progress: primaryProgress,
-                accent: .blue,
-                cta: "继续学习",
-                interactive: true
-            ),
-            LearnNowRoute(
-                id: "design",
-                title: "UI/UX 设计进阶",
-                subtitle: "色彩体系 · 组件化设计 · 交互",
-                progress: 0,
-                accent: .pink,
-                cta: "开始探索",
-                interactive: false
-            ),
-            LearnNowRoute(
-                id: "web",
-                title: "全栈 Web 开发",
-                subtitle: "React · Node.js · 数据库架构",
-                progress: 0.10,
-                accent: .mint,
-                cta: "继续学习",
-                interactive: false
-            ),
-        ]
+        catalog.routes.map { route in
+            let moduleIDs = catalog.moduleIDsByRouteID[route.id, default: []]
+            let completedCount = moduleIDs.filter { completedLessonIDs.contains($0) }.count
+            let progress = moduleIDs.isEmpty ? 0 : Double(completedCount) / Double(moduleIDs.count)
+            return LearnNowRoute(
+                id: route.id,
+                title: route.title,
+                subtitle: route.subtitle,
+                progress: progress,
+                accent: route.accent,
+                cta: route.cta,
+                interactive: route.interactive
+            )
+        }
     }
 
     var routeTracks: [LearnNowRouteTrack] {
@@ -447,12 +525,12 @@ struct LearnNowFlowState: Equatable {
     }
 
     var pathNodes: [LearnNowPathNode] {
-        Self.modules.enumerated().map { index, module in
+        modules.enumerated().map { index, module in
             let status: LearnNowPathNode.Status
 
-            if index < nextAvailableModuleIndex {
+            if completedLessonIDs.contains(module.id) {
                 status = .done
-            } else if index == nextAvailableModuleIndex {
+            } else if isLessonAvailable(for: index) {
                 status = .current
             } else {
                 status = .locked
@@ -478,26 +556,29 @@ struct LearnNowFlowState: Equatable {
     }
 
     var heatmap: [LearnNowHeatCell] {
-        let activeDays: Set<Int> = [2, 3, 4, 6, 7, 9, 10, 11, 12, 14, 15, 16, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 29, 30]
-
+        let calendar = Calendar.current
+        let now = Date()
+        let range = calendar.range(of: .day, in: .month, for: now) ?? 1..<32
         return (1...35).map { day in
-            if day > 31 {
+            if !range.contains(day) {
                 return LearnNowHeatCell(id: day, level: nil)
             }
-            guard activeDays.contains(day) else {
-                return LearnNowHeatCell(id: day, level: 0)
-            }
-            let level = day > 25 ? 3 : (day.isMultiple(of: 2) ? 1 : 2)
-            return LearnNowHeatCell(id: day, level: level)
+            var components = calendar.dateComponents([.year, .month], from: now)
+            components.day = day
+            let date = calendar.date(from: components) ?? now
+            let count = activityByLocalDay[Self.localDayFormatter.string(from: date), default: 0]
+            return LearnNowHeatCell(id: day, level: min(count, 3))
         }
     }
 
     var knowledgeMetrics: [LearnNowKnowledgeMetric] {
-        [
-            LearnNowKnowledgeMetric(id: "desc", title: "描述统计", progress: 0.92, accent: .mint),
-            LearnNowKnowledgeMetric(id: "test", title: "假设检验", progress: mastery, accent: .blue),
-            LearnNowKnowledgeMetric(id: "reg", title: "回归算法", progress: 0.25, accent: .pink),
-        ]
+        Dictionary(grouping: reviewCards, by: \.topic)
+            .compactMap { topic, cards in
+                guard let first = cards.first else { return nil }
+                let progress = cards.map(\.retrievability).reduce(0, +) / Double(cards.count)
+                return LearnNowKnowledgeMetric(id: topic, title: topic, progress: progress, accent: first.accent)
+            }
+            .sorted { $0.title < $1.title }
     }
 
     var favoritedReviewCardsCount: Int {
@@ -524,7 +605,9 @@ struct LearnNowFlowState: Equatable {
     }
 
     var retentionSeries: [Double] {
-        [1.0, 0.85, 0.78, 0.82, 0.75, 0.80, 0.78]
+        if reviewCards.isEmpty { return Array(repeating: 0, count: 7) }
+        let average = mastery
+        return (0..<7).map { day in max(0, min(1, average * pow(0.96, Double(day)))) }
     }
 
     var baselineSeries: [Double] {
@@ -559,11 +642,13 @@ struct LearnNowFlowState: Equatable {
     }
 
     var currentLessonTitle: String {
-        Self.modules[loadedLessonModuleIndex].lessonTitle
+        modules.indices.contains(loadedLessonModuleIndex)
+            ? modules[loadedLessonModuleIndex].lessonTitle
+            : "课程"
     }
 
     var generatedReviewTags: [String] {
-        completionSummary?.reviewTags ?? Self.modules[loadedLessonModuleIndex].reviewTags
+        completionSummary?.reviewTags ?? (modules.indices.contains(loadedLessonModuleIndex) ? modules[loadedLessonModuleIndex].reviewTags : [])
     }
 
     var generatedReviewCount: Int {
@@ -571,7 +656,7 @@ struct LearnNowFlowState: Equatable {
     }
 
     var completionReviewMessage: String {
-        completionSummary?.reviewMessage ?? Self.modules[loadedLessonModuleIndex].reviewMessage
+        completionSummary?.reviewMessage ?? (modules.indices.contains(loadedLessonModuleIndex) ? modules[loadedLessonModuleIndex].reviewMessage : "")
     }
 
     var nextLessonTitle: String? {
@@ -664,6 +749,63 @@ struct LearnNowFlowState: Equatable {
 }
 
 private extension LearnNowFlowState {
+    static let reminderTimeKey = "learnnow.settings.reminderTime"
+    static let remindersEnabledKey = "learnnow.settings.remindersEnabled"
+    static let nightModeKey = "learnnow.settings.nightMode"
+
+    static let todayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "EEEE · M月d日"
+        return formatter
+    }()
+
+    static let localDayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    static func makeReviewCards(
+        catalog: CourseCatalog,
+        snapshot: LearningSnapshot,
+        now: Date
+    ) -> [LearnNowReviewCard] {
+        catalog.reviewCards.compactMap { definition in
+            guard let memory = snapshot.reviewMemoryByCardID[definition.id],
+                  let module = catalog.module(id: definition.moduleID) else {
+                return nil
+            }
+            let bucket: LearnNowReviewBucket
+            if memory.reps == 0 {
+                bucket = .new
+            } else if memory.dueAt <= now {
+                bucket = .review
+            } else {
+                bucket = .reinforce
+            }
+            return LearnNowReviewCard(
+                id: definition.id,
+                topic: definition.topic,
+                moduleID: definition.moduleID,
+                moduleTitle: module.title,
+                bucket: bucket,
+                accent: definition.accent,
+                frontTitle: definition.frontTitle,
+                frontSubtitle: definition.frontSubtitle,
+                backTitle: definition.backTitle,
+                backBody: definition.backBody,
+                backHighlight: definition.backHighlight,
+                dueAt: memory.dueAt,
+                retrievability: memory.retrievability,
+                isMastered: memory.isMastered,
+                isFavorited: memory.isFavorited
+            )
+        }
+    }
+
     static func defaultReminderTime() -> Date {
         let calendar = Calendar.current
         let now = Date()

@@ -31,9 +31,20 @@ struct LessonScreen: View {
                     .tag(index)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
+            .learnNowLessonTabStyle()
         }
         .accessibilityIdentifier("screen.lesson")
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func learnNowLessonTabStyle() -> some View {
+#if os(macOS)
+        self
+#else
+        tabViewStyle(.page(indexDisplayMode: .never))
+#endif
     }
 }
 

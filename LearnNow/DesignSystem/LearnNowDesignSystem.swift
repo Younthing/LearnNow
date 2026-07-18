@@ -2,6 +2,8 @@ import SwiftUI
 
 #if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
 #endif
 
 enum LearnNowPalette {
@@ -402,13 +404,13 @@ extension View {
 }
 
 extension Color {
-#if canImport(UIKit)
     static func dynamic(
         light: UInt,
         dark: UInt,
         lightOpacity: Double = 1.0,
         darkOpacity: Double = 1.0
     ) -> Color {
+#if canImport(UIKit)
         Color(UIColor { trait in
             let hex = trait.userInterfaceStyle == .dark ? dark : light
             let opacity = trait.userInterfaceStyle == .dark ? darkOpacity : lightOpacity
@@ -420,8 +422,22 @@ extension Color {
                 alpha: CGFloat(opacity)
             )
         })
-    }
+#elseif canImport(AppKit)
+        Color(NSColor(name: nil) { appearance in
+            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            let hex = isDark ? dark : light
+            let opacity = isDark ? darkOpacity : lightOpacity
+            return NSColor(
+                red: CGFloat((hex >> 16) & 0xFF) / 255.0,
+                green: CGFloat((hex >> 8) & 0xFF) / 255.0,
+                blue: CGFloat(hex & 0xFF) / 255.0,
+                alpha: CGFloat(opacity)
+            )
+        })
+#else
+        Color(hex: light, opacity: lightOpacity)
 #endif
+    }
 
     init(hex: UInt, opacity: Double = 1) {
         self.init(

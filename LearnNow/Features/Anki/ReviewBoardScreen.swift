@@ -48,7 +48,7 @@ private struct ReviewBoardStage: View {
                 .accessibilityIdentifier("anki.card")
 
                 if stage.showsRatingGrid {
-                    ReviewRatingGrid(onRate: onRate)
+                    ReviewRatingGrid(intervals: stage.ratingIntervals, onRate: onRate)
                 }
             }
         case .empty(let state):
@@ -234,6 +234,7 @@ private struct ReviewFlashcardView: View {
 }
 
 private struct ReviewRatingGrid: View {
+    let intervals: [LearnNowReviewRating: String]
     let onRate: (LearnNowReviewRating) -> Void
 
     private let columns = [
@@ -251,7 +252,7 @@ private struct ReviewRatingGrid: View {
                         Text(rating.title)
                             .font(.system(size: 14, weight: .heavy, design: .rounded))
 
-                        Text(rating.interval)
+                        Text(intervals[rating] ?? rating.interval)
                             .font(.system(size: 11, weight: .medium, design: .rounded))
                     }
                     .foregroundStyle(LearnNowPalette.color(for: rating.accent))

@@ -140,6 +140,7 @@ struct ReviewBoardModel: Equatable {
         let card: Card
         let isFlipped: Bool
         let showsRatingGrid: Bool
+        let ratingIntervals: [LearnNowReviewRating: String]
     }
 
     struct EmptyState: Equatable {
@@ -282,8 +283,10 @@ extension LearnNowFlowState {
         return LearnNowLearningSummary(
             badge: "第\(loadedLessonModuleIndex + 1)单元 · 课时\(safePageIndex + 1)",
             title: currentPage?.title ?? currentLessonTitle,
-            progress: 0.40,
-            progressText: "完成 40%"
+            progress: lessonPages.isEmpty ? 0 : Double(safePageIndex) / Double(lessonPages.count),
+            progressText: lessonPages.isEmpty
+                ? "尚未开始"
+                : "完成 \(Int((Double(safePageIndex) / Double(lessonPages.count)) * 100))%"
         )
     }
 
@@ -344,6 +347,7 @@ extension LearnNowFlowState {
 
     var homeScreenModel: HomeScreenModel {
         let learningSummary = currentLearningSummary
+        let tip = catalog.dailyTips.first
 
         return HomeScreenModel(
             title: "今日学习",
@@ -353,10 +357,10 @@ extension LearnNowFlowState {
             continueCard: learningSummary,
             tipSectionTitle: "今日知识点 Tips",
             knowledgeTip: .init(
-                title: "p 值不是「原假设为真的概率」",
-                body: "它表示：在 H0 成立时，观察到当前结果或更极端结果的概率。",
-                systemImage: "lightbulb",
-                accent: .amber
+                title: tip?.title ?? "开始今天的学习",
+                body: tip?.body ?? "完成一个课程模块后，相关知识卡片会自动进入复习池。",
+                systemImage: tip?.systemImage ?? "lightbulb",
+                accent: tip?.accent ?? .amber
             )
         )
     }
@@ -439,10 +443,13 @@ extension LearnNowFlowState {
     }
 
     var completionScreenModel: CompletionScreenModel {
-        CompletionScreenModel(
+        let gainedXP = modules.indices.contains(loadedLessonModuleIndex)
+            ? modules[loadedLessonModuleIndex].completionXP
+            : 0
+        return CompletionScreenModel(
             title: "课程通关！",
             streakDays: streakDays,
-            gainedXPText: "+15",
+            gainedXPText: "+\(gainedXP)",
             reviewCount: generatedReviewCount,
             reviewTags: generatedReviewTags,
             reviewMessage: completionReviewMessage,
@@ -478,7 +485,8 @@ extension LearnNowFlowState {
                     ),
                     card: currentCardModel,
                     isFlipped: isCurrentReviewCardFlipped,
-                    showsRatingGrid: isCurrentReviewCardFlipped
+                    showsRatingGrid: isCurrentReviewCardFlipped,
+                    ratingIntervals: reviewIntervalTextByRating
                 )
             )
         } else {
@@ -574,7 +582,7 @@ extension LearnNowFlowState {
 
         return ProfileScreenModel(
             title: "我的",
-            subtitle: "学习概览、收藏与偏好设置",
+            subtitle: "学习概览、收藏与偏好设置 · \(syncAvailability.displayText)",
             profileName: "数据科学学徒",
             profileHeadline: "\(streakDays) 天连续学习 · 累计 \(totalXP) XP",
             profileLevel: "Lv.\(level)",

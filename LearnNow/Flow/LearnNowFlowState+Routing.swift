@@ -42,7 +42,7 @@ extension LearnNowFlowState {
     }
 
     mutating func openLesson() {
-        guard nextAvailableModuleIndex < Self.modules.count else { return }
+        guard nextAvailableModuleIndex < modules.count else { return }
 
         if loadedLessonModuleIndex != nextAvailableModuleIndex {
             loadLesson(for: nextAvailableModuleIndex)
@@ -55,7 +55,7 @@ extension LearnNowFlowState {
     }
 
     mutating func openLesson(moduleID: String) {
-        guard let moduleIndex = Self.modules.firstIndex(where: { $0.id == moduleID }) else { return }
+        guard let moduleIndex = modules.firstIndex(where: { $0.id == moduleID }) else { return }
         guard isLessonAvailable(for: moduleIndex) else { return }
 
         loadLesson(for: moduleIndex)
@@ -106,18 +106,29 @@ extension LearnNowFlowState {
     }
 
     mutating func completeLesson() {
+        completeLesson(awardXP: true)
+    }
+
+    mutating func completeLesson(awardXP: Bool) {
         guard lessonPages.indices.contains(currentLessonPageIndex) else { return }
         guard lessonPages[currentLessonPageIndex].callToAction == .completeLesson else { return }
+        guard modules.indices.contains(loadedLessonModuleIndex) else { return }
 
-        if !didAwardCompletionXP {
-            totalXP += 15
-            mastery = 0.68
+        let completedModule = modules[loadedLessonModuleIndex]
+        let wasAlreadyCompleted = completedLessonIDs.contains(completedModule.id)
+        completedLessonIDs.insert(completedModule.id)
+
+        if awardXP && !didAwardCompletionXP && !wasAlreadyCompleted {
+            totalXP += completedModule.completionXP
             didAwardCompletionXP = true
         }
 
-        let completedModule = Self.modules[loadedLessonModuleIndex]
-        let upcomingIndex = loadedLessonModuleIndex + 1
-        let nextModuleTitle = upcomingIndex < Self.modules.count ? Self.modules[upcomingIndex].lessonTitle : nil
+        activateReviewCards(for: completedModule)
+        let upcomingIndex = modules.firstIndex { module in
+            !completedLessonIDs.contains(module.id) &&
+            Set(module.prerequisiteModuleIDs).isSubset(of: completedLessonIDs)
+        }
+        let nextModuleTitle = upcomingIndex.map { modules[$0].lessonTitle }
 
         completionSummary = LearnNowCompletionSummary(
             completedModuleTitle: completedModule.title,
@@ -126,7 +137,7 @@ extension LearnNowFlowState {
             nextModuleTitle: nextModuleTitle
         )
 
-        nextAvailableModuleIndex = min(upcomingIndex, Self.modules.count)
+        nextAvailableModuleIndex = upcomingIndex ?? modules.count
         selectedTab = .routes
         currentScreen = .routes
         routesDestination = .completion
@@ -161,36 +172,84 @@ extension LearnNowFlowState {
     }
 
     func isLessonAvailable(for moduleIndex: Int) -> Bool {
-        guard Self.modules.indices.contains(moduleIndex) else { return false }
-        return moduleIndex <= nextAvailableModuleIndex && !Self.modules[moduleIndex].lessonPages.isEmpty
+        guard modules.indices.contains(moduleIndex) else { return false }
+        let module = modules[moduleIndex]
+        return Set(module.prerequisiteModuleIDs).isSubset(of: completedLessonIDs) && !module.lessonPages.isEmpty
     }
 
     func trackForModuleIndex(_ moduleIndex: Int) -> LearnNowRouteTrack? {
-        guard Self.modules.indices.contains(moduleIndex) else { return nil }
-        return Self.modules[moduleIndex].track
+        guard modules.indices.contains(moduleIndex) else { return nil }
+        return modules[moduleIndex].track
     }
 }
 
 extension LearnNowFlowState {
     mutating func setReminderTime(_ date: Date) {
         reminderTime = date
+        UserDefaults.standard.set(date, forKey: "learnnow.settings.reminderTime")
     }
 
     mutating func setRemindersEnabled(_ enabled: Bool) {
         remindersEnabled = enabled
+        UserDefaults.standard.set(enabled, forKey: "learnnow.settings.remindersEnabled")
     }
 
     mutating func setNightModeEnabled(_ enabled: Bool) {
         isNightModeEnabled = enabled
+        UserDefaults.standard.set(enabled, forKey: "learnnow.settings.nightMode")
     }
 }
 
 private extension LearnNowFlowState {
     mutating func loadLesson(for moduleIndex: Int) {
-        guard Self.modules.indices.contains(moduleIndex) else { return }
+        guard modules.indices.contains(moduleIndex) else { return }
 
         loadedLessonModuleIndex = moduleIndex
-        lessonPages = Self.modules[moduleIndex].lessonPages
+        lessonPages = modules[moduleIndex].lessonPages
         currentLessonPageIndex = 0
+        didAwardCompletionXP = completedLessonIDs.contains(modules[moduleIndex].id)
+    }
+
+    mutating func activateReviewCards(for module: LearnNowModuleDefinition) {
+        let now = Date()
+        for definition in catalog.reviewCards where module.reviewCardIDs.contains(definition.id) {
+            guard !reviewCards.contains(where: { $0.id == definition.id }) else { continue }
+            let memory = ReviewMemorySnapshot(
+                cardID: definition.id,
+                dueAt: now,
+                lastReviewAt: nil,
+                stability: 0,
+                difficulty: 0,
+                elapsedDays: 0,
+                scheduledDays: 0,
+                stateRawValue: 0,
+                learningSteps: 0,
+                reps: 0,
+                lapses: 0,
+                retrievability: 0,
+                isFavorited: false,
+                isMastered: false
+            )
+            reviewMemoryByCardID[definition.id] = memory
+            reviewCards.append(
+                LearnNowReviewCard(
+                    id: definition.id,
+                    topic: definition.topic,
+                    moduleID: definition.moduleID,
+                    moduleTitle: module.title,
+                    bucket: .new,
+                    accent: definition.accent,
+                    frontTitle: definition.frontTitle,
+                    frontSubtitle: definition.frontSubtitle,
+                    backTitle: definition.backTitle,
+                    backBody: definition.backBody,
+                    backHighlight: definition.backHighlight,
+                    dueAt: now,
+                    retrievability: 0,
+                    isMastered: false,
+                    isFavorited: false
+                )
+            )
+        }
     }
 }

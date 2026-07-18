@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AppShellView: View {
-    @Binding var flow: LearnNowFlowState
+    @Bindable var store: LearnNowAppStore
 
     /// `true` when the app is launched by UI tests with `-UIAnimationsDisabled YES`.
     private var animationsDisabled: Bool {
@@ -19,50 +19,61 @@ struct AppShellView: View {
             ZStack {
                 tabStage(tab: .home) {
                     HomeScreen(
-                        model: flow.homeScreenModel,
-                        onContinueLearning: { flow.openLesson() }
+                        model: store.flow.homeScreenModel,
+                        onContinueLearning: { store.openLesson() }
                     )
                 }
 
                 tabStage(tab: .routes) {
-                    RoutesJourneyContainer(flow: $flow)
+                    RoutesJourneyContainer(store: store)
                 }
 
                 tabStage(tab: .anki) {
-                    ReviewBoardContainer(flow: $flow)
+                    ReviewBoardContainer(store: store)
                 }
 
                 tabStage(tab: .profile) {
                     ProfileScreen(
-                        model: flow.profileScreenModel,
+                        model: store.flow.profileScreenModel,
                         reminderTime: Binding(
-                            get: { flow.reminderTime },
-                            set: { flow.setReminderTime($0) }
+                            get: { store.flow.reminderTime },
+                            set: { store.setReminderTime($0) }
                         ),
                         remindersEnabled: Binding(
-                            get: { flow.remindersEnabled },
-                            set: { flow.setRemindersEnabled($0) }
+                            get: { store.flow.remindersEnabled },
+                            set: { store.setRemindersEnabled($0) }
                         ),
                         isNightModeEnabled: Binding(
-                            get: { flow.isNightModeEnabled },
-                            set: { flow.setNightModeEnabled($0) }
+                            get: { store.flow.isNightModeEnabled },
+                            set: { store.setNightModeEnabled($0) }
                         ),
-                        onContinueLearning: { flow.openLesson() },
-                        onOpenFavorites: { flow.openFavoritedReviewBoard() }
+                        onContinueLearning: { store.openLesson() },
+                        onOpenFavorites: { store.openFavoritedReviewBoard() }
                     )
                 }
             }
             .padding(.bottom, 112)
             .animation(
                 animationsDisabled ? nil : .spring(response: 0.4, dampingFraction: 0.75),
-                value: flow.currentScreen
+                value: store.flow.currentScreen
             )
 
-            FloatingTabBar(selectedTab: flow.selectedTab) { tab in
-                flow.selectTab(tab)
+            FloatingTabBar(selectedTab: store.flow.selectedTab) { tab in
+                store.selectTab(tab)
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 18)
+        }
+        .alert(
+            "暂时无法保存",
+            isPresented: Binding(
+                get: { store.lastActionError != nil },
+                set: { if !$0 { store.lastActionError = nil } }
+            )
+        ) {
+            Button("知道了", role: .cancel) { store.lastActionError = nil }
+        } message: {
+            Text(store.lastActionError ?? "请稍后重试。")
         }
     }
 
@@ -70,7 +81,7 @@ struct AppShellView: View {
         tab: LearnNowTab,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        StableStage(isActive: flow.currentScreen == screen(for: tab)) {
+        StableStage(isActive: store.flow.currentScreen == screen(for: tab)) {
             content()
         }
     }
@@ -90,41 +101,41 @@ struct AppShellView: View {
 }
 
 private struct RoutesJourneyContainer: View {
-    @Binding var flow: LearnNowFlowState
+    @Bindable var store: LearnNowAppStore
 
     var body: some View {
         ZStack {
             routesStage(destination: .overview) {
-                RoutesScreen(model: flow.routesOverviewModel) { _ in
-                    flow.openPath()
+                RoutesScreen(model: store.flow.routesOverviewModel) { _ in
+                    store.openPath()
                 }
             }
 
             routesStage(destination: .path) {
                 PathScreen(
-                    model: flow.pathScreenModel,
-                    onBack: { flow.showRoutes() },
-                    onSelectTrack: { flow.selectRouteTrack($0) },
-                    onOpenLesson: { flow.openLesson(moduleID: $0) }
+                    model: store.flow.pathScreenModel,
+                    onBack: { store.showRoutes() },
+                    onSelectTrack: { store.selectRouteTrack($0) },
+                    onOpenLesson: { store.openLesson(moduleID: $0) }
                 )
             }
 
             routesStage(destination: .lesson) {
                 LessonScreen(
-                    model: flow.lessonScreenModel,
-                    onBack: { flow.openPathForLoadedLesson() },
-                    onSelectPage: { flow.setCurrentLessonPageIndex($0) },
-                    onAnswer: { flow.answerCurrentLesson(with: $0) },
-                    onCallToAction: { flow.handleLessonCallToAction($0) }
+                    model: store.flow.lessonScreenModel,
+                    onBack: { store.openPathForLoadedLesson() },
+                    onSelectPage: { store.setCurrentLessonPageIndex($0) },
+                    onAnswer: { store.answerCurrentLesson(with: $0) },
+                    onCallToAction: { store.handleLessonCallToAction($0) }
                 )
             }
 
             routesStage(destination: .completion) {
                 CompletionScreen(
-                    model: flow.completionScreenModel,
-                    onContinueLearning: { flow.openNextLesson() },
-                    onFinish: { flow.finishLearning() },
-                    onOpenReviewBoard: { flow.openReviewBoard() }
+                    model: store.flow.completionScreenModel,
+                    onContinueLearning: { store.openNextLesson() },
+                    onFinish: { store.finishLearning() },
+                    onOpenReviewBoard: { store.openReviewBoard() }
                 )
             }
         }
@@ -134,23 +145,23 @@ private struct RoutesJourneyContainer: View {
         destination: LearnNowRoutesDestination,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        StableStage(isActive: flow.routesDestination == destination) {
+        StableStage(isActive: store.flow.routesDestination == destination) {
             content()
         }
     }
 }
 
 private struct ReviewBoardContainer: View {
-    @Binding var flow: LearnNowFlowState
+    @Bindable var store: LearnNowAppStore
 
     private var activeSheet: Binding<LearnNowReviewSheet?> {
         Binding(
-            get: { flow.activeReviewSheet },
+            get: { store.flow.activeReviewSheet },
             set: { newValue in
                 if let newValue {
-                    flow.activeReviewSheet = newValue
+                    store.flow.activeReviewSheet = newValue
                 } else {
-                    flow.dismissReviewSheet()
+                    store.dismissReviewSheet()
                 }
             }
         )
@@ -158,26 +169,26 @@ private struct ReviewBoardContainer: View {
 
     var body: some View {
         ReviewBoardScreen(
-            model: flow.reviewBoardModel,
-            onOpenFilters: { flow.openReviewCardPool() },
-            onFlipCard: { flow.flipCurrentReviewCard() },
-            onRate: { flow.rateCurrentReviewCard($0) },
-            onEmptyAction: { flow.handleReviewEmptyPrimaryAction() }
+            model: store.flow.reviewBoardModel,
+            onOpenFilters: { store.openReviewCardPool() },
+            onFlipCard: { store.flipCurrentReviewCard() },
+            onRate: { store.rateCurrentReviewCard($0) },
+            onEmptyAction: { store.handleReviewEmptyPrimaryAction() }
         )
         .sheet(item: activeSheet) { sheet in
             switch sheet {
             case .cardPool:
                 ReviewFiltersSheet(
-                    model: flow.reviewFiltersSheetModel,
-                    onReset: { flow.resetDraftReviewFilters() },
-                    onSelectTime: { flow.setDraftTimeFilter($0) },
-                    onToggleTopic: { flow.toggleDraftTopic($0) },
-                    onToggleModule: { flow.toggleDraftModule($0) },
-                    onSelectMastery: { flow.setDraftMasteryFilter($0) },
-                    onSelectFavorite: { flow.setDraftFavoriteFilter($0) },
-                    onToggleFavorite: { flow.toggleReviewCardFavorited(id: $0) },
-                    onToggleMastered: { flow.toggleReviewCardMastered(id: $0) },
-                    onApply: { flow.applyReviewCardPoolFilters() }
+                    model: store.flow.reviewFiltersSheetModel,
+                    onReset: { store.resetDraftReviewFilters() },
+                    onSelectTime: { store.setDraftTimeFilter($0) },
+                    onToggleTopic: { store.toggleDraftTopic($0) },
+                    onToggleModule: { store.toggleDraftModule($0) },
+                    onSelectMastery: { store.setDraftMasteryFilter($0) },
+                    onSelectFavorite: { store.setDraftFavoriteFilter($0) },
+                    onToggleFavorite: { store.toggleReviewCardFavorited(id: $0) },
+                    onToggleMastered: { store.toggleReviewCardMastered(id: $0) },
+                    onApply: { store.applyReviewCardPoolFilters() }
                 )
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
@@ -204,9 +215,9 @@ private struct StableStage<Content: View>: View {
 }
 
 private struct AppShellPreviewContainer: View {
-    @State private var flow = LearnNowFlowState()
+    @State private var store = LearnNowAppStore()
 
     var body: some View {
-        AppShellView(flow: $flow)
+        AppShellView(store: store)
     }
 }

@@ -10,23 +10,32 @@ import SwiftData
 
 @main
 struct LearnNowApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+    private let sharedModelContainer: Result<ModelContainer, Error> = {
+        let processInfo = ProcessInfo.processInfo
+        let isUITesting = processInfo.arguments.contains("-UITestingResetData")
+        let isUnitTesting = processInfo.environment["LEARNNOW_TESTING"] == "YES"
+        let usesEphemeralStore = isUITesting || isUnitTesting
+        return Result {
+            try LearnNowModelContainerFactory.make(
+                cloudSyncEnabled: !usesEphemeralStore,
+                inMemory: usesEphemeralStore
+            )
         }
     }()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            switch sharedModelContainer {
+            case .success(let container):
+                ContentView()
+                    .modelContainer(container)
+            case .failure(let error):
+                ContentUnavailableView(
+                    "学习记录无法打开",
+                    systemImage: "externaldrive.badge.exclamationmark",
+                    description: Text(error.localizedDescription)
+                )
+            }
         }
-        .modelContainer(sharedModelContainer)
     }
 }

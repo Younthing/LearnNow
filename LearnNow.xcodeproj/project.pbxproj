@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F50000012FA0000000000001 /* FSRS in Frameworks */ = {isa = PBXBuildFile; productRef = F50000032FA0000000000003 /* FSRS */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		06A9D2892F7BE94100348AB9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F50000012FA0000000000001 /* FSRS in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = LearnNow;
 			packageProductDependencies = (
+				F50000032FA0000000000003 /* FSRS */,
 			);
 			productName = LearnNow;
 			productReference = 06A9D2772F7BE94000348AB9 /* LearnNow.app */;
@@ -188,6 +194,17 @@
 				TargetAttributes = {
 					06A9D2762F7BE94000348AB9 = {
 						CreatedOnToolsVersion = 26.2;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.Push = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
 					};
 					06A9D2872F7BE94100348AB9 = {
 						CreatedOnToolsVersion = 26.2;
@@ -208,6 +225,9 @@
 			);
 			mainGroup = 06A9D26E2F7BE94000348AB9;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F50000022FA0000000000002 /* XCRemoteSwiftPackageReference "swift-fsrs" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 06A9D2782F7BE94000348AB9 /* Products */;
 			projectDirPath = "";
@@ -285,8 +305,10 @@
 		06A9D29C2F7BE94100348AB9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APS_ENVIRONMENT = development;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LearnNow/LearnNow.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = PHRZM3P94S;
@@ -296,6 +318,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LearnNow/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -311,7 +334,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = fanxi.LearnNow;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fanxi.learnnow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -330,8 +353,10 @@
 		06A9D29D2F7BE94100348AB9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APS_ENVIRONMENT = production;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LearnNow/LearnNow.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = PHRZM3P94S;
@@ -341,6 +366,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LearnNow/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -356,7 +382,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = fanxi.LearnNow;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fanxi.learnnow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -630,6 +656,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F50000022FA0000000000002 /* XCRemoteSwiftPackageReference "swift-fsrs" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/open-spaced-repetition/swift-fsrs.git";
+			requirement = {
+				kind = revision;
+				revision = 4fbaf20184d62f82a9f44f343337c61a2c5483e9;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F50000032FA0000000000003 /* FSRS */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F50000022FA0000000000002 /* XCRemoteSwiftPackageReference "swift-fsrs" */;
+			productName = FSRS;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 06A9D26F2F7BE94000348AB9 /* Project object */;
 }

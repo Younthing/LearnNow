@@ -403,10 +403,13 @@ private struct PathModuleSurface<Content: View>: View {
 }
 
 #Preview("Path Empty Track") {
-    var flow = LearnNowFlowState.pathPreview
-    flow.selectRouteTrack(.deepLearning)
+    let flow = {
+        var value = LearnNowFlowState.pathPreview
+        value.selectRouteTrack(.deepLearning)
+        return value
+    }()
 
-    return ZStack {
+    ZStack {
         LearnNowPalette.canvas.ignoresSafeArea()
         PathScreen(
             model: flow.pathScreenModel,
