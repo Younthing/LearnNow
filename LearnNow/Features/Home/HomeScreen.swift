@@ -3,18 +3,23 @@ import SwiftUI
 private enum HomeLayout {
     static let topPadding: CGFloat = LearnNowSpacing.screenTop
     static let horizontalPadding: CGFloat = LearnNowSpacing.screenHorizontal
-    static let cardSpacing: CGFloat = 14
-    static let estimatedHeaderHeight: CGFloat = 58
+    static let headerHeight: CGFloat = 58
+    static let bottomPadding: CGFloat = 0
     static let cardContentPadding: CGFloat = 20
     static let cardCornerRadius: CGFloat = 26
-    static let continueMinContentHeight: CGFloat = 160
-    static let tipMinContentHeight: CGFloat = 132
     static let progressBottomSpacing: CGFloat = 12
 
-    static func cardHeights(for availableHeight: CGFloat) -> (status: CGFloat, secondary: CGFloat) {
+    static func cardHeights(
+        for availableHeight: CGFloat,
+        cardSpacing: CGFloat
+    ) -> (status: CGFloat, secondary: CGFloat) {
         let totalCardHeight = max(
             0,
-            availableHeight - topPadding - estimatedHeaderHeight - cardSpacing * 3
+            availableHeight
+                - topPadding
+                - bottomPadding
+                - headerHeight
+                - cardSpacing * 3
         )
         let unit = totalCardHeight / 7
 
@@ -28,21 +33,23 @@ private enum HomeLayout {
 
 struct HomeScreen: View {
     let model: HomeScreenModel
+    var cardSpacing: CGFloat = 14
     let onContinueLearning: () -> Void
 
     var body: some View {
         GeometryReader { geometry in
-            let cardHeights = HomeLayout.cardHeights(for: geometry.size.height)
-            let secondaryContentHeight = HomeLayout.contentHeight(for: cardHeights.secondary)
+            let cardHeights = HomeLayout.cardHeights(
+                for: geometry.size.height,
+                cardSpacing: cardSpacing
+            )
 
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: HomeLayout.cardSpacing) {
+                VStack(alignment: .leading, spacing: cardSpacing) {
                     ScreenHeader(
                         title: model.title,
-                        subtitle: model.subtitle,
-                        trailing: { AvatarBadge() }
+                        subtitle: model.subtitle
                     )
-                    .frame(height: HomeLayout.estimatedHeaderHeight, alignment: .center)
+                    .frame(height: HomeLayout.headerHeight, alignment: .center)
 
                     TodayStatusCard(
                         metrics: model.statusMetrics,
@@ -57,18 +64,19 @@ struct HomeScreen: View {
                         progress: model.continueCard.progress,
                         progressText: model.continueCard.progressText,
                         accent: .blue,
-                        contentHeight: max(secondaryContentHeight, HomeLayout.continueMinContentHeight),
+                        contentHeight: HomeLayout.contentHeight(for: cardHeights.secondary),
                         action: onContinueLearning
                     )
 
                     KnowledgeTipCard(
                         title: model.tipSectionTitle,
                         tip: model.knowledgeTip,
-                        contentHeight: max(secondaryContentHeight, HomeLayout.tipMinContentHeight)
+                        contentHeight: HomeLayout.contentHeight(for: cardHeights.secondary)
                     )
                 }
                 .padding(.horizontal, HomeLayout.horizontalPadding)
                 .padding(.top, HomeLayout.topPadding)
+                .padding(.bottom, HomeLayout.bottomPadding)
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .top)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -422,17 +430,11 @@ private struct StatusMetricsBand: View {
     let metrics: [LearnNowMetric]
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 12) {
             ForEach(metrics) { metric in
                 StatusSummaryMetric(metric: metric)
             }
         }
-        .padding(8)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(LearnNowPalette.base)
-                .modifier(InsetSurface(cornerRadius: 24))
-        )
     }
 }
 
@@ -466,14 +468,20 @@ private struct StatusSummaryMetric: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(LearnNowPalette.base)
-                .modifier(OuterSurface(cornerRadius: 18))
+                .fill(LearnNowPalette.color(for: metric.accent).opacity(0.07))
         )
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(
+                    LearnNowPalette.color(for: metric.accent).opacity(0.13),
+                    lineWidth: 0.75
+                )
+        }
     }
 }
 
@@ -486,7 +494,6 @@ private struct StatusIconBadge: View {
             Circle()
                 .fill(LearnNowPalette.color(for: accent).opacity(0.10))
                 .frame(width: 40, height: 40)
-                .modifier(InsetSurface(cornerRadius: 20))
 
             if let systemImage {
                 Image(systemName: systemImage)
@@ -542,7 +549,7 @@ private struct ContinueLearningCard: View {
 
                 ProgressTrack(progress: progress, accent: accent, height: 12)
             }
-            .frame(minHeight: max(contentHeight, HomeLayout.continueMinContentHeight), alignment: .top)
+            .frame(height: contentHeight, alignment: .top)
         }
     }
 }
@@ -573,7 +580,7 @@ private struct KnowledgeTipCard: View {
                 }
                 .padding(.top, 8)
             }
-            .frame(minHeight: max(contentHeight, HomeLayout.tipMinContentHeight), alignment: .top)
+            .frame(height: contentHeight, alignment: .top)
         }
         .accessibilityElement(children: .combine)
     }
@@ -692,27 +699,6 @@ private struct TipBellCurve: Shape {
         )
 
         return path
-    }
-}
-
-private struct AvatarBadge: View {
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [LearnNowPalette.color(for: .blue), LearnNowPalette.color(for: .purple)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 52, height: 52)
-                .softOuter(radius: 8, x: 4, y: 4)
-
-            Image(systemName: "person.fill")
-                .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(.white.opacity(0.95))
-        }
     }
 }
 

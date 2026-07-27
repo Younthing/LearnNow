@@ -315,7 +315,7 @@ extension LearnNowFlowState {
     var reviewDueMetric: LearnNowMetric {
         LearnNowMetric(
             id: "review",
-            title: "今日待复习",
+            title: "待复习卡片",
             value: "\(reviewCardsDueTodayCount)",
             unit: "张",
             systemImage: "calendar.badge.clock",
@@ -350,7 +350,7 @@ extension LearnNowFlowState {
         let tip = catalog.dailyTips.first
 
         return HomeScreenModel(
-            title: "今日学习",
+            title: "今日",
             subtitle: todayLabel,
             statusMetrics: [streakMetric, xpMetric, reviewDueMetric],
             continueSectionTitle: "继续学习",
