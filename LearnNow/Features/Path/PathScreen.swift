@@ -92,18 +92,14 @@ private struct RouteTrackTabs: View {
     var body: some View {
         HStack(spacing: 8) {
             ForEach(tabs) { tab in
-                Button {
-                    onSelectTrack(tab.track)
-                } label: {
-                    NeumorphicPill(
-                        text: tab.title,
-                        accent: tab.isSelected ? .blue : .mint,
-                        isSelected: tab.isSelected,
-                        isExpanded: true
-                    )
-                }
+                MetadataChipButton(
+                    title: tab.title,
+                    accent: tab.isSelected ? .blue : .mint,
+                    isSelected: tab.isSelected,
+                    isExpanded: true,
+                    action: { onSelectTrack(tab.track) }
+                )
                 .frame(maxWidth: .infinity)
-                .buttonStyle(.plain)
                 .accessibilityIdentifier("path.track.\(tab.track.rawValue)")
             }
         }
@@ -221,10 +217,10 @@ private struct PathNodeRow: View {
         PathModuleSurface(accent: .blue, isInset: true, contentPadding: PathNodeLayout.featuredCardPadding) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .center, spacing: 12) {
-                    NeumorphicPill(
+                    MetadataChip(
                         text: "正在学习",
                         accent: .blue,
-                        isSelected: true
+                        prominence: .selected
                     )
                     .fixedSize()
 

@@ -117,7 +117,7 @@ private struct ReviewSummaryPills: View {
     var body: some View {
         HStack(spacing: 12) {
             ForEach(summaries) { summary in
-                NeumorphicPill(
+                MetadataChip(
                     text: "\(summary.bucket.title) \(summary.count)",
                     accent: summary.bucket.accent,
                     isExpanded: true

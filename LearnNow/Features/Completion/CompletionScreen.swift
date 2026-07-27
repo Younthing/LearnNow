@@ -51,7 +51,7 @@ struct CompletionScreen: View {
                         .foregroundStyle(LearnNowPalette.textPrimary)
 
                     FlowLayout(items: model.reviewTags) { tag in
-                        NeumorphicPill(text: tag, accent: .blue)
+                        MetadataChip(text: tag, accent: .blue)
                     }
 
                     HStack(alignment: .top, spacing: 10) {

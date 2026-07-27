@@ -107,7 +107,7 @@ private struct ProfileHeaderCard: View {
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    NeumorphicPill(text: profileLevel, accent: .purple)
+                    MetadataChip(text: profileLevel, accent: .purple)
 
                     Text(profileName)
                         .font(LearnNowTypography.cardHeadline)
@@ -134,7 +134,11 @@ private struct ProfileOverviewCard: View {
             VStack(alignment: .leading, spacing: 18) {
                 HStack(alignment: .top, spacing: 16) {
                     VStack(alignment: .leading, spacing: 10) {
-                        NeumorphicPill(text: "学习概览", accent: .blue)
+                        MetadataChip(
+                            text: "学习概览",
+                            accent: .blue,
+                            prominence: .subtle
+                        )
 
                         Text(model.title)
                             .font(LearnNowTypography.cardHeadline)

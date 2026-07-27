@@ -297,7 +297,7 @@ private struct ReviewFiltersSummaryCard: View {
                     Spacer()
 
                     if activeFilterCount > 0 {
-                        MetaCapsule(
+                        MetadataChip(
                             text: "\(activeFilterCount) 个条件",
                             accent: .blue
                         )
@@ -443,37 +443,13 @@ private struct FilterChip: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 13, weight: .bold))
-                }
-
-                Text(title)
-                    .font(LearnNowTypography.label)
-                    .lineLimit(1)
-            }
-            .foregroundStyle(isSelected ? LearnNowPalette.color(for: accent) : LearnNowPalette.textMuted)
-            .frame(maxWidth: expands ? .infinity : nil)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-            .background(
-                Group {
-                    if isSelected {
-                        Capsule(style: .continuous)
-                            .fill(LearnNowPalette.base)
-                            .modifier(InsetSurface(cornerRadius: 999))
-                    } else {
-                        Capsule(style: .continuous)
-                            .fill(LearnNowPalette.base)
-                            .modifier(OuterSurface(cornerRadius: 999))
-                    }
-                }
-            )
-        }
-        .buttonStyle(.plain)
-        .frame(minHeight: 44)
+        MetadataChipButton(
+            title: title,
+            accent: accent,
+            isSelected: isSelected,
+            isExpanded: expands,
+            action: action
+        )
     }
 }
 
@@ -534,16 +510,11 @@ private struct SummaryFilterChip: View {
     let text: String
 
     var body: some View {
-        Text(text)
-            .font(.system(size: 12, weight: .black, design: .rounded))
-            .foregroundStyle(LearnNowPalette.textSecondary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(LearnNowPalette.base)
-                    .modifier(OuterSurface(cornerRadius: 999))
-            )
+        MetadataChip(
+            text: text,
+            accent: .blue,
+            prominence: .subtle
+        )
     }
 }
 
@@ -574,8 +545,12 @@ private struct ReviewCardPoolRow: View {
                 }
 
                 HStack(spacing: 8) {
-                    MetaCapsule(text: card.topic, accent: card.topicAccent)
-                    MetaCapsule(text: card.bucketTitle, accent: card.bucketAccent, subdued: true)
+                    MetadataChip(text: card.topic, accent: card.topicAccent)
+                    MetadataChip(
+                        text: card.bucketTitle,
+                        accent: card.bucketAccent,
+                        prominence: .subtle
+                    )
                 }
 
                 InsetCard(contentPadding: 14) {
@@ -639,26 +614,6 @@ private struct ReviewStatusButton: View {
         }
         .buttonStyle(.plain)
         .frame(minHeight: 48)
-    }
-}
-
-private struct MetaCapsule: View {
-    let text: String
-    let accent: LearnNowAccent
-    var subdued = false
-
-    var body: some View {
-        Text(text)
-            .font(.system(size: 12, weight: .black, design: .rounded))
-            .foregroundStyle(subdued ? LearnNowPalette.textMuted : LearnNowPalette.color(for: accent))
-            .lineLimit(1)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(LearnNowPalette.base)
-                    .modifier(OuterSurface(cornerRadius: 999))
-            )
     }
 }
 

@@ -129,7 +129,7 @@ private struct LessonHeroSection: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
-            NeumorphicPill(text: page.badge, accent: page.accent)
+            MetadataChip(text: page.badge, accent: page.accent)
 
             Text(page.title)
                 .font(.system(size: 30, weight: .black, design: .rounded))

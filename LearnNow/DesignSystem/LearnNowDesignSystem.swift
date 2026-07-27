@@ -226,23 +226,6 @@ struct FloatingTabBar: View {
     }
 }
 
-struct FlowLayout<Item: Hashable, Content: View>: View {
-    let items: [Item]
-    let content: (Item) -> Content
-
-    var body: some View {
-        LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 84), spacing: 8)],
-            alignment: .leading,
-            spacing: 8
-        ) {
-            ForEach(items, id: \.self) { item in
-                content(item)
-            }
-        }
-    }
-}
-
 struct SoftCard<Content: View>: View {
     var contentPadding: CGFloat = 24
     @ViewBuilder let content: Content
@@ -293,37 +276,6 @@ struct ProgressTrack: View {
             }
         }
         .frame(height: height)
-    }
-}
-
-struct NeumorphicPill: View {
-    let text: String
-    let accent: LearnNowAccent
-    var isSelected = false
-    var isExpanded = false
-
-    var body: some View {
-        Text(text)
-            .font(.system(size: 13, weight: .heavy, design: .rounded))
-            .foregroundStyle(
-                isSelected ? LearnNowPalette.color(for: accent) : LearnNowPalette.textMuted
-            )
-            .padding(.horizontal, 8)
-            .padding(.vertical, 10)
-            .frame(maxWidth: isExpanded ? .infinity : nil)
-            .background(
-                Group {
-                    if isSelected {
-                        Capsule(style: .continuous)
-                            .fill(LearnNowPalette.base)
-                            .modifier(InsetSurface(cornerRadius: 999))
-                    } else {
-                        Capsule(style: .continuous)
-                            .fill(LearnNowPalette.base)
-                            .modifier(OuterSurface(cornerRadius: 999))
-                    }
-                }
-            )
     }
 }
 

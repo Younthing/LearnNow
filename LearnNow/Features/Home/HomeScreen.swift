@@ -153,18 +153,7 @@ private struct StreakAchievementHero: View {
                         .minimumScaleFactor(0.75)
                 }
 
-                Text(milestoneText)
-                    .font(LearnNowTypography.label)
-                    .foregroundStyle(LearnNowPalette.color(for: metric.accent))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .background(
-                        Capsule(style: .continuous)
-                            .fill(LearnNowPalette.base)
-                            .modifier(InsetSurface(cornerRadius: 999))
-                    )
+                MetadataChip(text: milestoneText, accent: metric.accent)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -529,20 +518,12 @@ private struct ContinueLearningCard: View {
 
                     Spacer()
 
-                    Text(progressText)
-                        .font(LearnNowTypography.label)
-                        .foregroundStyle(LearnNowPalette.color(for: accent))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 7)
-                        .background(
-                            Capsule(style: .continuous)
-                                .fill(LearnNowPalette.color(for: accent).opacity(0.12))
-                        )
+                    MetadataChip(text: progressText, accent: accent)
                 }
 
                 HStack(alignment: .center, spacing: 16) {
                     VStack(alignment: .leading, spacing: 10) {
-                        NeumorphicPill(text: badge, accent: accent)
+                        MetadataChip(text: badge, accent: accent)
 
                         Text(title)
                             .font(LearnNowTypography.cardHeadline)
