@@ -2,25 +2,41 @@ import SwiftUI
 
 struct CompletionScreen: View {
     let model: CompletionScreenModel
+    let isActive: Bool
     let onContinueLearning: () -> Void
     let onFinish: () -> Void
     let onOpenReviewBoard: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.learnNowAnimationsEnabled) private var animationsEnabled
+    @Environment(\.learnNowReduceMotionOverride) private var reduceMotionOverride
+
+    @State private var isHeroPresented = false
+    @State private var isSymbolPresented = false
+    @State private var revealedSectionCount = 0
 
     var body: some View {
         ScreenScaffold(spacing: 26) {
             Spacer(minLength: 60)
 
-            InsetCircle(size: 112) {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 42, weight: .black))
-                    .foregroundStyle(LearnNowPalette.color(for: .mint))
-            }
+            CompletionHero(
+                isPresented: displayedHeroIsPresented,
+                isSymbolPresented: displayedSymbolIsPresented,
+                usesDrawOn: usesFullMotion,
+                showsGlow: !reduceTransparency
+            )
             .frame(maxWidth: .infinity)
 
             Text(model.title)
                 .font(.system(size: 32, weight: .black, design: .rounded))
                 .foregroundStyle(LearnNowPalette.textPrimary)
                 .frame(maxWidth: .infinity)
+                .completionReveal(
+                    isVisible: displayedSectionCount >= 1,
+                    usesMotion: usesFullMotion
+                )
+                .accessibilityAddTraits(.isHeader)
 
             SoftCard {
                 HStack {
@@ -43,6 +59,10 @@ struct CompletionScreen: View {
                     )
                 }
             }
+            .completionReveal(
+                isVisible: displayedSectionCount >= 2,
+                usesMotion: usesFullMotion
+            )
 
             InsetCard {
                 VStack(alignment: .leading, spacing: 16) {
@@ -64,6 +84,10 @@ struct CompletionScreen: View {
                     }
                 }
             }
+            .completionReveal(
+                isVisible: displayedSectionCount >= 3,
+                usesMotion: usesFullMotion
+            )
 
             CompletionActionGroup(
                 nextLessonTitle: model.nextLessonTitle,
@@ -72,8 +96,156 @@ struct CompletionScreen: View {
                 onFinish: onFinish,
                 onOpenReviewBoard: onOpenReviewBoard
             )
+            .completionReveal(
+                isVisible: displayedSectionCount >= 4,
+                usesMotion: usesFullMotion
+            )
         }
         .accessibilityIdentifier("screen.completion")
+        .task(id: isActive) {
+            await updateCelebrationState()
+        }
+        .sensoryFeedback(.success, trigger: isActive) { oldValue, newValue in
+            animationsEnabled && !oldValue && newValue
+        }
+    }
+
+    private var usesFullMotion: Bool {
+        animationsEnabled && !usesReducedMotion
+    }
+
+    private var usesReducedMotion: Bool {
+        reduceMotionOverride ?? reduceMotion
+    }
+
+    private var displayedHeroIsPresented: Bool {
+        animationsEnabled ? isHeroPresented : true
+    }
+
+    private var displayedSymbolIsPresented: Bool {
+        animationsEnabled ? isSymbolPresented : true
+    }
+
+    private var displayedSectionCount: Int {
+        animationsEnabled ? revealedSectionCount : 4
+    }
+
+    @MainActor
+    private func updateCelebrationState() async {
+        guard isActive else {
+            prepareForCelebration()
+            return
+        }
+
+        guard animationsEnabled else {
+            settleCelebration()
+            return
+        }
+
+        prepareForCelebration()
+        await Task.yield()
+
+        guard !Task.isCancelled, isActive else { return }
+
+        if usesReducedMotion {
+            withAnimation(.easeOut(duration: 0.18)) {
+                settleCelebration()
+            }
+            return
+        }
+
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.78)) {
+            isHeroPresented = true
+            isSymbolPresented = true
+        }
+
+        do {
+            for section in 1...4 {
+                try await Task.sleep(for: .milliseconds(80))
+                guard !Task.isCancelled, isActive else { return }
+
+                withAnimation(.easeOut(duration: 0.28)) {
+                    revealedSectionCount = section
+                }
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            return
+        }
+    }
+
+    @MainActor
+    private func prepareForCelebration() {
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+
+        withTransaction(transaction) {
+            isHeroPresented = false
+            isSymbolPresented = false
+            revealedSectionCount = 0
+        }
+    }
+
+    @MainActor
+    private func settleCelebration() {
+        isHeroPresented = true
+        isSymbolPresented = true
+        revealedSectionCount = 4
+    }
+}
+
+private struct CompletionHero: View {
+    let isPresented: Bool
+    let isSymbolPresented: Bool
+    let usesDrawOn: Bool
+    let showsGlow: Bool
+
+    var body: some View {
+        ZStack {
+            if showsGlow {
+                Circle()
+                    .fill(LearnNowPalette.color(for: .mint).opacity(0.18))
+                    .frame(width: 132, height: 132)
+                    .blur(radius: 18)
+            }
+
+            InsetCircle(size: 104) {
+                symbol
+            }
+            .overlay {
+                Circle()
+                    .stroke(
+                        LearnNowPalette.color(for: .mint).opacity(0.38),
+                        lineWidth: 1.25
+                    )
+            }
+        }
+        .scaleEffect(usesDrawOn ? (isPresented ? 1 : 0.86) : 1)
+        .opacity(isPresented ? 1 : 0)
+        .accessibilityHidden(true)
+        .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private var symbol: some View {
+        if usesDrawOn {
+            if isSymbolPresented {
+                completionSymbol
+                    .transition(.symbolEffect(.drawOn.byLayer))
+            }
+        } else {
+            completionSymbol
+                .opacity(isSymbolPresented ? 1 : 0)
+        }
+    }
+
+    private var completionSymbol: some View {
+        Image(systemName: "checkmark.seal.fill")
+            .font(.system(size: 58, weight: .semibold))
+            .symbolRenderingMode(.hierarchical)
+            .symbolColorRenderingMode(.gradient)
+            .foregroundStyle(LearnNowPalette.color(for: .mint))
     }
 }
 
@@ -84,39 +256,16 @@ private struct CompletionActionGroup: View {
     let onFinish: () -> Void
     let onOpenReviewBoard: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         VStack(spacing: 14) {
             if let nextLessonTitle {
-                GeometryReader { proxy in
-                    let spacing: CGFloat = 12
-                    let primaryWidth = max((proxy.size.width - spacing) * 0.66, 0)
-                    let secondaryWidth = max((proxy.size.width - spacing) * 0.34, 0)
-
-                    HStack(spacing: spacing) {
-                        CompletionPrimaryCTAButton(
-                            title: "学习下一章节",
-                            subtitle: nextLessonTitle,
-                            systemImage: "arrow.right",
-                            action: onContinueLearning
-                        )
-                        .frame(width: primaryWidth)
-                        .accessibilityIdentifier("completion.cta.next")
-
-                        CompletionCompactCTAButton(
-                            title: "完成学习",
-                            systemImage: "checkmark",
-                            action: onFinish
-                        )
-                        .frame(width: secondaryWidth)
-                        .accessibilityIdentifier("completion.cta.finish")
-                    }
-                }
-                .frame(height: 74)
+                actionRow(nextLessonTitle: nextLessonTitle)
             } else {
-                FullWidthButton(
+                CompletionFinishCTAButton(
                     title: "完成学习",
-                    accent: .blue,
-                    systemImage: "checkmark",
+                    isPrimary: true,
                     action: onFinish
                 )
                 .accessibilityIdentifier("completion.cta.finish")
@@ -127,8 +276,9 @@ private struct CompletionActionGroup: View {
                     HStack(spacing: 6) {
                         Text("去复习看板看看")
 
-                        Image(systemName: "arrow.right")
+                        Image(systemName: "chevron.forward")
                             .font(.system(size: 12, weight: .bold))
+                            .accessibilityHidden(true)
                     }
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(LearnNowPalette.textMuted)
@@ -139,6 +289,50 @@ private struct CompletionActionGroup: View {
                 .accessibilityIdentifier("completion.cta.review")
             }
         }
+    }
+
+    @ViewBuilder
+    private func actionRow(nextLessonTitle: String) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(spacing: 12) {
+                nextLessonButton(nextLessonTitle: nextLessonTitle)
+
+                CompletionFinishCTAButton(
+                    title: "完成学习",
+                    isPrimary: false,
+                    action: onFinish
+                )
+                .accessibilityIdentifier("completion.cta.finish")
+            }
+        } else {
+            GeometryReader { proxy in
+                let spacing: CGFloat = 12
+                let primaryWidth = max((proxy.size.width - spacing) * 0.66, 0)
+                let secondaryWidth = max((proxy.size.width - spacing) * 0.34, 0)
+
+                HStack(spacing: spacing) {
+                    nextLessonButton(nextLessonTitle: nextLessonTitle)
+                        .frame(width: primaryWidth)
+
+                    CompletionSecondaryCTAButton(
+                        title: "完成学习",
+                        action: onFinish
+                    )
+                    .frame(width: secondaryWidth)
+                    .accessibilityIdentifier("completion.cta.finish")
+                }
+            }
+            .frame(height: 74)
+        }
+    }
+
+    private func nextLessonButton(nextLessonTitle: String) -> some View {
+        CompletionPrimaryCTAButton(
+            title: "学习下一章节",
+            subtitle: nextLessonTitle,
+            action: onContinueLearning
+        )
+        .accessibilityIdentifier("completion.cta.next")
     }
 }
 
@@ -168,27 +362,42 @@ private struct CompletionStat: View {
 private struct CompletionPrimaryCTAButton: View {
     let title: String
     let subtitle: String
-    let systemImage: String
     let action: () -> Void
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(title)
-                        .font(.system(size: 16, weight: .heavy, design: .rounded))
+                        .font(.system(.headline, design: .rounded, weight: .heavy))
 
                     Text(subtitle)
-                        .font(LearnNowTypography.screenSubtitle)
+                        .font(.system(.subheadline, design: .rounded, weight: .bold))
                         .foregroundStyle(LearnNowPalette.textMuted)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                        .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.85)
                 }
 
                 Spacer(minLength: 0)
 
-                Image(systemName: systemImage)
-                    .font(.system(size: 14, weight: .black))
+                ZStack {
+                    Circle()
+                        .fill(LearnNowPalette.color(for: .blue).opacity(0.12))
+
+                    Image(systemName: "chevron.forward")
+                        .font(.system(size: 14, weight: .bold))
+                }
+                .frame(width: 32, height: 32)
+                .overlay {
+                    Circle()
+                        .stroke(
+                            LearnNowPalette.color(for: .blue).opacity(0.18),
+                            lineWidth: 1
+                        )
+                }
+                .accessibilityHidden(true)
             }
             .foregroundStyle(LearnNowPalette.color(for: .blue))
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -196,41 +405,122 @@ private struct CompletionPrimaryCTAButton: View {
             .padding(.vertical, 18)
         }
         .buttonStyle(SoftPressStyle(cornerRadius: 22))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(subtitle)
+        .accessibilityHint("打开下一章节")
     }
 }
 
-private struct CompletionCompactCTAButton: View {
+private struct CompletionSecondaryCTAButton: View {
     let title: String
-    let systemImage: String
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 14, weight: .black))
-
-                Text(title)
-                    .font(LearnNowTypography.label)
-                    .multilineTextAlignment(.center)
-            }
-            .foregroundStyle(LearnNowPalette.textPrimary)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 14)
+            Text(title)
+                .font(.system(.subheadline, design: .rounded, weight: .heavy))
+                .multilineTextAlignment(.center)
+                .foregroundStyle(LearnNowPalette.textPrimary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 14)
         }
         .buttonStyle(SoftPressStyle(cornerRadius: 22))
+        .accessibilityLabel(title)
+        .accessibilityHint("返回学习路径")
     }
 }
 
-#Preview("Completion") {
-    ZStack {
-        LearnNowPalette.canvas.ignoresSafeArea()
-        CompletionScreen(
-            model: LearnNowFlowState.completionPreview.completionScreenModel,
-            onContinueLearning: {},
-            onFinish: {},
-            onOpenReviewBoard: {}
+private struct CompletionFinishCTAButton: View {
+    let title: String
+    let isPrimary: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(.headline, design: .rounded, weight: .heavy))
+                .foregroundStyle(
+                    isPrimary
+                        ? LearnNowPalette.color(for: .blue)
+                        : LearnNowPalette.textPrimary
+                )
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 18)
+        }
+        .buttonStyle(SoftPressStyle(cornerRadius: isPrimary ? 999 : 22))
+        .accessibilityLabel(title)
+        .accessibilityHint("返回学习路径")
+    }
+}
+
+private extension View {
+    func completionReveal(isVisible: Bool, usesMotion: Bool) -> some View {
+        opacity(isVisible ? 1 : 0)
+            .offset(y: usesMotion && !isVisible ? 12 : 0)
+    }
+}
+
+private extension CompletionScreenModel {
+    var finalChapterPreview: Self {
+        CompletionScreenModel(
+            title: title,
+            streakDays: streakDays,
+            gainedXPText: gainedXPText,
+            reviewCount: reviewCount,
+            reviewTags: reviewTags,
+            reviewMessage: reviewMessage,
+            nextLessonTitle: nil,
+            showsReviewAction: showsReviewAction
         )
     }
+}
+
+private struct CompletionPreviewSurface: View {
+    let model: CompletionScreenModel
+    var animationsEnabled = true
+
+    var body: some View {
+        ZStack {
+            LearnNowPalette.canvas.ignoresSafeArea()
+            CompletionScreen(
+                model: model,
+                isActive: true,
+                onContinueLearning: {},
+                onFinish: {},
+                onOpenReviewBoard: {}
+            )
+        }
+        .environment(\.learnNowAnimationsEnabled, animationsEnabled)
+    }
+}
+
+#Preview("Completion · Animated") {
+    CompletionPreviewSurface(
+        model: LearnNowFlowState.completionPreview.completionScreenModel
+    )
+}
+
+#Preview("Completion · Reduce Motion") {
+    CompletionPreviewSurface(
+        model: LearnNowFlowState.completionPreview.completionScreenModel
+    )
+    .environment(\.learnNowReduceMotionOverride, true)
+}
+
+#Preview("Completion · Accessibility Type") {
+    CompletionPreviewSurface(
+        model: LearnNowFlowState.completionPreview.completionScreenModel,
+        animationsEnabled: false
+    )
+    .environment(\.dynamicTypeSize, .accessibility3)
+}
+
+#Preview("Completion · Final Chapter") {
+    CompletionPreviewSurface(
+        model: LearnNowFlowState.completionPreview.completionScreenModel.finalChapterPreview,
+        animationsEnabled: false
+    )
 }

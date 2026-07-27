@@ -30,6 +30,7 @@ struct AppShellView: View {
                     }
             }
         }
+        .environment(\.learnNowAnimationsEnabled, !animationsDisabled)
         .alert(
             "暂时无法保存",
             isPresented: Binding(
@@ -154,6 +155,7 @@ private struct RoutesJourneyContainer: View {
             routesStage(destination: .completion) {
                 CompletionScreen(
                     model: store.flow.completionScreenModel,
+                    isActive: store.flow.routesDestination == .completion,
                     onContinueLearning: { store.openNextLesson() },
                     onFinish: { store.finishLearning() },
                     onOpenReviewBoard: { store.openReviewBoard() }

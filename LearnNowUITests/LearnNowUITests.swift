@@ -72,6 +72,15 @@ final class LearnNowUITests: XCTestCase {
     }
 
     @MainActor
+    func testCompletionReviewCTAOpensReviewBoard() throws {
+        navigateToCompletion()
+
+        tapWhenHittable(element(matchingIdentifier: "completion.cta.review"))
+
+        assertExists(element(matchingIdentifier: "screen.anki"))
+    }
+
+    @MainActor
     func testPathTrackTabsSwitchVisibleContent() throws {
         tapWhenHittable(element(matchingIdentifier: "tab.routes"))
         tapWhenHittable(element(matchingIdentifier: "route.datascience"))

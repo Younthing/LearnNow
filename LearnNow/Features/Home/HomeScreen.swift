@@ -549,7 +549,7 @@ private struct ContinueLearningCard: View {
 
                 ProgressTrack(progress: progress, accent: accent, height: 12)
             }
-            .frame(height: contentHeight, alignment: .top)
+            .frame(minHeight: contentHeight, alignment: .top)
         }
     }
 }

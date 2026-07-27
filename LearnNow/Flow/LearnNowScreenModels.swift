@@ -350,12 +350,12 @@ extension LearnNowFlowState {
         let tip = catalog.dailyTips.first
 
         return HomeScreenModel(
-            title: "今日",
+            title: "今天快乐",
             subtitle: todayLabel,
             statusMetrics: [streakMetric, xpMetric, reviewDueMetric],
             continueSectionTitle: "继续学习",
             continueCard: learningSummary,
-            tipSectionTitle: "今日知识点 Tips",
+            tipSectionTitle: "Tips",
             knowledgeTip: .init(
                 title: tip?.title ?? "开始今天的学习",
                 body: tip?.body ?? "完成一个课程模块后，相关知识卡片会自动进入复习池。",

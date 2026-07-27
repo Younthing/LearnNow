@@ -6,6 +6,26 @@ import UIKit
 import AppKit
 #endif
 
+private struct LearnNowAnimationsEnabledKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+private struct LearnNowReduceMotionOverrideKey: EnvironmentKey {
+    static let defaultValue: Bool? = nil
+}
+
+extension EnvironmentValues {
+    var learnNowAnimationsEnabled: Bool {
+        get { self[LearnNowAnimationsEnabledKey.self] }
+        set { self[LearnNowAnimationsEnabledKey.self] = newValue }
+    }
+
+    var learnNowReduceMotionOverride: Bool? {
+        get { self[LearnNowReduceMotionOverrideKey.self] }
+        set { self[LearnNowReduceMotionOverrideKey.self] = newValue }
+    }
+}
+
 enum LearnNowPalette {
     static let base = Color.dynamic(light: 0xFFFFFF, dark: 0x1E1E24, lightOpacity: 0.55, darkOpacity: 0.5)
     static let canvas = Color.dynamic(light: 0xF4F6F9, dark: 0x07070A)
@@ -41,12 +61,52 @@ enum LearnNowPalette {
 }
 
 struct BackgroundGlow: View {
-    @State private var phase = false
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.learnNowAnimationsEnabled) private var animationsEnabled
+    @Environment(\.learnNowReduceMotionOverride) private var reduceMotionOverride
 
     var body: some View {
         let opacityMultiplier: Double = colorScheme == .dark ? 0.7 : 1.0
 
+        if shouldAnimate {
+            AnimatedBackgroundGlow(opacityMultiplier: opacityMultiplier)
+        } else {
+            BackgroundGlowLayer(
+                phase: false,
+                opacityMultiplier: opacityMultiplier
+            )
+        }
+    }
+
+    private var shouldAnimate: Bool {
+        animationsEnabled && !(reduceMotionOverride ?? reduceMotion)
+    }
+}
+
+private struct AnimatedBackgroundGlow: View {
+    let opacityMultiplier: Double
+
+    @State private var phase = false
+
+    var body: some View {
+        BackgroundGlowLayer(
+            phase: phase,
+            opacityMultiplier: opacityMultiplier
+        )
+        .task {
+            withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
+                phase = true
+            }
+        }
+    }
+}
+
+private struct BackgroundGlowLayer: View {
+    let phase: Bool
+    let opacityMultiplier: Double
+
+    var body: some View {
         ZStack {
             Circle()
                 .fill(LearnNowPalette.color(for: .blue).opacity(0.35 * opacityMultiplier))
@@ -65,11 +125,6 @@ struct BackgroundGlow: View {
                 .frame(width: 300, height: 300)
                 .blur(radius: 70)
                 .offset(x: phase ? 140 : -140, y: phase ? 250 : 380)
-        }
-        .onAppear {
-            withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
-                phase.toggle()
-            }
         }
     }
 }
