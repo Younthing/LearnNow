@@ -10,7 +10,16 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var store = LearnNowAppStore()
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var store: LearnNowAppStore
+
+    init(activeCloudSyncEnabled: Bool = true) {
+        _store = State(
+            initialValue: LearnNowAppStore(
+                activeCloudSyncEnabled: activeCloudSyncEnabled
+            )
+        )
+    }
 
     var body: some View {
         Group {
@@ -35,6 +44,11 @@ struct ContentView: View {
         }
         .preferredColorScheme(store.flow.isNightModeEnabled ? .dark : .light)
         .task { await store.load(context: modelContext) }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                store.refreshMemoryTrend()
+            }
+        }
     }
 }
 
@@ -61,7 +75,7 @@ private struct LearnNowStartupErrorView: View {
             SoftCard(contentPadding: 24) {
                 VStack(spacing: 16) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.title.weight(.bold))
                         .foregroundStyle(LearnNowPalette.color(for: .amber))
                     Text(title)
                         .font(LearnNowTypography.screenTitle)
@@ -79,5 +93,5 @@ private struct LearnNowStartupErrorView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(activeCloudSyncEnabled: false)
 }

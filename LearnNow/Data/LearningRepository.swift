@@ -9,6 +9,7 @@ protocol LearningRepository: AnyObject {
     func recordPageVisit(lessonID: String, pageID: String, pageOrder: Int) throws
     func completeLesson(lessonID: String, xp: Int) throws -> Bool
     func setCardPreference(cardID: String, isFavorited: Bool, isMastered: Bool) throws
+    func saveProfilePreference(_ preference: ProfilePreference) throws
     func recordReview(
         cardID: String,
         memory: ReviewMemorySnapshot?,
@@ -22,18 +23,21 @@ final class SwiftDataLearningRepository: LearningRepository {
     private let clock: any LearnNowClock
     private let scheduler: any ReviewScheduler
     private let syncAvailabilityOverride: LearnNowSyncAvailability?
+    private let cloudSyncEnabled: Bool
     private let logger = Logger(subsystem: "fanxi.LearnNow", category: "LearningRepository")
 
     init(
         context: ModelContext,
         clock: (any LearnNowClock)? = nil,
         scheduler: (any ReviewScheduler)? = nil,
-        syncAvailabilityOverride: LearnNowSyncAvailability? = nil
+        syncAvailabilityOverride: LearnNowSyncAvailability? = nil,
+        cloudSyncEnabled: Bool = true
     ) {
         self.context = context
         self.clock = clock ?? SystemLearnNowClock()
         self.scheduler = scheduler ?? FSRSReviewScheduler()
         self.syncAvailabilityOverride = syncAvailabilityOverride
+        self.cloudSyncEnabled = cloudSyncEnabled
     }
 
     func loadSnapshot(catalog: CourseCatalog) async throws -> LearningSnapshot {
@@ -41,6 +45,7 @@ final class SwiftDataLearningRepository: LearningRepository {
         let eventRecords = try context.fetch(FetchDescriptor<LearningEventRecord>())
         let logRecords = try context.fetch(FetchDescriptor<ReviewLogRecord>())
         let preferenceRecords = try context.fetch(FetchDescriptor<CardPreferenceRecord>())
+        let profilePreferenceRecords = try context.fetch(FetchDescriptor<ProfilePreferenceRecord>())
         let cacheRecords = try context.fetch(FetchDescriptor<ReviewScheduleCacheRecord>())
 
         let mergedProgress = mergeProgress(progressRecords)
@@ -70,6 +75,7 @@ final class SwiftDataLearningRepository: LearningRepository {
             by: \.cardID
         )
         let preferencesByCard = mergePreferences(preferenceRecords)
+        let profilePreferenceRecord = mergeProfilePreferences(profilePreferenceRecords)
         let cacheByCard = Dictionary(grouping: cacheRecords, by: \.cardID)
 
         var reviewMemoryByCardID: [String: ReviewMemorySnapshot] = [:]
@@ -138,6 +144,9 @@ final class SwiftDataLearningRepository: LearningRepository {
                 .mapValues(\.highestPageOrder),
             activityByLocalDay: activityByDay,
             reviewMemoryByCardID: reviewMemoryByCardID,
+            profilePreference: profilePreferenceRecord.map {
+                ProfilePreference(displayName: $0.displayName, avatarID: $0.avatarID)
+            } ?? ProfilePreference(),
             syncAvailability: await syncAvailability()
         )
     }
@@ -219,6 +228,23 @@ final class SwiftDataLearningRepository: LearningRepository {
         try context.save()
     }
 
+    func saveProfilePreference(_ preference: ProfilePreference) throws {
+        let records = try context.fetch(FetchDescriptor<ProfilePreferenceRecord>())
+        let existing = mergeProfilePreferences(records)
+        let record = existing ?? ProfilePreferenceRecord(
+            displayName: ProfilePreference.defaultDisplayName,
+            avatarID: ProfilePreference.defaultAvatarID,
+            updatedAt: clock.now
+        )
+        if existing == nil {
+            context.insert(record)
+        }
+        record.displayName = preference.displayName
+        record.avatarID = preference.avatarID
+        record.updatedAt = clock.now
+        try context.save()
+    }
+
     func recordReview(
         cardID: String,
         memory: ReviewMemorySnapshot?,
@@ -295,6 +321,17 @@ final class SwiftDataLearningRepository: LearningRepository {
         }
     }
 
+    private func mergeProfilePreferences(
+        _ records: [ProfilePreferenceRecord]
+    ) -> ProfilePreferenceRecord? {
+        let candidates = records.filter { $0.profileID == ProfilePreference.stableID }
+        guard let winner = candidates.max(by: profilePreferenceOrder) else { return nil }
+        for candidate in candidates where candidate !== winner {
+            context.delete(candidate)
+        }
+        return winner
+    }
+
     private func updateCache(
         existing: ReviewScheduleCacheRecord?,
         memory: ReviewMemorySnapshot,
@@ -358,6 +395,7 @@ final class SwiftDataLearningRepository: LearningRepository {
     }
 
     private func syncAvailability() async -> LearnNowSyncAvailability {
+        guard cloudSyncEnabled else { return .disabled }
         if let syncAvailabilityOverride { return syncAvailabilityOverride }
         let processInfo = ProcessInfo.processInfo
         if processInfo.environment["LEARNNOW_TESTING"] == "YES" ||
@@ -384,6 +422,15 @@ final class SwiftDataLearningRepository: LearningRepository {
                 return lhs.id.uuidString < rhs.id.uuidString
             }
             return lhs.reviewedAt < rhs.reviewedAt
+        }
+    }
+
+    private var profilePreferenceOrder: (ProfilePreferenceRecord, ProfilePreferenceRecord) -> Bool {
+        { lhs, rhs in
+            if lhs.updatedAt == rhs.updatedAt {
+                return lhs.id.uuidString < rhs.id.uuidString
+            }
+            return lhs.updatedAt < rhs.updatedAt
         }
     }
 }

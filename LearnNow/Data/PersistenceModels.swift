@@ -142,6 +142,29 @@ final class CardPreferenceRecord {
 }
 
 @Model
+final class ProfilePreferenceRecord {
+    var id: UUID = UUID()
+    var profileID: String = ProfilePreference.stableID
+    var displayName: String = ProfilePreference.defaultDisplayName
+    var avatarID: String = ProfilePreference.defaultAvatarID
+    var updatedAt: Date = Date.distantPast
+
+    init(
+        id: UUID = UUID(),
+        profileID: String = ProfilePreference.stableID,
+        displayName: String,
+        avatarID: String,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.profileID = profileID
+        self.displayName = displayName
+        self.avatarID = avatarID
+        self.updatedAt = updatedAt
+    }
+}
+
+@Model
 final class ReviewScheduleCacheRecord {
     var id: UUID = UUID()
     var cardID: String = ""
@@ -204,21 +227,46 @@ enum LearnNowSchemaV1: VersionedSchema {
     }
 }
 
+enum LearnNowSchemaV2: VersionedSchema {
+    static let versionIdentifier = Schema.Version(2, 0, 0)
+    static var models: [any PersistentModel.Type] {
+        [
+            LessonProgressRecord.self,
+            LearningEventRecord.self,
+            ReviewLogRecord.self,
+            CardPreferenceRecord.self,
+            ProfilePreferenceRecord.self,
+            ReviewScheduleCacheRecord.self,
+        ]
+    }
+}
+
 enum LearnNowMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [LearnNowSchemaV1.self] }
-    static var stages: [MigrationStage] { [] }
+    static var schemas: [any VersionedSchema.Type] {
+        [LearnNowSchemaV1.self, LearnNowSchemaV2.self]
+    }
+
+    static var stages: [MigrationStage] {
+        [
+            .lightweight(
+                fromVersion: LearnNowSchemaV1.self,
+                toVersion: LearnNowSchemaV2.self
+            ),
+        ]
+    }
 }
 
 enum LearnNowModelContainerFactory {
     static let cloudKitContainerIdentifier = "iCloud.fanxi.LearnNow"
 
     static func make(cloudSyncEnabled: Bool = true, inMemory: Bool = false) throws -> ModelContainer {
-        let fullSchema = Schema(versionedSchema: LearnNowSchemaV1.self)
+        let fullSchema = Schema(versionedSchema: LearnNowSchemaV2.self)
         let cloudSchema = Schema([
             LessonProgressRecord.self,
             LearningEventRecord.self,
             ReviewLogRecord.self,
             CardPreferenceRecord.self,
+            ProfilePreferenceRecord.self,
         ])
         let cacheSchema = Schema([ReviewScheduleCacheRecord.self])
 
@@ -247,6 +295,7 @@ enum LearnNowModelContainerFactory {
 
 enum LearnNowSyncAvailability: String, Equatable, Sendable {
     case available
+    case disabled
     case localOnly
     case restricted
     case unknown
@@ -254,10 +303,41 @@ enum LearnNowSyncAvailability: String, Equatable, Sendable {
     var displayText: String {
         switch self {
         case .available: "iCloud 同步"
+        case .disabled: "同步已关闭"
         case .localOnly: "仅本机"
         case .restricted: "iCloud 受限"
         case .unknown: "正在检查 iCloud"
         }
+    }
+}
+
+enum LearnNowCloudSyncPreference {
+    static let userDefaultsKey = "learnnow.settings.cloudSyncEnabled"
+
+    static func isEnabled(in defaults: UserDefaults = .standard) -> Bool {
+        guard defaults.object(forKey: userDefaultsKey) != nil else { return true }
+        return defaults.bool(forKey: userDefaultsKey)
+    }
+
+    static func setEnabled(_ enabled: Bool, in defaults: UserDefaults = .standard) {
+        defaults.set(enabled, forKey: userDefaultsKey)
+    }
+}
+
+struct ProfilePreference: Equatable, Sendable {
+    static let stableID = "primary-profile"
+    static let defaultDisplayName = "学习者"
+    static let defaultAvatarID = "fox"
+
+    var displayName: String
+    var avatarID: String
+
+    init(
+        displayName: String = Self.defaultDisplayName,
+        avatarID: String = Self.defaultAvatarID
+    ) {
+        self.displayName = displayName
+        self.avatarID = avatarID
     }
 }
 
@@ -287,6 +367,7 @@ struct LearningSnapshot: Equatable, Sendable {
     var highestPageOrderByLessonID: [String: Int] = [:]
     var activityByLocalDay: [String: Int] = [:]
     var reviewMemoryByCardID: [String: ReviewMemorySnapshot] = [:]
+    var profilePreference: ProfilePreference = ProfilePreference()
     var syncAvailability: LearnNowSyncAvailability = .unknown
 
     static let empty = Self()

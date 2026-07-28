@@ -9,7 +9,7 @@ enum LearnNowCloudKitSchemaInitializer {
 #if DEBUG
         guard ProcessInfo.processInfo.arguments.contains(launchArgument) else { return }
 
-        let marker = "schema-initialization:v1"
+        let marker = "schema-initialization:v2"
         if try context.fetch(FetchDescriptor<LessonProgressRecord>())
             .contains(where: { $0.lessonID == marker }) {
             return
@@ -60,6 +60,14 @@ enum LearnNowCloudKitSchemaInitializer {
                 cardID: marker,
                 isFavorited: false,
                 isMastered: false,
+                updatedAt: now
+            )
+        )
+        context.insert(
+            ProfilePreferenceRecord(
+                profileID: marker,
+                displayName: ProfilePreference.defaultDisplayName,
+                avatarID: ProfilePreference.defaultAvatarID,
                 updatedAt: now
             )
         )

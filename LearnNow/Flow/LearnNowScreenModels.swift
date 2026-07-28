@@ -10,6 +10,7 @@ struct HomeScreenModel: Equatable {
 
     let title: String
     let subtitle: String
+    let streakDays: Int
     let statusMetrics: [LearnNowMetric]
     let continueSectionTitle: String
     let continueCard: LearnNowLearningSummary
@@ -164,6 +165,11 @@ struct ReviewBoardModel: Equatable {
 }
 
 struct ReviewFiltersSheetModel: Equatable {
+    enum EmptyState: Equatable {
+        case noMatches
+        case noCards
+    }
+
     struct TimeOption: Identifiable, Equatable {
         let filter: LearnNowReviewTimeFilter
         let title: String
@@ -200,79 +206,25 @@ struct ReviewFiltersSheetModel: Equatable {
         let id: String
         let topic: String
         let topicAccent: LearnNowAccent
-        let bucketTitle: String
-        let bucketAccent: LearnNowAccent
         let frontTitle: String
         let moduleTitle: String
         let dueLabel: String
-        let highlight: String
+        let answerPreview: String
         let isFavorited: Bool
         let isMastered: Bool
     }
 
     let title: String
-    let subtitle: String
-    let stagedResultSummary: String
     let activeFilterCount: Int
-    let summaryMessage: String
     let canReset: Bool
     let timeOptions: [TimeOption]
     let topicOptions: [FacetOption]
     let moduleOptions: [FacetOption]
     let masteryOptions: [MasteryOption]
     let favoriteOptions: [FavoriteOption]
-    let resultsTitle: String
-    let emptyResultsTitle: String
-    let emptyResultsMessage: String
+    let resultCount: Int
+    let emptyState: EmptyState?
     let resultCards: [ResultCard]
-    let footerCountText: String
-    let footerSummary: String
-    let applyButtonTitle: String
-    let canApply: Bool
-}
-
-struct ProfileScreenModel: Equatable {
-    struct OverviewCTA: Equatable {
-        let badge: String
-        let title: String
-        let subtitle: String
-        let progress: Double
-        let progressText: String
-        let xpText: String
-        let heatmap: [LearnNowHeatCell]
-        let metrics: [LearnNowMetric]
-    }
-
-    struct FavoriteSummary: Equatable {
-        let countText: String
-        let masteredText: String
-        let highlights: [LearnNowProfileFavoriteHighlight]
-        let actionTitle: String
-    }
-
-    let title: String
-    let subtitle: String
-    let profileName: String
-    let profileHeadline: String
-    let profileLevel: String
-    let overviewCTA: OverviewCTA
-    let favoritesTitle: String
-    let favoritesSubtitle: String
-    let favoriteSummary: FavoriteSummary
-    let retentionTitle: String
-    let primarySeries: [Double]
-    let baselineSeries: [Double]
-    let knowledgeTitle: String
-    let knowledgeMetrics: [LearnNowKnowledgeMetric]
-    let settingsTitle: String
-    let settingsSubtitle: String
-    let reminderTitle: String
-    let reminderSubtitle: String
-    let reminderTimeText: String
-    let remindersEnabled: Bool
-    let appearanceTitle: String
-    let appearanceSubtitle: String
-    let isNightModeEnabled: Bool
 }
 
 extension LearnNowFlowState {
@@ -315,7 +267,7 @@ extension LearnNowFlowState {
     var reviewDueMetric: LearnNowMetric {
         LearnNowMetric(
             id: "review",
-            title: "今日待复习",
+            title: "待复习卡片",
             value: "\(reviewCardsDueTodayCount)",
             unit: "张",
             systemImage: "calendar.badge.clock",
@@ -350,12 +302,13 @@ extension LearnNowFlowState {
         let tip = catalog.dailyTips.first
 
         return HomeScreenModel(
-            title: "今日学习",
+            title: "今天快乐",
             subtitle: todayLabel,
+            streakDays: streakDays,
             statusMetrics: [streakMetric, xpMetric, reviewDueMetric],
             continueSectionTitle: "继续学习",
             continueCard: learningSummary,
-            tipSectionTitle: "今日知识点 Tips",
+            tipSectionTitle: "Tips",
             knowledgeTip: .init(
                 title: tip?.title ?? "开始今天的学习",
                 body: tip?.body ?? "完成一个课程模块后，相关知识卡片会自动进入复习池。",
@@ -515,14 +468,11 @@ extension LearnNowFlowState {
     }
 
     var reviewFiltersSheetModel: ReviewFiltersSheetModel {
-        ReviewFiltersSheetModel(
+        let stagedCards = stagedReviewCards
+
+        return ReviewFiltersSheetModel(
             title: "卡池浏览",
-            subtitle: "先浏览这一轮卡池，再按需收窄范围。",
-            stagedResultSummary: stagedResultSummary,
             activeFilterCount: stagedFilterBadgeCount,
-            summaryMessage: draftReviewFilters.isDefault
-                ? "你现在看到的是全部卡池，可以直接浏览，或先用时间范围快速收窄。"
-                : "结果会即时刷新；只有点击底部主按钮后，才会真正替换当前复习队列。",
             canReset: stagedFilterBadgeCount > 0,
             timeOptions: LearnNowReviewTimeFilter.allCases.map {
                 .init(filter: $0, title: $0.title, isSelected: draftReviewFilters.time == $0)
@@ -551,73 +501,161 @@ extension LearnNowFlowState {
             favoriteOptions: LearnNowReviewFavoriteFilter.allCases.map {
                 .init(filter: $0, title: $0.title, isSelected: draftReviewFilters.favorite == $0)
             },
-            resultsTitle: "卡片浏览",
-            emptyResultsTitle: "当前筛选下暂无卡片",
-            emptyResultsMessage: "可以放宽时间窗口，或展开高级筛选取消主题 / 模块限制。",
-            resultCards: stagedReviewCards.map {
+            resultCount: stagedCards.count,
+            emptyState: stagedCards.isEmpty
+                ? (reviewCards.isEmpty ? .noCards : .noMatches)
+                : nil,
+            resultCards: stagedCards.map {
                 .init(
                     id: $0.id,
                     topic: $0.topic,
                     topicAccent: $0.accent,
-                    bucketTitle: $0.bucket.title,
-                    bucketAccent: $0.bucket.accent,
                     frontTitle: $0.frontTitle,
                     moduleTitle: $0.moduleTitle,
                     dueLabel: Self.dueLabel(for: $0.dueAt),
-                    highlight: $0.backHighlight,
+                    answerPreview: $0.backHighlight,
                     isFavorited: $0.isFavorited,
                     isMastered: $0.isMastered
                 )
-            },
-            footerCountText: stagedReviewCards.isEmpty ? "暂无结果" : "\(stagedReviewCards.count) 张卡片",
-            footerSummary: draftReviewFilters.isDefault ? "将按当前卡池开始" : "仅应用到本轮复习",
-            applyButtonTitle: applyFiltersCTA,
-            canApply: !stagedReviewCards.isEmpty
+            }
         )
     }
 
     var profileScreenModel: ProfileScreenModel {
-        let learningSummary = currentLearningSummary
-        let level = max(1, totalXP / 200)
+        let completedCount = completedLessonIDs.count
+        let totalCount = modules.count
+        let reviewedMemories = reviewMemoryByCardID.values.filter { $0.reps > 0 }
+        let reviewedMastery = reviewedMemories.isEmpty
+            ? nil
+            : reviewedMemories.map(\.retrievability).reduce(0, +) / Double(reviewedMemories.count)
+        let settings = settingsScreenModel
+        let memoryValues = memoryTrend.points.map(\.retrievability)
+        let currentMemoryText = memoryTrend.current.map {
+            "\(Int(($0 * 100).rounded()))%"
+        }
+        let seventhDayMemoryText = memoryTrend.seventhDay.map {
+            "\(Int(($0 * 100).rounded()))%"
+        }
 
         return ProfileScreenModel(
             title: "我的",
-            subtitle: "学习概览、收藏与偏好设置 · \(syncAvailability.displayText)",
-            profileName: "数据科学学徒",
-            profileHeadline: "\(streakDays) 天连续学习 · 累计 \(totalXP) XP",
-            profileLevel: "Lv.\(level)",
-            overviewCTA: .init(
-                badge: learningSummary.badge,
-                title: learningSummary.title,
-                subtitle: "把原来的学习概览收进这里，作为你的个人学习驾驶舱。",
-                progress: learningSummary.progress,
-                progressText: "主线\(learningSummary.progressText)",
-                xpText: "累计获得 \(totalXP) XP",
-                heatmap: heatmap,
-                metrics: [reviewDueMetric, masteryMetric, favoritesMetric]
+            identity: .init(
+                displayName: profilePreference.displayName,
+                avatarID: profilePreference.avatarID,
+                activityText: "\(streakDays) 天连续 · 累计 \(totalXP) XP"
             ),
-            favoritesTitle: "收藏",
-            favoritesSubtitle: "把重点卡片固定在一个入口，随时回看。",
-            favoriteSummary: .init(
-                countText: "\(favoritedReviewCardsCount) 张已收藏",
-                masteredText: "\(masteredFavoritedReviewCardsCount) 张已掌握",
-                highlights: profileFavoriteHighlights,
-                actionTitle: "进入收藏复习"
+            overview: .init(
+                metrics: [
+                    .init(
+                        id: "completed",
+                        title: "完成课时",
+                        value: "\(completedCount)/\(totalCount)",
+                        accent: .purple
+                    ),
+                    .init(
+                        id: "review",
+                        title: "待复习",
+                        value: "\(reviewCardsDueTodayCount)",
+                        accent: .blue
+                    ),
+                    .init(
+                        id: "mastery",
+                        title: "平均掌握",
+                        value: reviewedMastery.map { "\(Int(($0 * 100).rounded()))%" } ?? "—",
+                        accent: .mint
+                    ),
+                ],
+                heatmap: rollingFourWeekHeatmap,
             ),
-            retentionTitle: "艾宾浩斯记忆曲线",
-            primarySeries: retentionSeries,
-            baselineSeries: baselineSeries,
-            knowledgeTitle: "知识掌握",
-            knowledgeMetrics: knowledgeMetrics,
-            settingsTitle: "设置",
-            settingsSubtitle: "提醒节奏和外观偏好都在这里统一管理。",
-            reminderTitle: "提醒时间",
-            reminderSubtitle: "每天固定一个轻提醒，把学习重新拉回你的日程里。",
-            reminderTimeText: reminderTimeText,
-            remindersEnabled: remindersEnabled,
-            appearanceTitle: "外观模式",
-            appearanceSubtitle: "一键切换白天 / 夜间模式，保持阅读舒适度。",
-            isNightModeEnabled: isNightModeEnabled
+            memoryTrend: .init(
+                values: memoryValues,
+                currentText: currentMemoryText,
+                seventhDayText: seventhDayMemoryText
+            ),
+            shortcuts: [
+                .init(
+                    kind: .career,
+                    title: "学习生涯",
+                    subtitle: "\(routeCategoryTitle) · \(completedCount)/\(totalCount) 个节点",
+                    systemImage: "map.fill",
+                    accent: .mint
+                ),
+                .init(
+                    kind: .favorites,
+                    title: "收藏",
+                    subtitle: "\(favoritedReviewCardsCount) 张卡片",
+                    systemImage: "bookmark.fill",
+                    accent: .pink
+                ),
+                .init(
+                    kind: .settings,
+                    title: "设置",
+                    subtitle: settings.requiresRestart ? "重新打开 App 后生效" : settings.syncStatusText,
+                    systemImage: "gearshape.fill",
+                    accent: .blue
+                ),
+            ]
+        )
+    }
+
+    var favoritesScreenModel: FavoritesScreenModel {
+        let cards = reviewCards
+            .filter(\.isFavorited)
+            .sorted(by: Self.reviewSort)
+            .map {
+                FavoritesScreenModel.Item(
+                    id: $0.id,
+                    title: $0.frontTitle,
+                    subtitle: $0.moduleTitle,
+                    topic: $0.topic,
+                    dueText: Self.dueLabel(for: $0.dueAt),
+                    accent: $0.accent,
+                    isMastered: $0.isMastered
+                )
+            }
+
+        return FavoritesScreenModel(
+            title: "收藏",
+            countText: cards.isEmpty ? "还没有收藏" : "共 \(cards.count) 张卡片",
+            items: cards
+        )
+    }
+
+    var settingsScreenModel: SettingsScreenModel {
+        let requiresRestart = activeCloudSyncEnabled != desiredCloudSyncEnabled
+        let statusText: String
+        if requiresRestart {
+            statusText = desiredCloudSyncEnabled ? "等待开启" : "等待关闭"
+        } else {
+            statusText = syncAvailability.displayText
+        }
+
+        let detailText: String
+        if requiresRestart {
+            detailText = desiredCloudSyncEnabled
+                ? "下次启动时连接 iCloud，并与本机学习记录合并。"
+                : "下次启动后停止同步，本机和云端已有记录都不会被删除。"
+        } else {
+            switch syncAvailability {
+            case .available:
+                detailText = "学习进度、复习记录和个人资料正在通过 iCloud 同步。"
+            case .disabled:
+                detailText = "所有数据仅保存在本机；重新开启后可恢复合并。"
+            case .localOnly:
+                detailText = "当前无法连接 iCloud，学习数据仍会安全保存在本机。"
+            case .restricted:
+                detailText = "当前 iCloud 账号受限，学习数据暂时只保存在本机。"
+            case .unknown:
+                detailText = "正在检查 iCloud 账号与同步状态。"
+            }
+        }
+
+        return SettingsScreenModel(
+            title: "设置",
+            syncStatusText: statusText,
+            syncDetailText: detailText,
+            desiredCloudSyncEnabled: desiredCloudSyncEnabled,
+            requiresRestart: requiresRestart
         )
     }
 

@@ -63,4 +63,29 @@ extension LearnNowFlowState {
         flow.selectTab(.profile)
         return flow
     }
+
+    static var profileMemoryPreview: Self {
+        var flow = profilePreview
+        let now = Date()
+        flow.memoryTrend = MemoryTrend(
+            points: (0...7).map { day in
+                MemoryTrendPoint(
+                    dayOffset: day,
+                    date: Calendar.current.date(byAdding: .day, value: day, to: now) ?? now,
+                    retrievability: 0.96 - (Double(day) * 0.025)
+                )
+            }
+        )
+        return flow
+    }
+
+    static var profileEmptyPreview: Self {
+        var flow = Self(
+            snapshot: .empty,
+            activeCloudSyncEnabled: false,
+            desiredCloudSyncEnabled: false
+        )
+        flow.selectTab(.profile)
+        return flow
+    }
 }

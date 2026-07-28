@@ -2,560 +2,458 @@ import SwiftUI
 
 struct ProfileScreen: View {
     let model: ProfileScreenModel
-    @Binding var reminderTime: Date
-    @Binding var remindersEnabled: Bool
-    @Binding var isNightModeEnabled: Bool
-    let onContinueLearning: () -> Void
+    let onEditProfile: () -> Void
+    let onOpenCareer: () -> Void
     let onOpenFavorites: () -> Void
+    let onOpenSettings: () -> Void
 
-    var body: some View {
-        ScreenScaffold {
-            ScreenHeader(title: model.title, subtitle: model.subtitle)
-
-            ProfileHeaderCard(
-                profileName: model.profileName,
-                profileHeadline: model.profileHeadline,
-                profileLevel: model.profileLevel
-            )
-
-            ProfileOverviewCard(model: model.overviewCTA, onContinueLearning: onContinueLearning)
-
-            FavoriteSummaryCard(
-                title: model.favoritesTitle,
-                subtitle: model.favoritesSubtitle,
-                summary: model.favoriteSummary,
-                onOpenFavorites: onOpenFavorites
-            )
-
-            InsightCard(title: model.retentionTitle) {
-                InsetCard(contentPadding: 14) {
-                    RetentionChart(
-                        primarySeries: model.primarySeries,
-                        baselineSeries: model.baselineSeries
-                    )
-                    .frame(height: 180)
-                }
-            }
-
-            SectionHeader(title: model.knowledgeTitle)
-
-            SoftCard(contentPadding: 20) {
-                VStack(spacing: 22) {
-                    ForEach(model.knowledgeMetrics) { metric in
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text(metric.title)
-                                    .font(.system(size: 15, weight: .heavy, design: .rounded))
-                                    .foregroundStyle(LearnNowPalette.textPrimary)
-
-                                Spacer()
-
-                                Text("\(Int(metric.progress * 100))%")
-                                    .font(.system(size: 15, weight: .black, design: .rounded))
-                                    .foregroundStyle(LearnNowPalette.color(for: metric.accent))
-                            }
-
-                            ProgressTrack(progress: metric.progress, accent: metric.accent, height: 8)
-                        }
-                    }
-                }
-            }
-
-            SectionHeader(title: model.settingsTitle, subtitle: model.settingsSubtitle)
-
-            ReminderSettingsCard(
-                title: model.reminderTitle,
-                subtitle: model.reminderSubtitle,
-                timeText: model.reminderTimeText,
-                reminderTime: $reminderTime,
-                remindersEnabled: $remindersEnabled
-            )
-
-            AppearanceSettingsCard(
-                title: model.appearanceTitle,
-                subtitle: model.appearanceSubtitle,
-                isNightModeEnabled: $isNightModeEnabled
-            )
-        }
-        .accessibilityIdentifier("screen.profile")
-    }
-}
-
-private struct ProfileHeaderCard: View {
-    let profileName: String
-    let profileHeadline: String
-    let profileLevel: String
-
-    var body: some View {
-        SoftCard(contentPadding: 20) {
-            HStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [LearnNowPalette.color(for: .purple), LearnNowPalette.color(for: .blue)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 68, height: 68)
-                        .softOuter(radius: 10, x: 4, y: 6)
-
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 26, weight: .black))
-                        .foregroundStyle(.white.opacity(0.96))
-                }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    NeumorphicPill(text: profileLevel, accent: .purple)
-
-                    Text(profileName)
-                        .font(LearnNowTypography.cardHeadline)
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-
-                    Text(profileHeadline)
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                Spacer(minLength: 0)
-            }
-        }
-    }
-}
-
-private struct ProfileOverviewCard: View {
-    let model: ProfileScreenModel.OverviewCTA
-    let onContinueLearning: () -> Void
-
-    var body: some View {
-        SoftCard(contentPadding: 22) {
-            VStack(alignment: .leading, spacing: 18) {
-                HStack(alignment: .top, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        NeumorphicPill(text: "学习概览", accent: .blue)
-
-                        Text(model.title)
-                            .font(LearnNowTypography.cardHeadline)
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-
-                        Text(model.subtitle)
-                            .font(LearnNowTypography.body)
-                            .foregroundStyle(LearnNowPalette.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    Spacer(minLength: 0)
-
-                    InsetCircle(size: 74) {
-                        VStack(spacing: 4) {
-                            Text("XP")
-                                .font(.system(size: 10, weight: .heavy, design: .rounded))
-                                .foregroundStyle(LearnNowPalette.textMuted)
-
-                            Text(model.xpText.replacingOccurrences(of: "累计获得 ", with: "").replacingOccurrences(of: " XP", with: ""))
-                                .font(.system(size: 22, weight: .black, design: .rounded))
-                                .foregroundStyle(LearnNowPalette.color(for: .blue))
-                        }
-                    }
-                }
-
-                HStack {
-                    Text(model.badge)
-                        .font(LearnNowTypography.screenSubtitle)
-                        .foregroundStyle(LearnNowPalette.textMuted)
-
-                    Spacer()
-
-                    Text(model.progressText)
-                        .font(LearnNowTypography.label)
-                        .foregroundStyle(LearnNowPalette.color(for: .blue))
-                }
-
-                ProgressTrack(progress: model.progress, accent: .blue, height: 10)
-
-                MetricGridSection(items: model.metrics, columns: 3, spacing: 12) { metric in
-                    ProfileMetricCard(metric: metric)
-                }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("本月学习记录")
-                            .font(LearnNowTypography.cardTitle)
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-
-                        Spacer()
-
-                        Text(model.xpText)
-                            .font(LearnNowTypography.screenSubtitle)
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
-
-                    StudyHeatmapGrid(cells: model.heatmap)
-                }
-
-                FullWidthButton(
-                    title: "继续学习",
-                    accent: .blue,
-                    systemImage: "play.fill",
-                    action: onContinueLearning
-                )
-            }
-        }
-    }
-}
-
-private struct ProfileMetricCard: View {
-    let metric: LearnNowMetric
-
-    var body: some View {
-        InsetCard(contentPadding: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(metric.title)
-                    .font(LearnNowTypography.screenSubtitle)
-                    .foregroundStyle(LearnNowPalette.textMuted)
-
-                HStack(alignment: .lastTextBaseline, spacing: 4) {
-                    Text(metric.value)
-                        .font(.system(size: 22, weight: .black, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.color(for: metric.accent))
-
-                    if let unit = metric.unit {
-                        Text(unit)
-                            .font(LearnNowTypography.screenSubtitle)
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-}
-
-private struct FavoriteSummaryCard: View {
-    let title: String
-    let subtitle: String
-    let summary: ProfileScreenModel.FavoriteSummary
-    let onOpenFavorites: () -> Void
-
-    var body: some View {
-        SoftCard(contentPadding: 20) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(title)
-                            .font(LearnNowTypography.cardHeadline)
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-
-                        Text(subtitle)
-                            .font(LearnNowTypography.body)
-                            .foregroundStyle(LearnNowPalette.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    Spacer(minLength: 0)
-
-                    VStack(alignment: .trailing, spacing: 6) {
-                        Text(summary.countText)
-                            .font(.system(size: 16, weight: .black, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.color(for: .pink))
-
-                        Text(summary.masteredText)
-                            .font(LearnNowTypography.screenSubtitle)
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
-                }
-
-                if summary.highlights.isEmpty {
-                    InsetCard {
-                        Text("还没有收藏卡片。遇到值得反复看的内容时，把它们放到这里。")
-                            .font(LearnNowTypography.body)
-                            .foregroundStyle(LearnNowPalette.textSecondary)
-                    }
-                } else {
-                    VStack(spacing: 12) {
-                        ForEach(summary.highlights) { highlight in
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    Circle()
-                                        .fill(LearnNowPalette.base)
-                                        .frame(width: 38, height: 38)
-                                        .modifier(InsetSurface(cornerRadius: 19))
-
-                                    Image(systemName: "bookmark.fill")
-                                        .font(.system(size: 13, weight: .black))
-                                        .foregroundStyle(LearnNowPalette.color(for: highlight.accent))
-                                }
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(highlight.title)
-                                        .font(.system(size: 15, weight: .heavy, design: .rounded))
-                                        .foregroundStyle(LearnNowPalette.textPrimary)
-
-                                    Text(highlight.subtitle)
-                                        .font(LearnNowTypography.screenSubtitle)
-                                        .foregroundStyle(LearnNowPalette.textMuted)
-                                }
-
-                                Spacer()
-                            }
-                        }
-                    }
-                }
-
-                FullWidthButton(
-                    title: summary.actionTitle,
-                    accent: .pink,
-                    systemImage: "bookmark.fill",
-                    action: onOpenFavorites
-                )
-            }
-        }
-    }
-}
-
-private struct ReminderSettingsCard: View {
-    let title: String
-    let subtitle: String
-    let timeText: String
-    @Binding var reminderTime: Date
-    @Binding var remindersEnabled: Bool
-
-    var body: some View {
-        InsetCard {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top, spacing: 12) {
-                    SettingsIcon(systemImage: "bell.badge.fill", accent: .blue)
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(title)
-                            .font(LearnNowTypography.cardTitle)
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-
-                        Text(subtitle)
-                            .font(LearnNowTypography.body)
-                            .foregroundStyle(LearnNowPalette.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    Spacer()
-
-                    Toggle("", isOn: $remindersEnabled)
-                        .labelsHidden()
-                        .tint(LearnNowPalette.color(for: .blue))
-                }
-
-                Divider()
-                    .overlay(LearnNowPalette.shadowDark.opacity(0.18))
-
-                HStack {
-                    Text("当前时间")
-                        .font(LearnNowTypography.screenSubtitle)
-                        .foregroundStyle(LearnNowPalette.textMuted)
-
-                    Spacer()
-
-                    Text(remindersEnabled ? timeText : "已关闭")
-                        .font(.system(size: 15, weight: .black, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-                }
-
-                if remindersEnabled {
-                    DatePicker(
-                        "提醒时间",
-                        selection: $reminderTime,
-                        displayedComponents: .hourAndMinute
-                    )
-                    .datePickerStyle(.compact)
-                    .font(LearnNowTypography.body)
-                    .tint(LearnNowPalette.color(for: .blue))
-                }
-            }
-        }
-    }
-}
-
-private struct AppearanceSettingsCard: View {
-    let title: String
-    let subtitle: String
-    @Binding var isNightModeEnabled: Bool
-
-    var body: some View {
-        InsetCard {
-            HStack(alignment: .top, spacing: 12) {
-                SettingsIcon(
-                    systemImage: isNightModeEnabled ? "moon.stars.fill" : "sun.max.fill",
-                    accent: isNightModeEnabled ? .purple : .amber
-                )
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(title)
-                        .font(LearnNowTypography.cardTitle)
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-
-                    Text(subtitle)
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Text(isNightModeEnabled ? "当前为夜间模式" : "当前为白天模式")
-                        .font(LearnNowTypography.screenSubtitle)
-                        .foregroundStyle(LearnNowPalette.textMuted)
-                }
-
-                Spacer()
-
-                Toggle("", isOn: $isNightModeEnabled)
-                    .labelsHidden()
-                    .tint(LearnNowPalette.color(for: isNightModeEnabled ? .purple : .amber))
-            }
-        }
-    }
-}
-
-private struct SettingsIcon: View {
-    let systemImage: String
-    let accent: LearnNowAccent
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(LearnNowPalette.base)
-                .frame(width: 42, height: 42)
-                .modifier(InsetSurface(cornerRadius: 21))
-
-            Image(systemName: systemImage)
-                .font(.system(size: 15, weight: .black))
-                .foregroundStyle(LearnNowPalette.color(for: accent))
-        }
-    }
-}
-
-private struct StudyHeatmapGrid: View {
-    let cells: [LearnNowHeatCell]
-
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
-
-    var body: some View {
-        LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(cells) { cell in
-                Group {
-                    if cell.level == 0 {
-                        Circle()
-                            .fill(fillColor(for: cell.level))
-                            .modifier(OuterSurface(cornerRadius: 9))
-                    } else {
-                        Circle()
-                            .fill(fillColor(for: cell.level))
-                            .modifier(InsetSurface(cornerRadius: 9))
-                    }
-                }
-                .frame(height: 18)
-                .opacity(cell.level == nil ? 0 : 1)
-            }
-        }
-    }
-
-    private func fillColor(for level: Int?) -> Color {
-        switch level {
-        case nil:
-            .clear
-        case 0:
-            LearnNowPalette.base
-        case 1:
-            LearnNowPalette.color(for: .mint)
-        case 2:
-            LearnNowPalette.color(for: .blue)
-        default:
-            LearnNowPalette.color(for: .pink)
-        }
-    }
-}
-
-private struct RetentionChart: View {
-    let primarySeries: [Double]
-    let baselineSeries: [Double]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var insightMode: ProfileInsightMode = .overview
 
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
-                VStack {
-                    Spacer()
-                    Divider().background(LearnNowPalette.shadowDark.opacity(0.5))
-                    Spacer()
-                    Divider().background(LearnNowPalette.shadowDark.opacity(0.5))
-                    Spacer()
-                }
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: spacing(for: geometry.size.height)) {
+                    Text(model.title)
+                        .font(LearnNowTypography.screenTitle)
+                        .foregroundStyle(LearnNowPalette.textPrimary)
+                        .accessibilityAddTraits(.isHeader)
 
-                ChartAreaShape(values: primarySeries)
-                    .fill(LearnNowPalette.gradient(for: .blue).opacity(0.28))
+                    ProfileIdentityCard(identity: model.identity, onEdit: onEditProfile)
 
-                ChartLineShape(values: baselineSeries)
-                    .stroke(
-                        LearnNowPalette.shadowDark,
-                        style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [6, 5])
+                    ProfileInsightCard(
+                        overview: model.overview,
+                        memoryTrend: model.memoryTrend,
+                        selection: $insightMode,
+                        usesFlexibleHeight: usesFlexibleInsightHeight
                     )
 
-                ChartLineShape(values: primarySeries)
+                    ProfileShortcutCard(
+                        shortcuts: model.shortcuts,
+                        onSelect: handleShortcut
+                    )
+                }
+                .padding(
+                    .horizontal,
+                    LearnNowSpacing.screenHorizontal(for: geometry.size.width)
+                )
+                .padding(.top, 12)
+                .padding(
+                    .bottom,
+                    usesFlexibleInsightHeight
+                        ? LearnNowSpacing.floatingTabBarClearance
+                        : 12
+                )
+                .frame(
+                    maxWidth: LearnNowSpacing.maximumContentWidth,
+                    minHeight: geometry.size.height,
+                    alignment: .top
+                )
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .accessibilityIdentifier("screen.profile")
+    }
+
+    private func spacing(for height: CGFloat) -> CGFloat {
+        height < 700 ? 10 : 12
+    }
+
+    private var usesFlexibleInsightHeight: Bool {
+        switch dynamicTypeSize {
+        case .xSmall, .small, .medium, .large:
+            false
+        default:
+            true
+        }
+    }
+
+    private func handleShortcut(_ shortcut: ProfileShortcutKind) {
+        switch shortcut {
+        case .career:
+            onOpenCareer()
+        case .favorites:
+            onOpenFavorites()
+        case .settings:
+            onOpenSettings()
+        }
+    }
+}
+
+private struct ProfileIdentityCard: View {
+    let identity: ProfileScreenModel.Identity
+    let onEdit: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var avatar: AvatarOption {
+        AvatarOption.option(for: identity.avatarID)
+    }
+
+    var body: some View {
+        Button(action: onEdit) {
+            SoftCard(contentPadding: 14) {
+                HStack(spacing: 14) {
+                    ZStack(alignment: .bottomTrailing) {
+                        Image(avatar.assetName)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 64, height: 64)
+                            .clipShape(Circle())
+                            .overlay {
+                                Circle()
+                                    .stroke(.white.opacity(0.85), lineWidth: 2)
+                            }
+                            .softOuter(radius: 8, x: 3, y: 5)
+
+                        Image(systemName: "pencil")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 22, height: 22)
+                            .background(LearnNowPalette.color(for: .blue), in: Circle())
+                    }
+                    .accessibilityHidden(true)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(identity.displayName)
+                            .font(LearnNowTypography.sheetTitle)
+                            .foregroundStyle(LearnNowPalette.textPrimary)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Text(identity.activityText)
+                            .font(LearnNowTypography.body)
+                            .foregroundStyle(LearnNowPalette.textSecondary)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(LearnNowPalette.textMuted)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(identity.displayName)，\(identity.activityText)")
+        .accessibilityHint("编辑昵称和头像")
+        .accessibilityIdentifier("profile.edit")
+    }
+}
+
+private struct ProfileInsightCard: View {
+    let overview: ProfileScreenModel.Overview
+    let memoryTrend: ProfileScreenModel.MemoryTrend
+    @Binding var selection: ProfileInsightMode
+    let usesFlexibleHeight: Bool
+
+    var body: some View {
+        SoftCard(contentPadding: 14) {
+            VStack(alignment: .leading, spacing: 12) {
+                insightHeader
+
+                Group {
+                    switch selection {
+                    case .overview:
+                        ProfileOverviewContent(overview: overview)
+                            .transition(.opacity)
+                    case .memoryTrend:
+                        ProfileMemoryTrendContent(memoryTrend: memoryTrend)
+                            .transition(.opacity)
+                    }
+                }
+                .frame(height: usesFlexibleHeight ? nil : 160, alignment: .top)
+                .animation(.easeInOut(duration: 0.2), value: selection)
+            }
+        }
+        .accessibilityIdentifier("profile.insight")
+    }
+
+    @ViewBuilder
+    private var insightHeader: some View {
+        if usesFlexibleHeight {
+            VStack(alignment: .leading, spacing: 8) {
+                insightTitle
+                insightPicker
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+        } else {
+            HStack(spacing: 10) {
+                insightTitle
+                Spacer(minLength: 0)
+                insightPicker
+                    .frame(maxWidth: 194, minHeight: 44)
+            }
+        }
+    }
+
+    private var insightTitle: some View {
+        Text("学习洞察")
+            .font(LearnNowTypography.cardTitle)
+            .foregroundStyle(LearnNowPalette.textPrimary)
+    }
+
+    private var insightPicker: some View {
+        Picker("学习洞察展示", selection: $selection) {
+            ForEach(ProfileInsightMode.allCases) { mode in
+                Text(mode.title).tag(mode)
+            }
+        }
+        .pickerStyle(.segmented)
+        .accessibilityIdentifier("profile.insight.picker")
+    }
+}
+
+private struct ProfileOverviewContent: View {
+    let overview: ProfileScreenModel.Overview
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var metricColumns: [GridItem] {
+        Array(
+            repeating: GridItem(.flexible(), spacing: 8),
+            count: dynamicTypeSize.isAccessibilitySize ? 1 : 3
+        )
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            LazyVGrid(columns: metricColumns, spacing: 8) {
+                ForEach(overview.metrics) { metric in
+                    InsetCard(contentPadding: 10) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(metric.title)
+                                .font(LearnNowTypography.caption)
+                                .foregroundStyle(LearnNowPalette.textMuted)
+                                .fixedSize(horizontal: false, vertical: true)
+
+                            Text(metric.value)
+                                .font(LearnNowTypography.sectionTitle)
+                                .foregroundStyle(LearnNowPalette.color(for: metric.accent))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    heatmapTitle
+                    heatmapLegend
+                }
+            } else {
+                HStack {
+                    heatmapTitle
+                    Spacer()
+                    heatmapLegend
+                }
+            }
+
+            CompactHeatmap(cells: overview.heatmap)
+        }
+    }
+
+    private var heatmapTitle: some View {
+        Text("近四周学习")
+            .font(LearnNowTypography.caption)
+            .foregroundStyle(LearnNowPalette.textSecondary)
+    }
+
+    private var heatmapLegend: some View {
+        Text("越深代表学习越多")
+            .font(LearnNowTypography.caption)
+            .foregroundStyle(LearnNowPalette.textMuted)
+    }
+}
+
+private struct CompactHeatmap: View {
+    let cells: [LearnNowHeatCell]
+
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 7), count: 7)
+
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: 7) {
+            ForEach(cells) { cell in
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(color(for: cell.level))
+                    .frame(height: 9)
+                    .opacity(cell.level == nil ? 0.18 : 1)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("近四周学习热力图")
+    }
+
+    private func color(for level: Int?) -> Color {
+        switch level {
+        case nil, 0:
+            LearnNowPalette.shadowDark.opacity(0.14)
+        case 1:
+            LearnNowPalette.color(for: .mint).opacity(0.55)
+        case 2:
+            LearnNowPalette.color(for: .blue).opacity(0.72)
+        default:
+            LearnNowPalette.color(for: .purple)
+        }
+    }
+}
+
+private struct ProfileMemoryTrendContent: View {
+    let memoryTrend: ProfileScreenModel.MemoryTrend
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        if memoryTrend.isEmpty {
+            InsetCard(contentPadding: 16) {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 12) {
+                        memoryEmptyIcon
+                        memoryEmptyCopy
+                    }
+                } else {
+                    HStack(spacing: 14) {
+                        memoryEmptyIcon
+                        memoryEmptyCopy
+                    }
+                }
+            }
+            .accessibilityIdentifier("profile.memory.empty")
+        } else {
+            VStack(alignment: .leading, spacing: 10) {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 8) {
+                        currentValue
+                        predictedValue
+                    }
+                } else {
+                    HStack {
+                        currentValue
+                        Spacer()
+                        predictedValue
+                    }
+                }
+
+                MemoryTrendChart(values: memoryTrend.values)
+                    .frame(height: 92)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(
+                        "记忆趋势，当前 \(memoryTrend.currentText ?? "未知")，7 天后 \(memoryTrend.seventhDayText ?? "未知")，目标百分之九十"
+                    )
+            }
+        }
+    }
+
+    private var memoryEmptyIcon: some View {
+        Image(systemName: "brain.head.profile")
+            .font(.title2.weight(.bold))
+            .foregroundStyle(LearnNowPalette.color(for: .blue))
+    }
+
+    private var memoryEmptyCopy: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("完成首次复习后生成趋势")
+                .font(LearnNowTypography.cardTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
+
+            Text("LearnNow 会依据 FSRS 预测未来 7 天的平均记忆保持率。")
+                .font(LearnNowTypography.body)
+                .foregroundStyle(LearnNowPalette.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var currentValue: some View {
+        MemoryTrendValue(title: "当前保持率", value: memoryTrend.currentText ?? "—")
+    }
+
+    private var predictedValue: some View {
+        MemoryTrendValue(title: "7 天预测", value: memoryTrend.seventhDayText ?? "—")
+    }
+}
+
+private struct MemoryTrendValue: View {
+    let title: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(LearnNowTypography.caption)
+                .foregroundStyle(LearnNowPalette.textMuted)
+
+            Text(value)
+                .font(LearnNowTypography.sectionTitle)
+                .foregroundStyle(LearnNowPalette.color(for: .blue))
+        }
+    }
+}
+
+private struct MemoryTrendChart: View {
+    let values: [Double]
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .topTrailing) {
+                Path { path in
+                    let y = (1 - 0.9) * geometry.size.height
+                    path.move(to: CGPoint(x: 0, y: y))
+                    path.addLine(to: CGPoint(x: geometry.size.width, y: y))
+                }
+                .stroke(
+                    LearnNowPalette.color(for: .mint).opacity(0.7),
+                    style: StrokeStyle(lineWidth: 1.5, dash: [5, 4])
+                )
+
+                ProfileChartAreaShape(values: values)
+                    .fill(LearnNowPalette.gradient(for: .blue).opacity(0.18))
+
+                ProfileChartLineShape(values: values)
                     .stroke(
                         LearnNowPalette.color(for: .blue),
                         style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
                     )
 
-                ForEach(primarySeries.indices, id: \.self) { index in
-                    let point = point(at: index, values: primarySeries, size: geometry.size)
-
-                    Circle()
-                        .fill(LearnNowPalette.base)
-                        .frame(width: 9, height: 9)
-                        .overlay(
-                            Circle()
-                                .stroke(LearnNowPalette.color(for: .blue), lineWidth: 2)
-                        )
-                        .position(point)
-                }
-            }
-        }
-    }
-
-    private func point(at index: Int, values: [Double], size: CGSize) -> CGPoint {
-        let step = size.width / CGFloat(max(values.count - 1, 1))
-        let x = CGFloat(index) * step
-        let y = (1 - values[index]) * size.height
-        return CGPoint(x: x, y: y)
-    }
-}
-
-private struct ChartLineShape: Shape {
-    let values: [Double]
-
-    func path(in rect: CGRect) -> Path {
-        Path { path in
-            guard !values.isEmpty else { return }
-
-            let step = rect.width / CGFloat(max(values.count - 1, 1))
-            for index in values.indices {
-                let point = CGPoint(
-                    x: CGFloat(index) * step,
-                    y: (1 - values[index]) * rect.height
-                )
-
-                if index == 0 {
-                    path.move(to: point)
-                } else {
-                    path.addLine(to: point)
-                }
+                Text("目标 90%")
+                    .font(LearnNowTypography.caption)
+                    .foregroundStyle(LearnNowPalette.color(for: .mint))
+                    .padding(.horizontal, 5)
+                    .background(LearnNowPalette.base.opacity(0.86), in: Capsule())
             }
         }
     }
 }
 
-private struct ChartAreaShape: Shape {
+private struct ProfileChartLineShape: Shape {
     let values: [Double]
 
     func path(in rect: CGRect) -> Path {
-        var path = ChartLineShape(values: values).path(in: rect)
+        guard !values.isEmpty else { return Path() }
+        var path = Path()
+        for index in values.indices {
+            let point = point(at: index, in: rect)
+            index == values.startIndex ? path.move(to: point) : path.addLine(to: point)
+        }
+        return path
+    }
+
+    private func point(at index: Int, in rect: CGRect) -> CGPoint {
+        let step = rect.width / CGFloat(max(values.count - 1, 1))
+        return CGPoint(
+            x: CGFloat(index) * step,
+            y: (1 - values[index].clamped(to: 0...1)) * rect.height
+        )
+    }
+}
+
+private struct ProfileChartAreaShape: Shape {
+    let values: [Double]
+
+    func path(in rect: CGRect) -> Path {
+        guard !values.isEmpty else { return Path() }
+        var path = ProfileChartLineShape(values: values).path(in: rect)
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
         path.closeSubpath()
@@ -563,24 +461,106 @@ private struct ChartAreaShape: Shape {
     }
 }
 
-#Preview("Profile") {
-    ZStack {
-        LearnNowPalette.canvas.ignoresSafeArea()
-        ProfileScreenPreview()
+private struct ProfileShortcutCard: View {
+    let shortcuts: [ProfileScreenModel.Shortcut]
+    let onSelect: (ProfileShortcutKind) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        SoftCard(contentPadding: 8) {
+            VStack(spacing: 0) {
+                ForEach(Array(shortcuts.enumerated()), id: \.element.id) { index, shortcut in
+                    Button {
+                        onSelect(shortcut.kind)
+                    } label: {
+                        HStack(spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .fill(LearnNowPalette.base)
+                                    .frame(width: 38, height: 38)
+                                    .modifier(InsetSurface(cornerRadius: 19))
+
+                                Image(systemName: shortcut.systemImage)
+                                    .font(.subheadline.weight(.bold))
+                                    .foregroundStyle(LearnNowPalette.color(for: shortcut.accent))
+                            }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(shortcut.title)
+                                    .font(LearnNowTypography.cardTitle)
+                                    .foregroundStyle(LearnNowPalette.textPrimary)
+
+                                Text(shortcut.subtitle)
+                                    .font(LearnNowTypography.caption)
+                                    .foregroundStyle(LearnNowPalette.textMuted)
+                                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(LearnNowPalette.textMuted)
+                        }
+                        .frame(minHeight: 48)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("profile.shortcut.\(shortcut.kind.rawValue)")
+
+                    if index < shortcuts.count - 1 {
+                        Divider()
+                            .overlay(LearnNowPalette.shadowDark.opacity(0.16))
+                            .padding(.leading, 50)
+                    }
+                }
+            }
+        }
     }
 }
 
-private struct ProfileScreenPreview: View {
-    @State private var flow = LearnNowFlowState.profilePreview
+private extension Double {
+    func clamped(to range: ClosedRange<Double>) -> Double {
+        min(max(self, range.lowerBound), range.upperBound)
+    }
+}
 
-    var body: some View {
+#Preview("Profile · Memory empty") {
+    ZStack {
+        LearnNowPalette.canvas.ignoresSafeArea()
         ProfileScreen(
-            model: flow.profileScreenModel,
-            reminderTime: $flow.reminderTime,
-            remindersEnabled: $flow.remindersEnabled,
-            isNightModeEnabled: $flow.isNightModeEnabled,
-            onContinueLearning: {},
-            onOpenFavorites: {}
+            model: LearnNowFlowState.profilePreview.profileScreenModel,
+            onEditProfile: {},
+            onOpenCareer: {},
+            onOpenFavorites: {},
+            onOpenSettings: {}
+        )
+    }
+}
+
+#Preview("Profile · Memory trend") {
+    ZStack {
+        LearnNowPalette.canvas.ignoresSafeArea()
+        ProfileScreen(
+            model: LearnNowFlowState.profileMemoryPreview.profileScreenModel,
+            onEditProfile: {},
+            onOpenCareer: {},
+            onOpenFavorites: {},
+            onOpenSettings: {}
+        )
+    }
+}
+
+#Preview("Profile · Empty data") {
+    ZStack {
+        LearnNowPalette.canvas.ignoresSafeArea()
+        ProfileScreen(
+            model: LearnNowFlowState.profileEmptyPreview.profileScreenModel,
+            onEditProfile: {},
+            onOpenCareer: {},
+            onOpenFavorites: {},
+            onOpenSettings: {}
         )
     }
 }

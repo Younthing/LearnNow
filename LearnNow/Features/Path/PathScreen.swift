@@ -53,7 +53,7 @@ struct PathScreen: View {
     private var selectedTrackHeader: some View {
         VStack(spacing: 6) {
             Text(model.selectedTrackTitle)
-                .font(.system(size: 24, weight: .black, design: .rounded))
+                .font(LearnNowTypography.sectionTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
                 .frame(maxWidth: .infinity)
 
@@ -71,10 +71,9 @@ struct PathScreen: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(model.title)
-                    .font(.system(size: 26, weight: .heavy, design: .rounded))
+                    .font(LearnNowTypography.sheetTitle)
                     .foregroundStyle(LearnNowPalette.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(model.subtitle)
                     .font(LearnNowTypography.screenSubtitle)
@@ -90,23 +89,31 @@ private struct RouteTrackTabs: View {
     let onSelectTrack: (LearnNowRouteTrack) -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
-            ForEach(tabs) { tab in
-                Button {
-                    onSelectTrack(tab.track)
-                } label: {
-                    NeumorphicPill(
-                        text: tab.title,
-                        accent: tab.isSelected ? .blue : .mint,
-                        isSelected: tab.isSelected,
-                        isExpanded: true
-                    )
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 8) {
+                ForEach(tabs) { tab in
+                    trackButton(tab)
                 }
-                .frame(maxWidth: .infinity)
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("path.track.\(tab.track.rawValue)")
+            }
+
+            VStack(spacing: 8) {
+                ForEach(tabs) { tab in
+                    trackButton(tab)
+                }
             }
         }
+    }
+
+    private func trackButton(_ tab: PathScreenModel.TrackTab) -> some View {
+        MetadataChipButton(
+            title: tab.title,
+            accent: tab.isSelected ? .blue : .mint,
+            isSelected: tab.isSelected,
+            isExpanded: true,
+            action: { onSelectTrack(tab.track) }
+        )
+        .frame(maxWidth: .infinity)
+        .accessibilityIdentifier("path.track.\(tab.track.rawValue)")
     }
 }
 
@@ -119,13 +126,13 @@ private struct PathEmptyStateCard: View {
             VStack(spacing: 16) {
                 InsetCircle(size: 72) {
                     Image(systemName: "ellipsis.circle")
-                        .font(.system(size: 28, weight: .bold))
+                        .font(.title.weight(.bold))
                         .foregroundStyle(LearnNowPalette.color(for: .amber))
                 }
 
                 VStack(spacing: 8) {
                     Text(title)
-                        .font(.system(size: 22, weight: .black, design: .rounded))
+                        .font(LearnNowTypography.sectionTitle)
                         .foregroundStyle(LearnNowPalette.textPrimary)
                         .multilineTextAlignment(.center)
 
@@ -221,23 +228,23 @@ private struct PathNodeRow: View {
         PathModuleSurface(accent: .blue, isInset: true, contentPadding: PathNodeLayout.featuredCardPadding) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .center, spacing: 12) {
-                    NeumorphicPill(
+                    MetadataChip(
                         text: "正在学习",
                         accent: .blue,
-                        isSelected: true
+                        prominence: .selected
                     )
                     .fixedSize()
 
                     Spacer(minLength: 0)
 
                     Image(systemName: "play.circle.fill")
-                        .font(.system(size: 26))
+                        .font(.title2)
                         .foregroundStyle(LearnNowPalette.color(for: .blue))
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(node.title)
-                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .font(LearnNowTypography.cardHeadline)
                         .foregroundStyle(LearnNowPalette.color(for: .blue))
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -280,7 +287,7 @@ private struct PathNodeRow: View {
 
             if showsChevron {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.subheadline.weight(.bold))
                     .foregroundStyle(LearnNowPalette.textMuted.opacity(0.7))
                     .padding(.top, 2)
             }
@@ -298,7 +305,7 @@ private struct PathNodeRow: View {
         case .done:
             InsetCircle(size: PathNodeLayout.regularBadgeSize) {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 18, weight: .black))
+                    .font(.headline.weight(.bold))
                     .foregroundStyle(LearnNowPalette.color(for: .mint))
             }
             .overlay(Circle().stroke(LearnNowPalette.color(for: .mint).opacity(0.5), lineWidth: 2))
@@ -318,14 +325,14 @@ private struct PathNodeRow: View {
                     )
                     .overlay {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 20, weight: .black))
+                            .font(.title3.weight(.bold))
                             .foregroundStyle(LearnNowPalette.color(for: .blue))
                     }
             }
         case .locked:
             InsetCircle(size: PathNodeLayout.regularBadgeSize) {
                 Image(systemName: "lock.fill")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.headline.weight(.bold))
                     .foregroundStyle(LearnNowPalette.textMuted.opacity(0.6))
             }
         }

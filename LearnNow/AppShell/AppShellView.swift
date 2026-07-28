@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AppShellView: View {
     @Bindable var store: LearnNowAppStore
+    @State private var profileResetRequest = 0
 
     /// `true` when the app is launched by UI tests with `-UIAnimationsDisabled YES`.
     private var animationsDisabled: Bool {
@@ -9,61 +10,31 @@ struct AppShellView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            LearnNowPalette.canvas
-                .ignoresSafeArea()
-
-            BackgroundGlow()
-                .ignoresSafeArea()
+        GeometryReader { geometry in
+            let contentSpacing = contentSpacing(for: geometry.size.height)
 
             ZStack {
-                tabStage(tab: .home) {
-                    HomeScreen(
-                        model: store.flow.homeScreenModel,
-                        onContinueLearning: { store.openLesson() }
-                    )
-                }
+                LearnNowPalette.canvas
+                    .ignoresSafeArea()
 
-                tabStage(tab: .routes) {
-                    RoutesJourneyContainer(store: store)
-                }
+                BackgroundGlow()
+                    .ignoresSafeArea()
 
-                tabStage(tab: .anki) {
-                    ReviewBoardContainer(store: store)
-                }
-
-                tabStage(tab: .profile) {
-                    ProfileScreen(
-                        model: store.flow.profileScreenModel,
-                        reminderTime: Binding(
-                            get: { store.flow.reminderTime },
-                            set: { store.setReminderTime($0) }
-                        ),
-                        remindersEnabled: Binding(
-                            get: { store.flow.remindersEnabled },
-                            set: { store.setRemindersEnabled($0) }
-                        ),
-                        isNightModeEnabled: Binding(
-                            get: { store.flow.isNightModeEnabled },
-                            set: { store.setNightModeEnabled($0) }
-                        ),
-                        onContinueLearning: { store.openLesson() },
-                        onOpenFavorites: { store.openFavoritedReviewBoard() }
-                    )
-                }
+                tabContent(spacing: contentSpacing)
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        FloatingTabBar(selectedTab: store.flow.selectedTab) { tab in
+                            if tab == .profile, store.flow.selectedTab == .profile {
+                                profileResetRequest += 1
+                            }
+                            store.selectTab(tab)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, contentSpacing)
+                        .padding(.bottom, 18)
+                    }
             }
-            .padding(.bottom, 112)
-            .animation(
-                animationsDisabled ? nil : .spring(response: 0.4, dampingFraction: 0.75),
-                value: store.flow.currentScreen
-            )
-
-            FloatingTabBar(selectedTab: store.flow.selectedTab) { tab in
-                store.selectTab(tab)
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 18)
         }
+        .environment(\.learnNowAnimationsEnabled, !animationsDisabled)
         .alert(
             "暂时无法保存",
             isPresented: Binding(
@@ -74,6 +45,48 @@ struct AppShellView: View {
             Button("知道了", role: .cancel) { store.lastActionError = nil }
         } message: {
             Text(store.lastActionError ?? "请稍后重试。")
+        }
+    }
+
+    private func tabContent(spacing: CGFloat) -> some View {
+        ZStack {
+            tabStage(tab: .home) {
+                HomeScreen(
+                    model: store.flow.homeScreenModel,
+                    cardSpacing: spacing,
+                    onContinueLearning: { store.openLesson() }
+                )
+            }
+
+            tabStage(tab: .routes) {
+                RoutesJourneyContainer(store: store)
+            }
+
+            tabStage(tab: .anki) {
+                ReviewBoardContainer(store: store)
+            }
+
+            tabStage(tab: .profile) {
+                ProfileContainer(
+                    store: store,
+                    resetRequest: profileResetRequest
+                )
+            }
+        }
+        .animation(
+            animationsDisabled ? nil : .spring(response: 0.4, dampingFraction: 0.75),
+            value: store.flow.currentScreen
+        )
+    }
+
+    private func contentSpacing(for height: CGFloat) -> CGFloat {
+        switch height {
+        case ..<700:
+            10
+        case ..<820:
+            12
+        default:
+            14
         }
     }
 
@@ -133,6 +146,7 @@ private struct RoutesJourneyContainer: View {
             routesStage(destination: .completion) {
                 CompletionScreen(
                     model: store.flow.completionScreenModel,
+                    isActive: store.flow.routesDestination == .completion,
                     onContinueLearning: { store.openNextLesson() },
                     onFinish: { store.finishLearning() },
                     onOpenReviewBoard: { store.openReviewBoard() }

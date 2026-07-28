@@ -6,6 +6,26 @@ import UIKit
 import AppKit
 #endif
 
+private struct LearnNowAnimationsEnabledKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+private struct LearnNowReduceMotionOverrideKey: EnvironmentKey {
+    static let defaultValue: Bool? = nil
+}
+
+extension EnvironmentValues {
+    var learnNowAnimationsEnabled: Bool {
+        get { self[LearnNowAnimationsEnabledKey.self] }
+        set { self[LearnNowAnimationsEnabledKey.self] = newValue }
+    }
+
+    var learnNowReduceMotionOverride: Bool? {
+        get { self[LearnNowReduceMotionOverrideKey.self] }
+        set { self[LearnNowReduceMotionOverrideKey.self] = newValue }
+    }
+}
+
 enum LearnNowPalette {
     static let base = Color.dynamic(light: 0xFFFFFF, dark: 0x1E1E24, lightOpacity: 0.55, darkOpacity: 0.5)
     static let canvas = Color.dynamic(light: 0xF4F6F9, dark: 0x07070A)
@@ -41,12 +61,52 @@ enum LearnNowPalette {
 }
 
 struct BackgroundGlow: View {
-    @State private var phase = false
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.learnNowAnimationsEnabled) private var animationsEnabled
+    @Environment(\.learnNowReduceMotionOverride) private var reduceMotionOverride
 
     var body: some View {
         let opacityMultiplier: Double = colorScheme == .dark ? 0.7 : 1.0
 
+        if shouldAnimate {
+            AnimatedBackgroundGlow(opacityMultiplier: opacityMultiplier)
+        } else {
+            BackgroundGlowLayer(
+                phase: false,
+                opacityMultiplier: opacityMultiplier
+            )
+        }
+    }
+
+    private var shouldAnimate: Bool {
+        animationsEnabled && !(reduceMotionOverride ?? reduceMotion)
+    }
+}
+
+private struct AnimatedBackgroundGlow: View {
+    let opacityMultiplier: Double
+
+    @State private var phase = false
+
+    var body: some View {
+        BackgroundGlowLayer(
+            phase: phase,
+            opacityMultiplier: opacityMultiplier
+        )
+        .task {
+            withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
+                phase = true
+            }
+        }
+    }
+}
+
+private struct BackgroundGlowLayer: View {
+    let phase: Bool
+    let opacityMultiplier: Double
+
+    var body: some View {
         ZStack {
             Circle()
                 .fill(LearnNowPalette.color(for: .blue).opacity(0.35 * opacityMultiplier))
@@ -65,11 +125,6 @@ struct BackgroundGlow: View {
                 .frame(width: 300, height: 300)
                 .blur(radius: 70)
                 .offset(x: phase ? 140 : -140, y: phase ? 250 : 380)
-        }
-        .onAppear {
-            withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true)) {
-                phase.toggle()
-            }
         }
     }
 }
@@ -143,6 +198,7 @@ struct ScreenHeader<Trailing: View>: View {
     var subtitle: String?
     var centered = false
     @ViewBuilder var trailing: () -> Trailing
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     init(
         title: String,
@@ -157,22 +213,39 @@ struct ScreenHeader<Trailing: View>: View {
     }
 
     var body: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: centered ? .center : .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 30, weight: .black, design: .rounded))
-                    .foregroundStyle(LearnNowPalette.textPrimary)
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textMuted)
+        Group {
+            if centered {
+                titleBlock
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 12) {
+                    titleBlock
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    trailing()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else {
+                HStack(alignment: .center, spacing: 12) {
+                    titleBlock
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    trailing()
                 }
             }
-            .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
+        }
+    }
 
-            if !centered {
-                trailing()
+    private var titleBlock: some View {
+        VStack(alignment: centered ? .center : .leading, spacing: 4) {
+            Text(title)
+                .font(LearnNowTypography.screenTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let subtitle {
+                Text(subtitle)
+                    .font(LearnNowTypography.screenSubtitle)
+                    .foregroundStyle(LearnNowPalette.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -202,7 +275,7 @@ struct FloatingTabBar: View {
                         }
 
                         Image(systemName: tab.systemImage)
-                            .font(.system(size: 21, weight: .bold))
+                            .font(.title3.weight(.bold))
                             .foregroundStyle(
                                 tab == selectedTab
                                     ? LearnNowPalette.color(for: .blue)
@@ -223,23 +296,6 @@ struct FloatingTabBar: View {
                 .fill(LearnNowPalette.base)
                 .modifier(OuterSurface(cornerRadius: 999))
         )
-    }
-}
-
-struct FlowLayout<Item: Hashable, Content: View>: View {
-    let items: [Item]
-    let content: (Item) -> Content
-
-    var body: some View {
-        LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 84), spacing: 8)],
-            alignment: .leading,
-            spacing: 8
-        ) {
-            ForEach(items, id: \.self) { item in
-                content(item)
-            }
-        }
     }
 }
 
@@ -296,37 +352,6 @@ struct ProgressTrack: View {
     }
 }
 
-struct NeumorphicPill: View {
-    let text: String
-    let accent: LearnNowAccent
-    var isSelected = false
-    var isExpanded = false
-
-    var body: some View {
-        Text(text)
-            .font(.system(size: 13, weight: .heavy, design: .rounded))
-            .foregroundStyle(
-                isSelected ? LearnNowPalette.color(for: accent) : LearnNowPalette.textMuted
-            )
-            .padding(.horizontal, 8)
-            .padding(.vertical, 10)
-            .frame(maxWidth: isExpanded ? .infinity : nil)
-            .background(
-                Group {
-                    if isSelected {
-                        Capsule(style: .continuous)
-                            .fill(LearnNowPalette.base)
-                            .modifier(InsetSurface(cornerRadius: 999))
-                    } else {
-                        Capsule(style: .continuous)
-                            .fill(LearnNowPalette.base)
-                            .modifier(OuterSurface(cornerRadius: 999))
-                    }
-                }
-            )
-    }
-}
-
 struct CircleIconButton: View {
     let systemImage: String
     let accent: LearnNowAccent
@@ -341,7 +366,7 @@ struct CircleIconButton: View {
                 .modifier(OuterSurface(cornerRadius: size / 2))
                 .overlay {
                     Image(systemName: systemImage)
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.headline.weight(.bold))
                         .foregroundStyle(LearnNowPalette.color(for: accent))
                 }
         }
@@ -364,6 +389,62 @@ struct InsetCircle<Content: View>: View {
     }
 }
 
+struct AchievementSymbolBadge<Content: View>: View {
+    let size: CGFloat
+    let accent: LearnNowAccent
+    let glowSize: CGFloat
+    let glowOpacity: Double
+    let glowBlur: CGFloat
+    let strokeOpacity: Double
+    let strokeWidth: CGFloat
+    let showsGlow: Bool
+    private let content: Content
+
+    init(
+        size: CGFloat,
+        accent: LearnNowAccent,
+        glowSize: CGFloat,
+        glowOpacity: Double,
+        glowBlur: CGFloat,
+        strokeOpacity: Double,
+        strokeWidth: CGFloat = 1,
+        showsGlow: Bool,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.size = size
+        self.accent = accent
+        self.glowSize = glowSize
+        self.glowOpacity = glowOpacity
+        self.glowBlur = glowBlur
+        self.strokeOpacity = strokeOpacity
+        self.strokeWidth = strokeWidth
+        self.showsGlow = showsGlow
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack {
+            if showsGlow {
+                Circle()
+                    .fill(LearnNowPalette.color(for: accent).opacity(glowOpacity))
+                    .frame(width: glowSize, height: glowSize)
+                    .blur(radius: glowBlur)
+            }
+
+            InsetCircle(size: size) {
+                content
+            }
+            .overlay {
+                Circle()
+                    .stroke(
+                        LearnNowPalette.color(for: accent).opacity(strokeOpacity),
+                        lineWidth: strokeWidth
+                    )
+            }
+        }
+    }
+}
+
 struct FullWidthButton: View {
     let title: String
     var accent: LearnNowAccent? = nil
@@ -374,11 +455,13 @@ struct FullWidthButton: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Text(title)
-                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .font(LearnNowTypography.label)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 if let systemImage {
                     Image(systemName: systemImage)
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.subheadline.weight(.bold))
                 }
             }
             .foregroundStyle(accentColor)

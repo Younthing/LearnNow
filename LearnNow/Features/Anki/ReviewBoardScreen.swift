@@ -66,47 +66,48 @@ private struct ReviewBoardHeader: View {
     let onOpenFilters: () -> Void
 
     var body: some View {
-        ZStack {
+        HStack(alignment: .center, spacing: 12) {
             Text(title)
                 .font(LearnNowTypography.screenTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
 
-            HStack {
-                Spacer()
+            Spacer(minLength: 0)
 
-                Button(action: onOpenFilters) {
-                    ZStack(alignment: .topTrailing) {
-                        Circle()
-                            .fill(LearnNowPalette.base)
-                            .frame(width: 48, height: 48)
-                            .modifier(OuterSurface(cornerRadius: 24))
-                            .overlay {
-                                Image(systemName: "line.3.horizontal.decrease.circle")
-                                    .font(.system(size: 19, weight: .bold))
-                                    .foregroundStyle(
-                                        activeFilterCount > 0
-                                            ? LearnNowPalette.color(for: .blue)
-                                            : LearnNowPalette.textMuted
-                                    )
-                            }
-
-                        if activeFilterCount > 0 {
-                            Text("\(activeFilterCount)")
-                                .font(.system(size: 11, weight: .black, design: .rounded))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule(style: .continuous)
-                                        .fill(LearnNowPalette.color(for: .pink))
+            Button(action: onOpenFilters) {
+                ZStack(alignment: .topTrailing) {
+                    Circle()
+                        .fill(LearnNowPalette.base)
+                        .frame(width: 48, height: 48)
+                        .modifier(OuterSurface(cornerRadius: 24))
+                        .overlay {
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .font(.headline.weight(.bold))
+                                .foregroundStyle(
+                                    activeFilterCount > 0
+                                        ? LearnNowPalette.color(for: .blue)
+                                        : LearnNowPalette.textMuted
                                 )
-                                .offset(x: 8, y: -4)
                         }
+
+                    if activeFilterCount > 0 {
+                        Text("\(activeFilterCount)")
+                            .font(LearnNowTypography.caption)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule(style: .continuous)
+                                    .fill(LearnNowPalette.color(for: .pink))
+                            )
+                            .offset(x: 8, y: -4)
                     }
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(activeFilterCount > 0 ? "打开筛选，当前有 \(activeFilterCount) 个条件" : "打开筛选")
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel(activeFilterCount > 0 ? "打开筛选，当前有 \(activeFilterCount) 个条件" : "打开筛选")
+            .accessibilityIdentifier("anki.filters")
         }
     }
 }
@@ -115,9 +116,12 @@ private struct ReviewSummaryPills: View {
     let summaries: [ReviewBoardModel.Summary]
 
     var body: some View {
-        HStack(spacing: 12) {
+        LazyVGrid(
+            columns: [GridItem(.adaptive(minimum: 100), spacing: 12)],
+            spacing: 12
+        ) {
             ForEach(summaries) { summary in
-                NeumorphicPill(
+                MetadataChip(
                     text: "\(summary.bucket.title) \(summary.count)",
                     accent: summary.bucket.accent,
                     isExpanded: true
@@ -133,7 +137,8 @@ private struct ReviewScopeCaption: View {
     var body: some View {
         VStack(spacing: 6) {
             Text("第 \(scope.current) / \(scope.total) 张")
-                .font(.system(size: 13, weight: .black, design: .rounded))
+                .font(LearnNowTypography.metadata)
+                .fontWeight(.semibold)
                 .foregroundStyle(LearnNowPalette.textSecondary)
 
             Text(scope.title == "全卡池复习" ? scope.subtitle : scope.title)
@@ -175,7 +180,7 @@ private struct ReviewFlashcardView: View {
 
             VStack(spacing: 20) {
                 Text(isFlipped ? card.backTitle : card.topic)
-                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .font(LearnNowTypography.label)
                     .foregroundStyle(
                         isFlipped
                             ? LearnNowPalette.color(for: .pink)
@@ -186,7 +191,7 @@ private struct ReviewFlashcardView: View {
                 if isFlipped {
                     VStack(spacing: 18) {
                         Text(card.backBody)
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .font(LearnNowTypography.body)
                             .foregroundStyle(LearnNowPalette.textPrimary)
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
@@ -194,7 +199,7 @@ private struct ReviewFlashcardView: View {
 
                         InsetCard(contentPadding: 16) {
                             Text(card.backHighlight)
-                                .font(.system(size: 15, weight: .heavy, design: .rounded))
+                                .font(LearnNowTypography.cardTitle)
                                 .foregroundStyle(LearnNowPalette.color(for: .pink))
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity)
@@ -204,21 +209,21 @@ private struct ReviewFlashcardView: View {
                     Button(action: onFlip) {
                         VStack(spacing: 12) {
                             Text(card.frontTitle)
-                                .font(.system(size: 34, weight: .black, design: .rounded))
+                                .font(LearnNowTypography.cardHeadline)
                                 .foregroundStyle(LearnNowPalette.textPrimary)
                                 .multilineTextAlignment(.center)
                                 .fixedSize(horizontal: false, vertical: true)
 
                             if let frontSubtitle = card.frontSubtitle {
                                 Text(frontSubtitle)
-                                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                                    .font(LearnNowTypography.body)
                                     .foregroundStyle(LearnNowPalette.textMuted)
                                     .multilineTextAlignment(.center)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
 
                             Label("点击卡片翻转", systemImage: "hand.tap")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .font(LearnNowTypography.metadata)
                                 .foregroundStyle(LearnNowPalette.textMuted)
                         }
                         .frame(maxWidth: .infinity)
@@ -229,18 +234,21 @@ private struct ReviewFlashcardView: View {
             }
             .padding(.horizontal, 26)
         }
-        .frame(height: cardHeight)
+        .frame(minHeight: cardHeight)
     }
 }
 
 private struct ReviewRatingGrid: View {
     let intervals: [LearnNowReviewRating: String]
     let onRate: (LearnNowReviewRating) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
-    ]
+    private var columns: [GridItem] {
+        Array(
+            repeating: GridItem(.flexible(), spacing: 12),
+            count: dynamicTypeSize.isAccessibilitySize ? 1 : 2
+        )
+    }
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 12) {
@@ -250,10 +258,10 @@ private struct ReviewRatingGrid: View {
                 } label: {
                     VStack(spacing: 4) {
                         Text(rating.title)
-                            .font(.system(size: 14, weight: .heavy, design: .rounded))
+                            .font(LearnNowTypography.label)
 
                         Text(intervals[rating] ?? rating.interval)
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .font(LearnNowTypography.caption)
                     }
                     .foregroundStyle(LearnNowPalette.color(for: rating.accent))
                     .frame(maxWidth: .infinity)
@@ -275,13 +283,13 @@ private struct ReviewEmptyStateCard: View {
             VStack(spacing: 18) {
                 InsetCircle(size: 72) {
                     Image(systemName: state.hasActiveFilters ? "line.3.horizontal.decrease.circle" : "checkmark.circle")
-                        .font(.system(size: 30, weight: .bold))
+                        .font(.title.weight(.bold))
                         .foregroundStyle(LearnNowPalette.color(for: state.hasActiveFilters ? .amber : .mint))
                 }
 
                 VStack(spacing: 8) {
                     Text(state.title)
-                        .font(.system(size: 24, weight: .black, design: .rounded))
+                        .font(LearnNowTypography.cardHeadline)
                         .foregroundStyle(LearnNowPalette.textPrimary)
                         .multilineTextAlignment(.center)
 

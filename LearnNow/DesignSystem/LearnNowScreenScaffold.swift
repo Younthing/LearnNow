@@ -1,25 +1,41 @@
 import SwiftUI
 
 enum LearnNowSpacing {
-    static let screenHorizontal: CGFloat = 24
+    static let screenHorizontal: CGFloat = 20
     static let screenTop: CGFloat = 20
     static let screenBottom: CGFloat = 40
     static let section: CGFloat = 24
     static let cardGap: CGFloat = 20
     static let itemGap: CGFloat = 16
     static let compactGap: CGFloat = 10
+    static let maximumContentWidth: CGFloat = 920
+    static let floatingTabBarClearance: CGFloat = 106
+
+    static func screenHorizontal(for width: CGFloat) -> CGFloat {
+        switch width {
+        case ...390:
+            16
+        case ..<700:
+            screenHorizontal
+        default:
+            32
+        }
+    }
 }
 
 enum LearnNowTypography {
-    static let screenTitle = Font.system(size: 30, weight: .black, design: .rounded)
-    static let screenSubtitle = Font.system(size: 13, weight: .bold, design: .rounded)
-    static let sectionTitle = Font.system(size: 20, weight: .heavy, design: .rounded)
-    static let cardTitle = Font.system(size: 17, weight: .heavy, design: .rounded)
-    static let cardHeadline = Font.system(size: 20, weight: .heavy, design: .rounded)
-    static let body = Font.system(size: 14, weight: .semibold, design: .rounded)
-    static let label = Font.system(size: 13, weight: .heavy, design: .rounded)
-    static let metricValue = Font.system(size: 28, weight: .black, design: .rounded)
-    static let metricUnit = Font.system(size: 14, weight: .bold, design: .rounded)
+    static let screenTitle = Font.system(.title, design: .rounded, weight: .bold)
+    static let sheetTitle = Font.system(.title2, design: .rounded, weight: .bold)
+    static let sectionTitle = Font.system(.title3, design: .rounded, weight: .semibold)
+    static let cardTitle = Font.system(.headline, design: .rounded, weight: .semibold)
+    static let cardHeadline = Font.system(.title3, design: .rounded, weight: .bold)
+    static let body = Font.system(.body, design: .default, weight: .regular)
+    static let screenSubtitle = Font.system(.subheadline, design: .default, weight: .regular)
+    static let label = Font.system(.subheadline, design: .rounded, weight: .semibold)
+    static let metadata = Font.system(.footnote, design: .default, weight: .medium)
+    static let caption = Font.system(.caption, design: .default, weight: .medium)
+    static let metricValue = Font.system(.title, design: .rounded, weight: .bold)
+    static let metricUnit = Font.system(.subheadline, design: .rounded, weight: .semibold)
 }
 
 struct ScreenScaffold<Content: View>: View {
@@ -38,13 +54,20 @@ struct ScreenScaffold<Content: View>: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: spacing) {
-                content
+        GeometryReader { geometry in
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: spacing) {
+                    content
+                }
+                .padding(
+                    .horizontal,
+                    LearnNowSpacing.screenHorizontal(for: geometry.size.width)
+                )
+                .padding(.top, LearnNowSpacing.screenTop)
+                .padding(.bottom, bottomPadding)
+                .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
+                .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, LearnNowSpacing.screenHorizontal)
-            .padding(.top, LearnNowSpacing.screenTop)
-            .padding(.bottom, bottomPadding)
         }
     }
 }

@@ -2,19 +2,23 @@ import SwiftUI
 
 private enum HomeLayout {
     static let topPadding: CGFloat = LearnNowSpacing.screenTop
-    static let horizontalPadding: CGFloat = LearnNowSpacing.screenHorizontal
-    static let cardSpacing: CGFloat = 14
-    static let estimatedHeaderHeight: CGFloat = 58
+    static let headerHeight: CGFloat = 58
+    static let bottomPadding: CGFloat = 0
     static let cardContentPadding: CGFloat = 20
     static let cardCornerRadius: CGFloat = 26
-    static let continueMinContentHeight: CGFloat = 160
-    static let tipMinContentHeight: CGFloat = 132
     static let progressBottomSpacing: CGFloat = 12
 
-    static func cardHeights(for availableHeight: CGFloat) -> (status: CGFloat, secondary: CGFloat) {
+    static func cardHeights(
+        for availableHeight: CGFloat,
+        cardSpacing: CGFloat
+    ) -> (status: CGFloat, secondary: CGFloat) {
         let totalCardHeight = max(
             0,
-            availableHeight - topPadding - estimatedHeaderHeight - cardSpacing * 3
+            availableHeight
+                - topPadding
+                - bottomPadding
+                - headerHeight
+                - cardSpacing * 3
         )
         let unit = totalCardHeight / 7
 
@@ -28,24 +32,27 @@ private enum HomeLayout {
 
 struct HomeScreen: View {
     let model: HomeScreenModel
+    var cardSpacing: CGFloat = 14
     let onContinueLearning: () -> Void
 
     var body: some View {
         GeometryReader { geometry in
-            let cardHeights = HomeLayout.cardHeights(for: geometry.size.height)
-            let secondaryContentHeight = HomeLayout.contentHeight(for: cardHeights.secondary)
+            let cardHeights = HomeLayout.cardHeights(
+                for: geometry.size.height,
+                cardSpacing: cardSpacing
+            )
 
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: HomeLayout.cardSpacing) {
+                VStack(alignment: .leading, spacing: cardSpacing) {
                     ScreenHeader(
                         title: model.title,
-                        subtitle: model.subtitle,
-                        trailing: { AvatarBadge() }
+                        subtitle: model.subtitle
                     )
-                    .frame(height: HomeLayout.estimatedHeaderHeight, alignment: .center)
+                    .frame(minHeight: HomeLayout.headerHeight, alignment: .center)
 
                     TodayStatusCard(
                         metrics: model.statusMetrics,
+                        streakDays: model.streakDays,
                         contentHeight: HomeLayout.contentHeight(for: cardHeights.status),
                         action: onContinueLearning
                     )
@@ -57,18 +64,23 @@ struct HomeScreen: View {
                         progress: model.continueCard.progress,
                         progressText: model.continueCard.progressText,
                         accent: .blue,
-                        contentHeight: max(secondaryContentHeight, HomeLayout.continueMinContentHeight),
+                        contentHeight: HomeLayout.contentHeight(for: cardHeights.secondary),
                         action: onContinueLearning
                     )
 
                     KnowledgeTipCard(
                         title: model.tipSectionTitle,
                         tip: model.knowledgeTip,
-                        contentHeight: max(secondaryContentHeight, HomeLayout.tipMinContentHeight)
+                        contentHeight: HomeLayout.contentHeight(for: cardHeights.secondary)
                     )
                 }
-                .padding(.horizontal, HomeLayout.horizontalPadding)
+                .padding(
+                    .horizontal,
+                    LearnNowSpacing.screenHorizontal(for: geometry.size.width)
+                )
                 .padding(.top, HomeLayout.topPadding)
+                .padding(.bottom, HomeLayout.bottomPadding)
+                .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .top)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -79,16 +91,25 @@ struct HomeScreen: View {
 
 private struct TodayStatusCard: View {
     let metrics: [LearnNowMetric]
+    let streakDays: Int
     let contentHeight: CGFloat
     let action: () -> Void
 
     private var primaryMetric: LearnNowMetric? {
-        metrics.first { $0.id == "streak" } ?? metrics.first
+        metrics.first { $0.id == "streak" }
     }
 
     private var supportingMetrics: [LearnNowMetric] {
-        guard let primaryMetric else { return Array(metrics.dropFirst()) }
-        return metrics.filter { $0.id != primaryMetric.id }
+        metrics.filter { $0.id != "streak" }
+    }
+
+    private var accessibilityValue: String {
+        metrics
+            .map { metric in
+                let unit = metric.unit.map { " \($0)" } ?? ""
+                return "\(metric.title) \(metric.value)\(unit)"
+            }
+            .joined(separator: "，")
     }
 
     var body: some View {
@@ -96,19 +117,25 @@ private struct TodayStatusCard: View {
             StatusSoftCardContent(contentHeight: contentHeight) {
                 VStack(alignment: .leading, spacing: 20) {
                     if let primaryMetric {
-                        StreakAchievementHero(metric: primaryMetric)
+                        StreakAchievementHero(
+                            metric: primaryMetric,
+                            streakDays: streakDays
+                        )
                     }
 
                     if !supportingMetrics.isEmpty {
                         StatusMetricsBand(metrics: Array(supportingMetrics.prefix(2)))
                     }
                 }
-                .frame(height: contentHeight, alignment: .center)
+                .frame(minHeight: contentHeight, alignment: .center)
             }
         }
         .buttonStyle(SoftPressStyle(cornerRadius: HomeLayout.cardCornerRadius))
-        .accessibilityLabel("继续学习，保持连续学习")
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("继续学习")
+        .accessibilityValue(accessibilityValue)
+        .accessibilityHint("打开当前课程")
+        .accessibilityIdentifier("home.status.continue")
     }
 }
 
@@ -126,45 +153,34 @@ private struct StatusSoftCardContent<Content: View>: View {
         content
             .padding(HomeLayout.cardContentPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: cardHeight, alignment: .center)
+            .frame(minHeight: cardHeight, alignment: .center)
             .contentShape(RoundedRectangle(cornerRadius: HomeLayout.cardCornerRadius, style: .continuous))
     }
 }
 
 private struct StreakAchievementHero: View {
     let metric: LearnNowMetric
+    let streakDays: Int
 
     var body: some View {
         HStack(alignment: .center, spacing: 18) {
-            StreakIconBadge(accent: metric.accent)
+            StreakIconBadge(
+                streakDays: streakDays,
+                accent: metric.accent
+            )
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(metric.value)
-                        .font(.system(size: 54, weight: .black, design: .rounded))
+                        .font(LearnNowTypography.metricValue)
                         .foregroundStyle(LearnNowPalette.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
 
                     Text(streakSuffix)
-                        .font(.system(size: 21, weight: .heavy, design: .rounded))
+                        .font(LearnNowTypography.metricUnit)
                         .foregroundStyle(LearnNowPalette.textSecondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
                 }
 
-                Text(milestoneText)
-                    .font(LearnNowTypography.label)
-                    .foregroundStyle(LearnNowPalette.color(for: metric.accent))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .background(
-                        Capsule(style: .continuous)
-                            .fill(LearnNowPalette.base)
-                            .modifier(InsetSurface(cornerRadius: 999))
-                    )
+                MetadataChip(text: milestoneText, accent: metric.accent)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -180,10 +196,9 @@ private struct StreakAchievementHero: View {
 
     private var milestoneText: String {
         let targets = [7, 14, 30, 60, 100]
-        guard
-            let current = Int(metric.value),
-            let nextTarget = targets.first(where: { current < $0 })
-        else {
+        let current = max(streakDays, 0)
+
+        guard let nextTarget = targets.first(where: { current < $0 }) else {
             return "保持节奏"
         }
 
@@ -192,240 +207,36 @@ private struct StreakAchievementHero: View {
 }
 
 private struct StreakIconBadge: View {
+    let streakDays: Int
     let accent: LearnNowAccent
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(LearnNowPalette.base)
-                .frame(width: 84, height: 84)
-                .modifier(OuterSurface(cornerRadius: 42))
-
-            Circle()
-                .fill(LearnNowPalette.color(for: accent).opacity(0.11))
-                .frame(width: 66, height: 66)
-                .modifier(InsetSurface(cornerRadius: 33))
-
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            Color(hex: 0xFFE8A3),
-                            Color(hex: 0xFFAB1F),
-                            Color(hex: 0xF66A18)
-                        ],
-                        center: .topLeading,
-                        startRadius: 3,
-                        endRadius: 44
-                    )
+        AchievementSymbolBadge(
+            size: 80,
+            accent: accent,
+            glowSize: 96,
+            glowOpacity: 0.12,
+            glowBlur: 14,
+            strokeOpacity: isActive ? 0.30 : 0.18,
+            showsGlow: isActive && !reduceTransparency
+        ) {
+            Image(systemName: isActive ? "flame.fill" : "flame")
+                .font(.largeTitle.weight(.semibold))
+                .symbolRenderingMode(.hierarchical)
+                .symbolColorRenderingMode(.gradient)
+                .foregroundStyle(
+                    LearnNowPalette.color(for: accent).opacity(isActive ? 1 : 0.62)
                 )
-                .frame(width: 60, height: 60)
-                .shadow(color: Color(hex: 0xF59E0B).opacity(0.34), radius: 16, x: 0, y: 8)
-
-            RoundedFlameGlyph(accent: accent)
-                .frame(width: 42, height: 47)
-                .offset(y: 1)
-
-            Circle()
-                .fill(Color.white.opacity(0.38))
-                .frame(width: 18, height: 18)
-                .offset(x: 25, y: -24)
-                .blur(radius: 0.3)
-
-            Circle()
-                .fill(Color.white.opacity(0.24))
-                .frame(width: 9, height: 9)
-                .offset(x: -28, y: 24)
         }
         .frame(width: 86, height: 86)
+        .accessibilityHidden(true)
+        .allowsHitTesting(false)
     }
-}
 
-private struct RoundedFlameGlyph: View {
-    let accent: LearnNowAccent
-
-    var body: some View {
-        ZStack {
-            OrganicFlameShape()
-                .fill(LearnNowPalette.color(for: accent).opacity(0.30))
-                .blur(radius: 8)
-                .offset(y: 4)
-
-            OrganicFlameShape()
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: 0xFFF4B8),
-                            Color(hex: 0xFFC342),
-                            Color(hex: 0xFF8A1C),
-                            Color(hex: 0xF15C22)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .overlay {
-                    OrganicFlameShape()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.white.opacity(0.58),
-                                    Color.white.opacity(0.16),
-                                    .clear
-                                ],
-                                center: .topLeading,
-                                startRadius: 1,
-                                endRadius: 30
-                            )
-                        )
-                }
-                .overlay {
-                    OrganicFlameShape()
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.66),
-                                    Color.white.opacity(0.08),
-                                    Color(hex: 0xD9480F).opacity(0.22)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1.2
-                        )
-                }
-
-            InnerFlameShape()
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.96),
-                            Color(hex: 0xFFE77A),
-                            Color(hex: 0xFFB21A)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 19, height: 28)
-                .offset(x: -1, y: 8)
-                .shadow(color: Color.white.opacity(0.28), radius: 5, x: -1, y: -2)
-
-            FlameHighlightShape()
-                .fill(Color.white.opacity(0.38))
-                .frame(width: 13, height: 18)
-                .offset(x: -7, y: -7)
-                .blur(radius: 0.2)
-        }
-    }
-}
-
-private struct OrganicFlameShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let w = rect.width
-        let h = rect.height
-
-        path.move(to: CGPoint(x: w * 0.52, y: h * 0.98))
-        path.addCurve(
-            to: CGPoint(x: w * 0.15, y: h * 0.70),
-            control1: CGPoint(x: w * 0.32, y: h * 0.98),
-            control2: CGPoint(x: w * 0.10, y: h * 0.88)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.34, y: h * 0.18),
-            control1: CGPoint(x: w * 0.20, y: h * 0.50),
-            control2: CGPoint(x: w * 0.25, y: h * 0.37)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.50, y: h * 0.34),
-            control1: CGPoint(x: w * 0.42, y: h * 0.20),
-            control2: CGPoint(x: w * 0.45, y: h * 0.28)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.66, y: h * 0.04),
-            control1: CGPoint(x: w * 0.58, y: h * 0.24),
-            control2: CGPoint(x: w * 0.55, y: h * 0.08)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.86, y: h * 0.62),
-            control1: CGPoint(x: w * 0.80, y: h * 0.20),
-            control2: CGPoint(x: w * 0.90, y: h * 0.38)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.52, y: h * 0.98),
-            control1: CGPoint(x: w * 0.84, y: h * 0.84),
-            control2: CGPoint(x: w * 0.73, y: h * 0.98)
-        )
-        path.closeSubpath()
-
-        return path
-    }
-}
-
-private struct InnerFlameShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let w = rect.width
-        let h = rect.height
-
-        path.move(to: CGPoint(x: w * 0.52, y: h * 0.98))
-        path.addCurve(
-            to: CGPoint(x: w * 0.16, y: h * 0.68),
-            control1: CGPoint(x: w * 0.31, y: h * 0.97),
-            control2: CGPoint(x: w * 0.14, y: h * 0.83)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.50, y: h * 0.08),
-            control1: CGPoint(x: w * 0.18, y: h * 0.45),
-            control2: CGPoint(x: w * 0.40, y: h * 0.31)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.84, y: h * 0.66),
-            control1: CGPoint(x: w * 0.70, y: h * 0.27),
-            control2: CGPoint(x: w * 0.86, y: h * 0.43)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.52, y: h * 0.98),
-            control1: CGPoint(x: w * 0.82, y: h * 0.84),
-            control2: CGPoint(x: w * 0.68, y: h * 0.98)
-        )
-        path.closeSubpath()
-
-        return path
-    }
-}
-
-private struct FlameHighlightShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let w = rect.width
-        let h = rect.height
-
-        path.move(to: CGPoint(x: w * 0.54, y: h * 0.04))
-        path.addCurve(
-            to: CGPoint(x: w * 0.18, y: h * 0.62),
-            control1: CGPoint(x: w * 0.30, y: h * 0.24),
-            control2: CGPoint(x: w * 0.15, y: h * 0.42)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.54, y: h * 0.96),
-            control1: CGPoint(x: w * 0.20, y: h * 0.80),
-            control2: CGPoint(x: w * 0.34, y: h * 0.94)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.74, y: h * 0.54),
-            control1: CGPoint(x: w * 0.72, y: h * 0.82),
-            control2: CGPoint(x: w * 0.78, y: h * 0.66)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.54, y: h * 0.04),
-            control1: CGPoint(x: w * 0.68, y: h * 0.32),
-            control2: CGPoint(x: w * 0.56, y: h * 0.22)
-        )
-        path.closeSubpath()
-
-        return path
+    private var isActive: Bool {
+        streakDays > 0
     }
 }
 
@@ -433,17 +244,19 @@ private struct StatusMetricsBand: View {
     let metrics: [LearnNowMetric]
 
     var body: some View {
-        HStack(spacing: 10) {
-            ForEach(metrics) { metric in
-                StatusSummaryMetric(metric: metric)
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                ForEach(metrics) { metric in
+                    StatusSummaryMetric(metric: metric)
+                }
+            }
+
+            VStack(spacing: 12) {
+                ForEach(metrics) { metric in
+                    StatusSummaryMetric(metric: metric)
+                }
             }
         }
-        .padding(8)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(LearnNowPalette.base)
-                .modifier(InsetSurface(cornerRadius: 24))
-        )
     }
 }
 
@@ -452,21 +265,17 @@ private struct StatusSummaryMetric: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
-            StatusIconBadge(systemImage: metric.systemImage, accent: metric.accent)
+            StatusIconBadge(metric: metric)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(metric.title)
-                    .font(.system(size: 12, weight: .heavy, design: .rounded))
+                    .font(LearnNowTypography.caption)
                     .foregroundStyle(LearnNowPalette.textMuted)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(metric.value)
-                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .font(LearnNowTypography.cardTitle)
                         .foregroundStyle(LearnNowPalette.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
 
                     if let unit = metric.unit {
                         Text(unit)
@@ -477,35 +286,63 @@ private struct StatusSummaryMetric: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(LearnNowPalette.base)
-                .modifier(OuterSurface(cornerRadius: 18))
+                .fill(LearnNowPalette.color(for: metric.accent).opacity(0.07))
         )
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(
+                    LearnNowPalette.color(for: metric.accent).opacity(0.13),
+                    lineWidth: 0.75
+                )
+        }
     }
 }
 
 private struct StatusIconBadge: View {
-    let systemImage: String?
-    let accent: LearnNowAccent
+    let metric: LearnNowMetric
+
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
             Circle()
-                .fill(LearnNowPalette.color(for: accent).opacity(0.10))
+                .fill(LearnNowPalette.base)
+                .overlay {
+                    Circle()
+                        .fill(LearnNowPalette.color(for: metric.accent).opacity(0.08))
+                }
+                .overlay {
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(colorScheme == .dark ? 0.14 : 0.48),
+                                    LearnNowPalette.color(for: metric.accent).opacity(0.18)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 0.75
+                        )
+                }
                 .frame(width: 40, height: 40)
-                .modifier(InsetSurface(cornerRadius: 20))
 
-            if let systemImage {
+            if let systemImage = metric.systemImage {
                 Image(systemName: systemImage)
-                    .font(.system(size: 17, weight: .black))
-                    .foregroundStyle(LearnNowPalette.color(for: accent))
+                    .font(.headline.weight(.semibold))
+                    .symbolRenderingMode(.hierarchical)
+                    .symbolColorRenderingMode(.gradient)
+                    .foregroundStyle(LearnNowPalette.color(for: metric.accent))
             }
         }
         .frame(width: 40, height: 40)
+        .accessibilityHidden(true)
+        .allowsHitTesting(false)
     }
 }
 
@@ -529,26 +366,16 @@ private struct ContinueLearningCard: View {
 
                     Spacer()
 
-                    Text(progressText)
-                        .font(LearnNowTypography.label)
-                        .foregroundStyle(LearnNowPalette.color(for: accent))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 7)
-                        .background(
-                            Capsule(style: .continuous)
-                                .fill(LearnNowPalette.color(for: accent).opacity(0.12))
-                        )
+                    MetadataChip(text: progressText, accent: accent)
                 }
 
                 HStack(alignment: .center, spacing: 16) {
                     VStack(alignment: .leading, spacing: 10) {
-                        NeumorphicPill(text: badge, accent: accent)
+                        MetadataChip(text: badge, accent: accent)
 
                         Text(title)
                             .font(LearnNowTypography.cardHeadline)
                             .foregroundStyle(LearnNowPalette.textPrimary)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.82)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -561,7 +388,7 @@ private struct ContinueLearningCard: View {
 
                 ProgressTrack(progress: progress, accent: accent, height: 12)
             }
-            .frame(minHeight: max(contentHeight, HomeLayout.continueMinContentHeight), alignment: .top)
+            .frame(minHeight: contentHeight, alignment: .top)
         }
     }
 }
@@ -570,6 +397,7 @@ private struct KnowledgeTipCard: View {
     let title: String
     let tip: HomeScreenModel.KnowledgeTip
     let contentHeight: CGFloat
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SoftCard(contentPadding: 20) {
@@ -578,23 +406,35 @@ private struct KnowledgeTipCard: View {
                     .font(LearnNowTypography.cardTitle)
                     .foregroundStyle(LearnNowPalette.color(for: .mint))
 
-                HStack(alignment: .center, spacing: 10) {
-                    TipIcon(systemImage: tip.systemImage, accent: tip.accent)
-
-                    TipCopy(tip: tip)
-                        .padding(.trailing, 72)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 12) {
+                        TipIcon(systemImage: tip.systemImage, accent: tip.accent)
+                        TipCopy(tip: tip)
+                    }
+                    .padding(.top, 8)
+                } else {
+                    standardContent
                 }
-                .overlay(alignment: .trailing) {
-                    TipIllustration(accent: tip.accent)
-                        .frame(width: 70, height: 54)
-                        .allowsHitTesting(false)
-                }
-                .padding(.top, 8)
             }
-            .frame(minHeight: max(contentHeight, HomeLayout.tipMinContentHeight), alignment: .top)
+            .frame(minHeight: contentHeight, alignment: .top)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    private var standardContent: some View {
+        HStack(alignment: .center, spacing: 10) {
+            TipIcon(systemImage: tip.systemImage, accent: tip.accent)
+
+            TipCopy(tip: tip)
+                .padding(.trailing, 72)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .overlay(alignment: .trailing) {
+            TipIllustration(accent: tip.accent)
+                .frame(width: 70, height: 54)
+                .allowsHitTesting(false)
+        }
+        .padding(.top, 8)
     }
 }
 
@@ -615,7 +455,7 @@ private struct TipIcon: View {
                 .opacity(0.18)
 
             Image(systemName: systemImage)
-                .font(.system(size: 21, weight: .medium))
+                .font(.title3.weight(.medium))
                 .foregroundStyle(LearnNowPalette.color(for: accent))
         }
         .frame(width: 52, height: 52)
@@ -628,15 +468,13 @@ private struct TipCopy: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             Text(tip.title)
-                .font(.system(size: 15, weight: .heavy, design: .rounded))
+                .font(LearnNowTypography.cardTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
-                .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text(tip.body)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .font(LearnNowTypography.screenSubtitle)
                 .foregroundStyle(LearnNowPalette.textSecondary)
-                .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
 
         }
@@ -714,28 +552,7 @@ private struct TipBellCurve: Shape {
     }
 }
 
-private struct AvatarBadge: View {
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [LearnNowPalette.color(for: .blue), LearnNowPalette.color(for: .purple)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 52, height: 52)
-                .softOuter(radius: 8, x: 4, y: 4)
-
-            Image(systemName: "person.fill")
-                .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(.white.opacity(0.95))
-        }
-    }
-}
-
-#Preview("Home") {
+#Preview("Home · Active Streak") {
     ZStack {
         LearnNowPalette.canvas.ignoresSafeArea()
         HomeScreen(
@@ -743,4 +560,78 @@ private struct AvatarBadge: View {
             onContinueLearning: {}
         )
     }
+}
+
+private struct HomeStatusIconGallery: View {
+    private let xpMetric = LearnNowMetric(
+        id: "xp",
+        title: "经验",
+        value: "1240",
+        unit: "XP",
+        systemImage: "bolt.fill",
+        accent: .purple
+    )
+
+    private let reviewMetric = LearnNowMetric(
+        id: "review",
+        title: "待复习卡片",
+        value: "3",
+        unit: "张",
+        systemImage: "calendar.badge.clock",
+        accent: .blue
+    )
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            Text("连续学习")
+                .font(LearnNowTypography.cardTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
+
+            HStack(spacing: 28) {
+                previewStreak(days: 0, label: "尚未开始")
+                previewStreak(days: 12, label: "已点燃")
+            }
+
+            Text("辅助指标")
+                .font(LearnNowTypography.cardTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
+
+            HStack(spacing: 28) {
+                previewMetric(xpMetric)
+                previewMetric(reviewMetric)
+            }
+        }
+        .padding(28)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(LearnNowPalette.canvas)
+    }
+
+    private func previewStreak(days: Int, label: String) -> some View {
+        VStack(spacing: 8) {
+            StreakIconBadge(streakDays: days, accent: .amber)
+
+            Text(label)
+                .font(LearnNowTypography.label)
+                .foregroundStyle(LearnNowPalette.textMuted)
+        }
+    }
+
+    private func previewMetric(_ metric: LearnNowMetric) -> some View {
+        HStack(spacing: 10) {
+            StatusIconBadge(metric: metric)
+
+            Text(metric.title)
+                .font(LearnNowTypography.label)
+                .foregroundStyle(LearnNowPalette.textSecondary)
+        }
+    }
+}
+
+#Preview("Home · Status Icons") {
+    HomeStatusIconGallery()
+}
+
+#Preview("Home · Status Icons · Dark") {
+    HomeStatusIconGallery()
+        .preferredColorScheme(.dark)
 }

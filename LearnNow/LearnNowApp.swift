@@ -10,24 +10,33 @@ import SwiftData
 
 @main
 struct LearnNowApp: App {
-    private let sharedModelContainer: Result<ModelContainer, Error> = {
+    private let activeCloudSyncEnabled: Bool
+    private let sharedModelContainer: Result<ModelContainer, Error>
+
+    init() {
         let processInfo = ProcessInfo.processInfo
         let isUITesting = processInfo.arguments.contains("-UITestingResetData")
         let isUnitTesting = processInfo.environment["LEARNNOW_TESTING"] == "YES"
         let usesEphemeralStore = isUITesting || isUnitTesting
-        return Result {
+        let simulatesActiveCloudSync = isUITesting &&
+            processInfo.arguments.contains("-UITestingActiveCloudSyncEnabled")
+        let activeCloudSyncEnabled = simulatesActiveCloudSync ||
+            (!usesEphemeralStore && LearnNowCloudSyncPreference.isEnabled())
+
+        self.activeCloudSyncEnabled = activeCloudSyncEnabled
+        self.sharedModelContainer = Result {
             try LearnNowModelContainerFactory.make(
-                cloudSyncEnabled: !usesEphemeralStore,
+                cloudSyncEnabled: activeCloudSyncEnabled,
                 inMemory: usesEphemeralStore
             )
         }
-    }()
+    }
 
     var body: some Scene {
         WindowGroup {
             switch sharedModelContainer {
             case .success(let container):
-                ContentView()
+                ContentView(activeCloudSyncEnabled: activeCloudSyncEnabled)
                     .modelContainer(container)
             case .failure(let error):
                 ContentUnavailableView(
