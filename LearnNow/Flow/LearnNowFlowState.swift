@@ -634,11 +634,11 @@ struct LearnNowFlowState: Equatable {
         }
     }
 
-    var rollingFourWeekHeatmap: [LearnNowHeatCell] {
+    var rollingHeatmapHistory: [LearnNowHeatCell] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
-        return (-27...0).enumerated().map { index, dayOffset in
+        return (-239...0).enumerated().map { index, dayOffset in
             let date = calendar.date(byAdding: .day, value: dayOffset, to: today) ?? today
             let count = activityByLocalDay[Self.localDayFormatter.string(from: date), default: 0]
             return LearnNowHeatCell(id: index, level: min(count, 3))

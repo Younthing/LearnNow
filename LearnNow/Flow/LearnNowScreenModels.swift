@@ -582,7 +582,7 @@ extension LearnNowFlowState {
                         accent: .mint
                     ),
                 ],
-                heatmap: rollingFourWeekHeatmap,
+                heatmap: rollingHeatmapHistory,
             ),
             memoryTrend: .init(
                 values: memoryValues,

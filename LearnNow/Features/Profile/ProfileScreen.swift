@@ -150,6 +150,8 @@ private struct ProfileInsightCard: View {
     @Binding var selection: ProfileInsightMode
     let usesFlexibleHeight: Bool
 
+    private let regularContentHeight: CGFloat = 200
+
     var body: some View {
         SoftCard(contentPadding: 14) {
             VStack(alignment: .leading, spacing: 12) {
@@ -161,11 +163,17 @@ private struct ProfileInsightCard: View {
                         ProfileOverviewContent(overview: overview)
                             .transition(.opacity)
                     case .memoryTrend:
-                        ProfileMemoryTrendContent(memoryTrend: memoryTrend)
+                        ProfileMemoryTrendContent(
+                            memoryTrend: memoryTrend,
+                            fillsAvailableHeight: !usesFlexibleHeight
+                        )
                             .transition(.opacity)
                     }
                 }
-                .frame(height: usesFlexibleHeight ? nil : 160, alignment: .top)
+                .frame(
+                    height: usesFlexibleHeight ? nil : regularContentHeight,
+                    alignment: .top
+                )
                 .animation(.easeInOut(duration: 0.2), value: selection)
             }
         }
@@ -239,70 +247,183 @@ private struct ProfileOverviewContent: View {
                 }
             }
 
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 4) {
-                    heatmapTitle
-                    heatmapLegend
-                }
-            } else {
-                HStack {
-                    heatmapTitle
-                    Spacer()
-                    heatmapLegend
-                }
-            }
+            heatmapTitle
 
             CompactHeatmap(cells: overview.heatmap)
         }
     }
 
     private var heatmapTitle: some View {
-        Text("近四周学习")
+        Text("近期学习")
             .font(LearnNowTypography.caption)
             .foregroundStyle(LearnNowPalette.textSecondary)
-    }
-
-    private var heatmapLegend: some View {
-        Text("越深代表学习越多")
-            .font(LearnNowTypography.caption)
-            .foregroundStyle(LearnNowPalette.textMuted)
     }
 }
 
 private struct CompactHeatmap: View {
     let cells: [LearnNowHeatCell]
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 7), count: 7)
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 7) {
+        ResponsiveHeatmapLayout(
+            prefersLargerCells: dynamicTypeSize.isAccessibilitySize
+        ) {
             ForEach(cells) { cell in
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
                     .fill(color(for: cell.level))
-                    .frame(height: 9)
-                    .opacity(cell.level == nil ? 0.18 : 1)
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("近四周学习热力图")
+        .accessibilityLabel("近期学习热力图")
     }
 
     private func color(for level: Int?) -> Color {
         switch level {
-        case nil, 0:
-            LearnNowPalette.shadowDark.opacity(0.14)
+        case nil:
+            LearnNowPalette.shadowDark.opacity(0.10)
+        case 0:
+            LearnNowPalette.color(for: .mint).opacity(0.14)
         case 1:
-            LearnNowPalette.color(for: .mint).opacity(0.55)
+            LearnNowPalette.color(for: .mint).opacity(0.38)
         case 2:
-            LearnNowPalette.color(for: .blue).opacity(0.72)
+            LearnNowPalette.color(for: .mint).opacity(0.66)
         default:
-            LearnNowPalette.color(for: .purple)
+            LearnNowPalette.color(for: .mint)
         }
+    }
+}
+
+private struct ResponsiveHeatmapLayout: Layout {
+    let prefersLargerCells: Bool
+
+    private let rowCount = 4
+    private let preferredCellSize: CGFloat = 20
+    private let preferredLargeCellSize: CGFloat = 24
+    private let spacing: CGFloat = 6
+
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) -> CGSize {
+        let metrics = metrics(
+            for: proposedWidth(proposal.width),
+            itemCount: subviews.count
+        )
+        return CGSize(width: metrics.containerWidth, height: metrics.height)
+    }
+
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) {
+        let metrics = metrics(for: bounds.width, itemCount: subviews.count)
+        let leadingInset = max(0, (bounds.width - metrics.contentWidth) / 2)
+        let hiddenItemCount = subviews.count - metrics.visibleItemCount
+
+        for subview in subviews.prefix(hiddenItemCount) {
+            subview.place(
+                at: CGPoint(x: bounds.minX, y: bounds.minY),
+                anchor: .topLeading,
+                proposal: ProposedViewSize(width: 0, height: 0)
+            )
+        }
+
+        for (index, subview) in subviews.suffix(metrics.visibleItemCount).enumerated() {
+            let column = index % metrics.columnCount
+            let row = index / metrics.columnCount
+            let x = bounds.minX
+                + leadingInset
+                + CGFloat(column) * (metrics.cellSize + spacing)
+            let y = bounds.minY + CGFloat(row) * (metrics.cellSize + spacing)
+
+            subview.place(
+                at: CGPoint(x: x, y: y),
+                anchor: .topLeading,
+                proposal: ProposedViewSize(
+                    width: metrics.cellSize,
+                    height: metrics.cellSize
+                )
+            )
+        }
+    }
+
+    private func proposedWidth(_ width: CGFloat?) -> CGFloat {
+        guard let width, width.isFinite else {
+            return 360
+        }
+        return max(width, 1)
+    }
+
+    private func metrics(for availableWidth: CGFloat, itemCount: Int) -> Metrics {
+        let preferredSize = prefersLargerCells
+            ? preferredLargeCellSize
+            : preferredCellSize
+        let proposedColumnCount = max(
+            1,
+            Int(
+                (
+                    (availableWidth + spacing)
+                    / (preferredSize + spacing)
+                ).rounded()
+            )
+        )
+        let maximumCompleteColumnCount = max(1, itemCount / rowCount)
+        let columnCount = min(
+            proposedColumnCount,
+            maximumCompleteColumnCount
+        )
+        let visibleItemCount = min(itemCount, columnCount * rowCount)
+        let availableCellSize =
+            (availableWidth - CGFloat(columnCount - 1) * spacing)
+            / CGFloat(columnCount)
+        let cellSize = max(1, availableCellSize)
+        let visibleRowCount = max(
+            1,
+            Int(ceil(Double(visibleItemCount) / Double(columnCount)))
+        )
+        let contentWidth = requiredWidth(
+            columnCount: columnCount,
+            cellSize: cellSize
+        )
+        let height =
+            CGFloat(visibleRowCount) * cellSize
+            + CGFloat(visibleRowCount - 1) * spacing
+
+        return Metrics(
+            containerWidth: availableWidth,
+            contentWidth: contentWidth,
+            height: height,
+            cellSize: cellSize,
+            columnCount: columnCount,
+            visibleItemCount: visibleItemCount
+        )
+    }
+
+    private func requiredWidth(
+        columnCount: Int,
+        cellSize: CGFloat
+    ) -> CGFloat {
+        CGFloat(columnCount) * cellSize
+            + CGFloat(columnCount - 1) * spacing
+    }
+
+    private struct Metrics {
+        let containerWidth: CGFloat
+        let contentWidth: CGFloat
+        let height: CGFloat
+        let cellSize: CGFloat
+        let columnCount: Int
+        let visibleItemCount: Int
     }
 }
 
 private struct ProfileMemoryTrendContent: View {
     let memoryTrend: ProfileScreenModel.MemoryTrend
+    let fillsAvailableHeight: Bool
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
@@ -321,6 +442,10 @@ private struct ProfileMemoryTrendContent: View {
                 }
             }
             .accessibilityIdentifier("profile.memory.empty")
+            .frame(
+                maxHeight: fillsAvailableHeight ? .infinity : nil,
+                alignment: .center
+            )
         } else {
             VStack(alignment: .leading, spacing: 10) {
                 if dynamicTypeSize.isAccessibilitySize {
@@ -336,14 +461,32 @@ private struct ProfileMemoryTrendContent: View {
                     }
                 }
 
-                MemoryTrendChart(values: memoryTrend.values)
-                    .frame(height: 92)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(
-                        "记忆趋势，当前 \(memoryTrend.currentText ?? "未知")，7 天后 \(memoryTrend.seventhDayText ?? "未知")，目标百分之九十"
-                    )
+                trendChart
             }
+            .frame(
+                maxHeight: fillsAvailableHeight ? .infinity : nil,
+                alignment: .top
+            )
         }
+    }
+
+    @ViewBuilder
+    private var trendChart: some View {
+        if fillsAvailableHeight {
+            chart
+                .frame(minHeight: 92, maxHeight: .infinity)
+        } else {
+            chart
+                .frame(height: 120)
+        }
+    }
+
+    private var chart: some View {
+        MemoryTrendChart(values: memoryTrend.values)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(
+                "记忆趋势，当前 \(memoryTrend.currentText ?? "未知")，7 天后 \(memoryTrend.seventhDayText ?? "未知")，目标百分之九十"
+            )
     }
 
     private var memoryEmptyIcon: some View {
@@ -467,25 +610,35 @@ private struct ProfileShortcutCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        SoftCard(contentPadding: 8) {
+        SoftCard(contentPadding: LearnNowSpacing.compactGap) {
             VStack(spacing: 0) {
                 ForEach(Array(shortcuts.enumerated()), id: \.element.id) { index, shortcut in
                     Button {
                         onSelect(shortcut.kind)
                     } label: {
-                        HStack(spacing: 12) {
+                        HStack(spacing: ProfileShortcutLayout.horizontalSpacing) {
                             ZStack {
                                 Circle()
                                     .fill(LearnNowPalette.base)
-                                    .frame(width: 38, height: 38)
-                                    .modifier(InsetSurface(cornerRadius: 19))
+                                    .frame(
+                                        width: ProfileShortcutLayout.iconSize,
+                                        height: ProfileShortcutLayout.iconSize
+                                    )
+                                    .modifier(
+                                        InsetSurface(
+                                            cornerRadius: ProfileShortcutLayout.iconSize / 2
+                                        )
+                                    )
 
                                 Image(systemName: shortcut.systemImage)
                                     .font(.subheadline.weight(.bold))
                                     .foregroundStyle(LearnNowPalette.color(for: shortcut.accent))
                             }
 
-                            VStack(alignment: .leading, spacing: 2) {
+                            VStack(
+                                alignment: .leading,
+                                spacing: ProfileShortcutLayout.copySpacing
+                            ) {
                                 Text(shortcut.title)
                                     .font(LearnNowTypography.cardTitle)
                                     .foregroundStyle(LearnNowPalette.textPrimary)
@@ -503,7 +656,8 @@ private struct ProfileShortcutCard: View {
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(LearnNowPalette.textMuted)
                         }
-                        .frame(minHeight: 48)
+                        .padding(.vertical, LearnNowSpacing.compactGap)
+                        .frame(minHeight: ProfileShortcutLayout.minimumRowHeight)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -512,12 +666,23 @@ private struct ProfileShortcutCard: View {
                     if index < shortcuts.count - 1 {
                         Divider()
                             .overlay(LearnNowPalette.shadowDark.opacity(0.16))
-                            .padding(.leading, 50)
+                            .padding(
+                                .leading,
+                                ProfileShortcutLayout.dividerLeadingInset
+                            )
                     }
                 }
             }
         }
     }
+}
+
+private enum ProfileShortcutLayout {
+    static let horizontalSpacing: CGFloat = 14
+    static let iconSize: CGFloat = 42
+    static let copySpacing: CGFloat = 4
+    static let minimumRowHeight: CGFloat = 62
+    static let dividerLeadingInset = iconSize + horizontalSpacing
 }
 
 private extension Double {

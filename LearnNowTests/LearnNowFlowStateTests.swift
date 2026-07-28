@@ -43,6 +43,23 @@ struct LearnNowFlowStateTests {
     }
 
     @Test
+    func profileProvidesEnoughRollingHeatmapHistoryForResponsiveLayouts() {
+        let cells = LearnNowFlowState.profilePreview
+            .profileScreenModel
+            .overview
+            .heatmap
+
+        #expect(cells.count == 240)
+        #expect(cells.map(\.id) == Array(0..<240))
+        #expect(
+            cells.allSatisfy { cell in
+                guard let level = cell.level else { return false }
+                return (0...3).contains(level)
+            }
+        )
+    }
+
+    @Test
     func nestedLearningFlowKeepsRoutesTabSelected() {
         var sut = LearnNowFlowState.homePreview
 
@@ -495,7 +512,7 @@ struct LearnNowFlowStateTests {
         #expect(model.memoryTrend.currentText == "96%")
         #expect(model.memoryTrend.seventhDayText == "82%")
         #expect(model.overview.metrics.first(where: { $0.id == "mastery" })?.value == "—")
-        #expect(model.overview.heatmap.count == 28)
+        #expect(model.overview.heatmap.count == 240)
     }
 
     @Test

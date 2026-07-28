@@ -201,6 +201,25 @@ final class LearnNowUITests: XCTestCase {
         [editProfile, career, favorites, settings].forEach {
             XCTAssertTrue($0.isHittable, "\($0) should be tappable without scrolling.")
         }
+        [career, favorites, settings].forEach {
+            XCTAssertGreaterThanOrEqual(
+                $0.frame.height,
+                60,
+                "\($0) should keep enough vertical breathing room."
+            )
+        }
+        XCTAssertEqual(
+            career.frame.height,
+            favorites.frame.height,
+            accuracy: 2,
+            "Profile shortcut rows should use consistent heights."
+        )
+        XCTAssertEqual(
+            favorites.frame.height,
+            settings.frame.height,
+            accuracy: 2,
+            "Profile shortcut rows should use consistent heights."
+        )
         XCTAssertLessThanOrEqual(
             settings.frame.maxY,
             profileTab.frame.minY,
