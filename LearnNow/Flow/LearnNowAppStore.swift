@@ -272,6 +272,7 @@ final class LearnNowAppStore {
     func setReminderTime(_ date: Date) { flow.setReminderTime(date) }
     func setRemindersEnabled(_ enabled: Bool) { flow.setRemindersEnabled(enabled) }
     func setNightModeEnabled(_ enabled: Bool) { flow.setNightModeEnabled(enabled) }
+    func setSelectedTheme(_ theme: LearnNowTheme) { flow.setSelectedTheme(theme) }
 
     func setCloudSyncEnabled(_ enabled: Bool) {
         if enabled, !subscriptionStore.isCloudSyncEntitled {

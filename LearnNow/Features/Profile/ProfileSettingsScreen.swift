@@ -6,6 +6,7 @@ struct ProfileSettingsScreen: View {
     @Binding var reminderTime: Date
     @Binding var remindersEnabled: Bool
     @Binding var isNightModeEnabled: Bool
+    @Binding var selectedTheme: LearnNowTheme
     let onSetCloudSyncEnabled: (Bool) -> Void
     let onUpgradeCloudSync: () -> Void
 
@@ -34,6 +35,7 @@ struct ProfileSettingsScreen: View {
             } footer: {
                 Text("每天用一个轻提醒，把学习重新拉回日程。")
             }
+            .listRowBackground(LearnNowPalette.surfaceOpaque)
 
             Section("外观") {
                 Toggle(isOn: $isNightModeEnabled) {
@@ -43,7 +45,17 @@ struct ProfileSettingsScreen: View {
                     )
                 }
                 .accessibilityIdentifier("settings.appearance.toggle")
+
+                Picker(selection: $selectedTheme) {
+                    ForEach(LearnNowTheme.allCases) { theme in
+                        Text(theme.displayName).tag(theme)
+                    }
+                } label: {
+                    Label("主题", systemImage: "paintpalette.fill")
+                }
+                .accessibilityIdentifier("settings.appearance.theme")
             }
+            .listRowBackground(LearnNowPalette.surfaceOpaque)
 
             Section {
                 if model.showsCloudSyncToggle {
@@ -62,6 +74,7 @@ struct ProfileSettingsScreen: View {
                     } label: {
                         Label("管理订阅", systemImage: "creditcard")
                     }
+                    .buttonStyle(.plain)
                     .foregroundStyle(LearnNowPalette.textPrimary)
                     .accessibilityIdentifier("settings.cloud.manage")
                 } else {
@@ -70,6 +83,7 @@ struct ProfileSettingsScreen: View {
                     } label: {
                         Label("升级以开启云同步", systemImage: "icloud")
                     }
+                    .buttonStyle(.plain)
                     .foregroundStyle(LearnNowPalette.textPrimary)
                     .accessibilityIdentifier("settings.cloud.upgrade")
                 }
@@ -95,10 +109,12 @@ struct ProfileSettingsScreen: View {
                     }
                 }
             }
+            .listRowBackground(LearnNowPalette.surfaceOpaque)
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
         .background(LearnNowPalette.canvas.ignoresSafeArea())
+        .tint(LearnNowSemanticRole.brand.foreground)
         .navigationTitle(model.title)
         .learnNowInlineNavigationTitle()
         .learnNowNavigationBarVisible()
@@ -142,10 +158,14 @@ private struct CloudSyncConfirmation: Identifiable {
             reminderTime: .constant(Date()),
             remindersEnabled: .constant(true),
             isNightModeEnabled: .constant(false),
+            selectedTheme: .constant(.emerald),
             onSetCloudSyncEnabled: { _ in },
             onUpgradeCloudSync: {}
         )
     }
+    .onAppear { LearnNowThemeStore.current = .emerald }
+    .preferredColorScheme(.light)
+    .tint(LearnNowSemanticRole.brand.foreground)
 }
 
 #Preview("Settings · Sync on") {
@@ -163,10 +183,14 @@ private struct CloudSyncConfirmation: Identifiable {
             reminderTime: .constant(Date()),
             remindersEnabled: .constant(true),
             isNightModeEnabled: .constant(false),
+            selectedTheme: .constant(.sand),
             onSetCloudSyncEnabled: { _ in },
             onUpgradeCloudSync: {}
         )
     }
+    .onAppear { LearnNowThemeStore.current = .sand }
+    .preferredColorScheme(.light)
+    .tint(LearnNowSemanticRole.brand.foreground)
 }
 
 #Preview("Settings · Restart pending") {
@@ -183,9 +207,13 @@ private struct CloudSyncConfirmation: Identifiable {
             ),
             reminderTime: .constant(Date()),
             remindersEnabled: .constant(true),
-            isNightModeEnabled: .constant(false),
+            isNightModeEnabled: .constant(true),
+            selectedTheme: .constant(.ink),
             onSetCloudSyncEnabled: { _ in },
             onUpgradeCloudSync: {}
         )
     }
+    .onAppear { LearnNowThemeStore.current = .ink }
+    .preferredColorScheme(.dark)
+    .tint(LearnNowSemanticRole.brand.foreground)
 }

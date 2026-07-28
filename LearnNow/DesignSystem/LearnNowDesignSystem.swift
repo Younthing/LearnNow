@@ -27,29 +27,22 @@ extension EnvironmentValues {
 }
 
 enum LearnNowPalette {
-    static let base = Color.dynamic(light: 0xFFFFFF, dark: 0x181C1A, lightOpacity: 0.58, darkOpacity: 0.65)
+    private static var tokens: LearnNowThemeTokens {
+        LearnNowThemeCatalog.tokens(for: LearnNowThemeStore.current)
+    }
+
+    static var base: Color { tokens.base.color }
     /// 无障碍降级用的不透明表面（Increase Contrast / Reduce Transparency）。
-    static let surfaceOpaque = Color.dynamic(light: 0xF9FBFA, dark: 0x181C1A)
-    static let canvas = Color.dynamic(light: 0xF4F6F5, dark: 0x0B0D0C)
-    static let textPrimary = Color.dynamic(light: 0x1E2522, dark: 0xF3F6F4, lightOpacity: 1.0, darkOpacity: 0.95)
-    static let textSecondary = Color.dynamic(light: 0x4A5551, dark: 0xC3CCC8)
-    static let textMuted = Color.dynamic(light: 0x7E8985, dark: 0x8B9691)
-    static let shadowDark = Color.dynamic(light: 0xA9AEAC, dark: 0x000000, lightOpacity: 0.4, darkOpacity: 0.5)
-    static let shadowLight = Color.dynamic(light: 0xFFFFFF, dark: 0xFFFFFF, lightOpacity: 0.9, darkOpacity: 0.1)
+    static var surfaceOpaque: Color { tokens.surfaceOpaque.color }
+    static var canvas: Color { tokens.canvas.color }
+    static var textPrimary: Color { tokens.textPrimary.color }
+    static var textSecondary: Color { tokens.textSecondary.color }
+    static var textMuted: Color { tokens.textMuted.color }
+    static var shadowDark: Color { tokens.shadowDark.color }
+    static var shadowLight: Color { tokens.shadowLight.color }
 
     static func color(for accent: LearnNowAccent) -> Color {
-        switch accent {
-        case .blue:
-            return Color.dynamic(light: 0x4A7089, dark: 0x8FB8CE)
-        case .pink:
-            return Color.dynamic(light: 0xA4525C, dark: 0xDA9AA3)
-        case .mint:
-            return Color.dynamic(light: 0x0F7258, dark: 0x66CDA8)
-        case .purple:
-            return Color.dynamic(light: 0x337873, dark: 0x7CC7C0)
-        case .amber:
-            return Color.dynamic(light: 0x8C6410, dark: 0xD9BC6E)
-        }
+        tokens.accent(for: accent).color
     }
 
     static func gradient(for accent: LearnNowAccent) -> LinearGradient {
@@ -70,42 +63,44 @@ enum LearnNowSemanticRole {
     case danger
     case neutral
 
+    private var tokens: LearnNowThemeTokens {
+        LearnNowThemeCatalog.tokens(for: LearnNowThemeStore.current)
+    }
+
     var foreground: Color {
         switch self {
-        case .brand:
-            return Color.dynamic(light: 0x0B7A5C, dark: 0x5FD3A6)
-        case .warning:
-            return Color.dynamic(light: 0x8C6410, dark: 0xE0C06A)
-        case .danger:
-            return Color.dynamic(light: 0xB4434E, dark: 0xEC9AA2)
-        case .neutral:
-            return LearnNowPalette.textSecondary
+        case .brand: tokens.brand.foreground.color
+        case .warning: tokens.warning.foreground.color
+        case .danger: tokens.danger.foreground.color
+        case .neutral: LearnNowPalette.textSecondary
         }
     }
 
     var softFill: Color {
         switch self {
-        case .brand:
-            return Color.dynamic(light: 0xDEF2E9, dark: 0x163529)
-        case .warning:
-            return Color.dynamic(light: 0xF6EEDA, dark: 0x2B2416)
-        case .danger:
-            return Color.dynamic(light: 0xF8E7E9, dark: 0x2F1D20)
+        case .brand: tokens.brand.softFill.color
+        case .warning: tokens.warning.softFill.color
+        case .danger: tokens.danger.softFill.color
         case .neutral:
-            return Color.dynamic(light: 0x1E2522, dark: 0xF3F6F4, lightOpacity: 0.06, darkOpacity: 0.08)
+            Color.dynamic(
+                light: tokens.textPrimary.light,
+                dark: tokens.textPrimary.dark,
+                lightOpacity: 0.06,
+                darkOpacity: 0.08
+            )
         }
     }
 
     var onFill: Color {
         switch self {
-        case .brand:
-            return Color.dynamic(light: 0xFFFFFF, dark: 0x07110D)
-        case .warning:
-            return Color.dynamic(light: 0xFFFFFF, dark: 0x211A08)
-        case .danger:
-            return Color.dynamic(light: 0xFFFFFF, dark: 0x230F12)
+        case .brand: tokens.brand.onFill.color
+        case .warning: tokens.warning.onFill.color
+        case .danger: tokens.danger.onFill.color
         case .neutral:
-            return Color.dynamic(light: 0xFFFFFF, dark: 0x1E2522)
+            Color.dynamic(
+                light: 0xFFFFFF,
+                dark: tokens.textPrimary.light
+            )
         }
     }
 
@@ -113,15 +108,18 @@ enum LearnNowSemanticRole {
         foreground.opacity(0.32)
     }
 
-    static let brandGradient = LinearGradient(
-        colors: [
-            Color.dynamic(light: 0x0B7A5C, dark: 0x47BE94),
-            // 亮端压深到 #0D9A6B：保证渐变实填上的白色图标 ≥3:1（WCAG UI 部件）。
-            Color.dynamic(light: 0x0D9A6B, dark: 0x5FD3A6)
-        ],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    static var brandGradient: LinearGradient {
+        let tokens = LearnNowThemeCatalog.tokens(for: LearnNowThemeStore.current)
+        return LinearGradient(
+            colors: [
+                tokens.brandGradientStart.color,
+                // 亮端压深：保证渐变实填上的 onFill 图标 ≥3:1（WCAG UI 部件）。
+                tokens.brandGradientEnd.color
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
 }
 
 struct BackgroundGlow: View {

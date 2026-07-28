@@ -42,11 +42,16 @@ struct ContentView: View {
                 )
             }
         }
+        .id(store.flow.selectedTheme)
         .tint(LearnNowSemanticRole.brand.foreground)
         .preferredColorScheme(store.flow.isNightModeEnabled ? .dark : .light)
         .task {
+            LearnNowThemeStore.current = store.flow.selectedTheme
             await store.load(context: modelContext)
             await store.startSubscriptions()
+        }
+        .onChange(of: store.flow.selectedTheme) { _, theme in
+            LearnNowThemeStore.current = theme
         }
         .onChange(of: store.subscriptionStore.isCloudSyncEntitled) { _, _ in
             store.syncSubscriptionEntitlement()

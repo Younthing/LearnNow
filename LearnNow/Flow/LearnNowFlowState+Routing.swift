@@ -268,6 +268,12 @@ extension LearnNowFlowState {
         isNightModeEnabled = enabled
         UserDefaults.standard.set(enabled, forKey: "learnnow.settings.nightMode")
     }
+
+    mutating func setSelectedTheme(_ theme: LearnNowTheme) {
+        selectedTheme = theme
+        UserDefaults.standard.set(theme.rawValue, forKey: "learnnow.settings.theme")
+        LearnNowThemeStore.current = theme
+    }
 }
 
 private extension LearnNowFlowState {

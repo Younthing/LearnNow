@@ -464,13 +464,17 @@ struct LearnNowDataTests {
         let reminderKey = "learnnow.settings.reminderTime"
         let enabledKey = "learnnow.settings.remindersEnabled"
         let nightKey = "learnnow.settings.nightMode"
+        let themeKey = "learnnow.settings.theme"
         let oldReminder = defaults.object(forKey: reminderKey)
         let oldEnabled = defaults.object(forKey: enabledKey)
         let oldNight = defaults.object(forKey: nightKey)
+        let oldTheme = defaults.object(forKey: themeKey)
         defer {
             restore(oldReminder, key: reminderKey, defaults: defaults)
             restore(oldEnabled, key: enabledKey, defaults: defaults)
             restore(oldNight, key: nightKey, defaults: defaults)
+            restore(oldTheme, key: themeKey, defaults: defaults)
+            LearnNowThemeStore.current = .emerald
         }
 
         let reminder = Date(timeIntervalSince1970: 1_752_800_400)
@@ -478,11 +482,59 @@ struct LearnNowDataTests {
         flow.setReminderTime(reminder)
         flow.setRemindersEnabled(false)
         flow.setNightModeEnabled(true)
+        flow.setSelectedTheme(.sand)
 
         let restored = LearnNowFlowState()
         #expect(restored.reminderTime == reminder)
         #expect(restored.remindersEnabled == false)
         #expect(restored.isNightModeEnabled == true)
+        #expect(restored.selectedTheme == .sand)
+        #expect(LearnNowThemeStore.current == .sand)
+    }
+
+    @Test
+    func selectedThemeDefaultsToEmeraldAndFallsBackFromInvalidRawValue() {
+        let defaults = UserDefaults.standard
+        let themeKey = "learnnow.settings.theme"
+        let oldTheme = defaults.object(forKey: themeKey)
+        defer {
+            restore(oldTheme, key: themeKey, defaults: defaults)
+            LearnNowThemeStore.current = .emerald
+        }
+
+        defaults.removeObject(forKey: themeKey)
+        let defaultFlow = LearnNowFlowState()
+        #expect(defaultFlow.selectedTheme == .emerald)
+        #expect(LearnNowThemeStore.current == .emerald)
+
+        defaults.set("not-a-theme", forKey: themeKey)
+        let fallbackFlow = LearnNowFlowState()
+        #expect(fallbackFlow.selectedTheme == .emerald)
+        #expect(LearnNowThemeStore.current == .emerald)
+    }
+
+    @Test
+    func themeCatalogProvidesDistinctBrandForegroundsForAllThemes() {
+        let brands = LearnNowTheme.allCases.map {
+            LearnNowThemeCatalog.tokens(for: $0).brand.foreground.light
+        }
+        #expect(Set(brands).count == LearnNowTheme.allCases.count)
+        #expect(LearnNowThemeCatalog.tokens(for: .emerald).brand.foreground.light == 0x0B7A5C)
+    }
+
+    @Test
+    func themeDisplayNamesAreExactlyFourChineseCharacters() {
+        let expected: [LearnNowTheme: String] = [
+            .emerald: "清水翡翠",
+            .sand: "暖沙米白",
+            .ink: "墨青素笺",
+            .graphite: "石墨素灰",
+            .clay: "柔陶暖灰",
+        ]
+        for theme in LearnNowTheme.allCases {
+            #expect(theme.displayName == expected[theme])
+            #expect(theme.displayName.count == 4)
+        }
     }
 
     @Test

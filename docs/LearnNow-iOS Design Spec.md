@@ -1943,10 +1943,10 @@ struct LessonResumeState {
 
 整体视觉语言定义为：
 
-- 中性灰白画布 + 单一翡翠色低透明静谧光（Quiet Emerald Glow）
+- 低饱和中性画布 + 单一品牌色低透明静谧光（主题品牌色驱动 Ambient Glow）
 - 原生 `ultraThinMaterial` 毛玻璃表面
 - 表面与文字保持中性、不带可感知色相；颜色只用于表达含义（品牌、状态、内容区分）
-- 日间 / 夜间双主题基于同一套中性基底与语义角色派生，不做风格分叉
+- **五套可切换主题**（清水翡翠 / 暖沙米白 / 墨青素笺 / 石墨素灰 / 柔陶暖灰），每套各自具备日间 / 夜间派生；日夜模式与主题选择独立
 - 以弹簧为主的物理反馈交互
 - 保留外凸 / 内陷层级关系，但不再依赖传统双向新拟态阴影
 
@@ -1954,15 +1954,27 @@ struct LessonResumeState {
 
 ### 6.2 主题模式策略
 
-- 默认跟随系统 `ColorScheme`，支持日间 / 夜间模式即时切换
+- App 主题由设置页 `selectedTheme`（`LearnNowTheme`）选择，持久化到 `UserDefaults`（`learnnow.settings.theme`），默认 `emerald`（清水翡翠）
+- 夜间模式（`isNightModeEnabled`）独立于主题：每套主题都有 light / dark 两套 Token；夜间开关只切换 `preferredColorScheme`
 - 颜色 Token 必须通过动态 provider 生成；实现采用 `Color.dynamic(light:dark:)` + `UIColor(dynamicProvider:)`
-- 主题切换不依赖额外业务状态注入，不为 Light / Dark 单独维护页面状态
-- 夜间主题目标为 Quiet Dark：近黑中性画布、半透明中性深色玻璃、克制的翡翠品牌色点缀
-- 日间主题目标为 Light Glassmorphism：灰白中性画布、低透明白色玻璃、安静低饱和的语义色
+- 业务页继续消费 `LearnNowPalette` / `LearnNowSemanticRole`；二者从 `LearnNowThemeCatalog.tokens(for: LearnNowThemeStore.current)` 计算取值。主题切换时根视图以 `.id(selectedTheme)` 失效重绘，并由根同步 `LearnNowThemeStore`
+- 非法 / 缺失的 theme raw value 回落 `emerald`
+- 夜间主题目标为 Quiet Dark：近黑中性画布、半透明中性深色玻璃、克制的品牌色点缀
+- 日间主题目标为 Light Glassmorphism：中性画布、低透明白色（或微暖 / 微冷）玻璃、安静低饱和的语义色
+
+五套主题气质：
+
+| ID | 名称 | 气质 | Brand 色相 |
+| --- | --- | --- | --- |
+| `emerald` | 清水翡翠 | 珍珠白 + 雾翡翠（默认） | 绿 |
+| `sand` | 暖沙米白 | 米白纸感 + 软陶棕 | 暖棕琥珀 |
+| `ink` | 墨青素笺 | 冷灰画布 + 青墨 | 低饱和青蓝（非系统蓝） |
+| `graphite` | 石墨素灰 | 中性灰石 + 炭黑强调 | 冷灰 |
+| `clay` | 柔陶暖灰 | 暖灰粉画布 + 陶土 | 低饱和陶红（非深红） |
 
 ### 6.3 颜色 Token
 
-以下 Token 以 `LearnNowPalette` 为事实标准。色板分为三层：中性基底、语义角色、内容色。
+以下 Token 以 `LearnNowThemeCatalog` → `LearnNowPalette` / `LearnNowSemanticRole` 为事实标准。色板分为三层：中性基底、语义角色、内容色。下表以默认主题 **清水翡翠（`emerald`）** 为基准值；其余四套同结构，数值见 `LearnNowTheme.swift`。
 
 #### 中性基底（文字与表面不带可感知色相）
 
@@ -1979,9 +1991,9 @@ struct LessonResumeState {
 
 #### 品牌与语义角色（`LearnNowSemanticRole`）
 
-语义角色为 `brand` / `warning` / `danger` / `neutral` 四种，每种角色提供 `foreground` / `softFill` / `onFill` / `stroke` 四个 Token。语义角色只服务 UI 自身决定的颜色（CTA、进度、状态），不进入内容协议。
+语义角色为 `brand` / `warning` / `danger` / `neutral` 四种，每种角色提供 `foreground` / `softFill` / `onFill` / `stroke` 四个 Token。语义角色只服务 UI 自身决定的颜色（CTA、进度、状态），不进入内容协议。`warning` / `danger` 跨主题保持灰金 / 灰玫瑰，不跟 brand 抢戏。
 
-| 角色      | Light                                        | Dark                          | 用途 |
+| 角色      | Light（emerald）                              | Dark（emerald）               | 用途 |
 | --------- | -------------------------------------------- | ----------------------------- | ---- |
 | `brand`   | 前景 `#0B7A5C`；渐变 `#0B7A5C → #0D9A6B`；soft `#DEF2E9`；onBrand 白 | 前景 `#5FD3A6`；soft `#163529`；onBrand `#07110D` | 主行动 CTA、进度、正确 / 完成状态、品牌表达 |
 | `warning` | 前景 `#8C6410`；soft `#F6EEDA`              | 前景 `#E0C06A`；soft `#2B2416` | 提醒、告警但非危险态（沙金） |
@@ -1990,9 +2002,9 @@ struct LessonResumeState {
 
 #### 内容色（`LearnNowPalette.color(for:)` 映射，安静但可分辨的 5 色相）
 
-`ContentAccent` / `LearnNowAccent` 的 raw value（blue / pink / mint / purple / amber）保持不变以兼容既有内容，仅在映射层换血：
+`ContentAccent` / `LearnNowAccent` 的 raw value（blue / pink / mint / purple / amber）保持不变以兼容既有内容，仅在映射层按主题换血：
 
-| Raw value | 实际色相 | Light     | Dark      |
+| Raw value | 实际色相（emerald） | Light     | Dark      |
 | --------- | -------- | --------- | --------- |
 | `mint`    | 翡翠（与品牌同族） | `#0F7258` | `#66CDA8` |
 | `blue`    | 青灰蓝   | `#4A7089` | `#8FB8CE` |
@@ -2004,9 +2016,10 @@ struct LessonResumeState {
 
 - 颜色管道保持：ContentAccent（内容层）→ LearnNowAccent（UI 层）→ LearnNowPalette（唯一 hex 出口）。
 - 表面与文字回归中性，不做全局品牌色浸染；颜色只用于表达含义。
+- 不把 `ContentAccent` 当作 App 主题；App 主题只走 `LearnNowTheme`。
 - 不再使用高饱和 `accentBlue` / `accentPink` / `accentPurple` 一类旧 accent 常量作为规范基准。
 - 新增颜色应优先作为动态 Token 接入，不允许只定义单一模式颜色。
-- 实施时以对比度校验结果微调 hex（正文 4.5:1、大字与 UI 部件 3:1），本表为基准值。
+- 实施时以对比度校验结果微调 hex（正文 4.5:1、大字与 UI 部件 3:1），本表为基准值；用 `scripts/tmp_contrast_check.py` 覆盖 5 套 × light/dark。
 
 ### 6.4 字体 Token
 
@@ -2073,7 +2086,7 @@ struct LessonResumeState {
 ### 6.7 背景与环境光规范
 
 - 全局背景分为两层：底层 `canvas`，其上为 `BackgroundGlow`
-- 环境光为单一翡翠色的低透明静谧光，由两层光斑组成，不透明度约 `0.10–0.16`
+- 环境光为当前主题 `brand` 前景色的低透明静谧光，由两层光斑组成，不透明度约 `0.10–0.16`
 - 不再使用蓝 / 紫 / 薄荷三色漫游光球
 - 动效采用 `withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true))`
 - 环境光仅服务于氛围与层次，不应影响正文识别、点击反馈或可访问性对比度

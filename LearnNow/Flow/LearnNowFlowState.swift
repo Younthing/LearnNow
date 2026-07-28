@@ -458,6 +458,7 @@ struct LearnNowFlowState: Equatable {
     var reminderTime: Date
     var remindersEnabled: Bool
     var isNightModeEnabled: Bool
+    var selectedTheme: LearnNowTheme
 
     init(
         catalog: CourseCatalog = .empty,
@@ -535,6 +536,8 @@ struct LearnNowFlowState: Equatable {
             ? true
             : UserDefaults.standard.bool(forKey: Self.remindersEnabledKey)
         self.isNightModeEnabled = UserDefaults.standard.bool(forKey: Self.nightModeKey)
+        self.selectedTheme = Self.loadSelectedTheme()
+        LearnNowThemeStore.current = self.selectedTheme
     }
 
     var routeCategoryTitle: String {
@@ -855,6 +858,15 @@ private extension LearnNowFlowState {
     static let reminderTimeKey = "learnnow.settings.reminderTime"
     static let remindersEnabledKey = "learnnow.settings.remindersEnabled"
     static let nightModeKey = "learnnow.settings.nightMode"
+    static let themeKey = "learnnow.settings.theme"
+
+    static func loadSelectedTheme() -> LearnNowTheme {
+        guard let raw = UserDefaults.standard.string(forKey: themeKey),
+              let theme = LearnNowTheme(rawValue: raw) else {
+            return .emerald
+        }
+        return theme
+    }
 
     static let todayFormatter: DateFormatter = {
         let formatter = DateFormatter()

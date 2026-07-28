@@ -76,6 +76,10 @@ struct ProfileContainer: View {
                     get: { store.flow.isNightModeEnabled },
                     set: { store.setNightModeEnabled($0) }
                 ),
+                selectedTheme: Binding(
+                    get: { store.flow.selectedTheme },
+                    set: { store.setSelectedTheme($0) }
+                ),
                 onSetCloudSyncEnabled: { store.setCloudSyncEnabled($0) },
                 onUpgradeCloudSync: { presentedSheet = .subscription }
             )
