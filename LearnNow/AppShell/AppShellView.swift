@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AppShellView: View {
     @Bindable var store: LearnNowAppStore
+    @State private var profileResetRequest = 0
 
     /// `true` when the app is launched by UI tests with `-UIAnimationsDisabled YES`.
     private var animationsDisabled: Bool {
@@ -22,6 +23,9 @@ struct AppShellView: View {
                 tabContent(spacing: contentSpacing)
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         FloatingTabBar(selectedTab: store.flow.selectedTab) { tab in
+                            if tab == .profile, store.flow.selectedTab == .profile {
+                                profileResetRequest += 1
+                            }
                             store.selectTab(tab)
                         }
                         .padding(.horizontal, 20)
@@ -63,22 +67,9 @@ struct AppShellView: View {
             }
 
             tabStage(tab: .profile) {
-                ProfileScreen(
-                    model: store.flow.profileScreenModel,
-                    reminderTime: Binding(
-                        get: { store.flow.reminderTime },
-                        set: { store.setReminderTime($0) }
-                    ),
-                    remindersEnabled: Binding(
-                        get: { store.flow.remindersEnabled },
-                        set: { store.setRemindersEnabled($0) }
-                    ),
-                    isNightModeEnabled: Binding(
-                        get: { store.flow.isNightModeEnabled },
-                        set: { store.setNightModeEnabled($0) }
-                    ),
-                    onContinueLearning: { store.openLesson() },
-                    onOpenFavorites: { store.openFavoritedReviewBoard() }
+                ProfileContainer(
+                    store: store,
+                    resetRequest: profileResetRequest
                 )
             }
         }

@@ -106,6 +106,7 @@ private struct ReviewBoardHeader: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(activeFilterCount > 0 ? "打开筛选，当前有 \(activeFilterCount) 个条件" : "打开筛选")
+                .accessibilityIdentifier("anki.filters")
             }
         }
     }

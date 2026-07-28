@@ -400,6 +400,7 @@ private struct ReviewFiltersFooter: View {
                     systemImage: canApply ? "play.fill" : nil,
                     action: onApply
                 )
+                .accessibilityIdentifier("review.filters.apply")
                 .disabled(!canApply)
                 .opacity(canApply ? 1 : 0.7)
             }
@@ -569,6 +570,7 @@ private struct ReviewCardPoolRow: View {
                         isSelected: card.isFavorited,
                         action: onToggleFavorite
                     )
+                    .accessibilityIdentifier("review.pool.favorite.\(card.id)")
 
                     ReviewStatusButton(
                         title: card.isMastered ? "已掌握" : "标记掌握",
@@ -577,6 +579,7 @@ private struct ReviewCardPoolRow: View {
                         isSelected: card.isMastered,
                         action: onToggleMastered
                     )
+                    .accessibilityIdentifier("review.pool.mastered.\(card.id)")
                 }
             }
         }
