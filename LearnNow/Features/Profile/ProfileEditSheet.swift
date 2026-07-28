@@ -77,8 +77,8 @@ struct ProfileEditSheet: View {
                                                 Circle()
                                                     .stroke(
                                                         selectedAvatarID == avatar.id
-                                                            ? LearnNowPalette.color(for: .blue)
-                                                            : .white.opacity(0.7),
+                                                            ? LearnNowSemanticRole.brand.foreground
+                                                            : LearnNowPalette.shadowLight,
                                                         lineWidth: selectedAvatarID == avatar.id ? 3 : 1
                                                     )
                                             }
@@ -86,8 +86,8 @@ struct ProfileEditSheet: View {
                                         if selectedAvatarID == avatar.id {
                                             Image(systemName: "checkmark.circle.fill")
                                                 .font(.title3.weight(.bold))
-                                                .foregroundStyle(LearnNowPalette.color(for: .blue))
-                                                .background(.white, in: Circle())
+                                                .foregroundStyle(LearnNowSemanticRole.brand.foreground)
+                                                .background(LearnNowSemanticRole.brand.onFill, in: Circle())
                                         }
                                     }
                                 }

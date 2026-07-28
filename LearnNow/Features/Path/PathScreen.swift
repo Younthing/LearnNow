@@ -67,7 +67,7 @@ struct PathScreen: View {
 
     private var pathHeader: some View {
         HStack(spacing: 16) {
-            CircleIconButton(systemImage: "arrow.left", accent: .blue, size: 42, action: onBack)
+            CircleIconButton(systemImage: "arrow.left", role: .brand, size: 42, action: onBack)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(model.title)
@@ -107,7 +107,7 @@ private struct RouteTrackTabs: View {
     private func trackButton(_ tab: PathScreenModel.TrackTab) -> some View {
         MetadataChipButton(
             title: tab.title,
-            accent: tab.isSelected ? .blue : .mint,
+            role: .brand,
             isSelected: tab.isSelected,
             isExpanded: true,
             action: { onSelectTrack(tab.id) }
@@ -193,9 +193,12 @@ private struct PathNodeRow: View {
     }
 
     private var lineColor: Color {
-        LearnNowPalette
-            .color(for: node.status == .done ? .mint : (node.status == .current ? .blue : .purple))
-            .opacity(node.status == .locked ? 0.2 : 0.6)
+        switch node.status {
+        case .done, .current:
+            LearnNowSemanticRole.brand.foreground.opacity(0.6)
+        case .locked:
+            LearnNowSemanticRole.neutral.foreground.opacity(0.2)
+        }
     }
 
     @ViewBuilder
@@ -225,12 +228,12 @@ private struct PathNodeRow: View {
     }
 
     private var currentModuleCard: some View {
-        PathModuleSurface(accent: .blue, isInset: true, contentPadding: PathNodeLayout.featuredCardPadding) {
+        PathModuleSurface(showsBrandBorder: true, isInset: true, contentPadding: PathNodeLayout.featuredCardPadding) {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .center, spacing: 12) {
                     MetadataChip(
                         text: "正在学习",
-                        accent: .blue,
+                        role: .brand,
                         prominence: .selected
                     )
                     .fixedSize()
@@ -239,13 +242,13 @@ private struct PathNodeRow: View {
 
                     Image(systemName: "play.circle.fill")
                         .font(.title2)
-                        .foregroundStyle(LearnNowPalette.color(for: .blue))
+                        .foregroundStyle(LearnNowSemanticRole.brand.foreground)
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(node.title)
                         .font(LearnNowTypography.cardHeadline)
-                        .foregroundStyle(LearnNowPalette.color(for: .blue))
+                        .foregroundStyle(LearnNowSemanticRole.brand.foreground)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Text(node.subtitle)
@@ -256,7 +259,7 @@ private struct PathNodeRow: View {
 
                 if let progress = node.progress {
                     VStack(alignment: .leading, spacing: 8) {
-                        ProgressTrack(progress: progress, accent: .blue, height: 10)
+                        ProgressTrack(progress: progress, height: 10)
 
                         Text("已完成 \(Int(progress * 100))%")
                             .font(LearnNowTypography.label)
@@ -308,37 +311,36 @@ private struct PathNodeRow: View {
     private var nodeBadge: some View {
         switch node.status {
         case .done:
-            InsetCircle(size: PathNodeLayout.regularBadgeSize) {
-                Image(systemName: "checkmark")
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(LearnNowPalette.color(for: .mint))
-            }
-            .overlay(Circle().stroke(LearnNowPalette.color(for: .mint).opacity(0.5), lineWidth: 2))
+            Circle()
+                .fill(LearnNowSemanticRole.brand.softFill)
+                .frame(width: PathNodeLayout.regularBadgeSize, height: PathNodeLayout.regularBadgeSize)
+                .overlay {
+                    Image(systemName: "checkmark")
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(LearnNowSemanticRole.brand.foreground)
+                }
+                .overlay(Circle().stroke(LearnNowSemanticRole.brand.stroke, lineWidth: 2))
         case .current:
             ZStack {
                 Circle()
-                    .fill(LearnNowPalette.color(for: .blue).opacity(colorScheme == .dark ? 0.3 : 0.15))
+                    .fill(LearnNowSemanticRole.brand.foreground.opacity(colorScheme == .dark ? 0.3 : 0.15))
                     .frame(width: PathNodeLayout.currentBadgeSize, height: PathNodeLayout.currentBadgeSize)
                     .blur(radius: 12)
 
                 Circle()
-                    .fill(LearnNowPalette.base)
-                    .modifier(OuterSurface(cornerRadius: PathNodeLayout.currentBadgeSize / 2))
+                    .fill(LearnNowSemanticRole.brandGradient)
                     .frame(width: PathNodeLayout.currentBadgeSize, height: PathNodeLayout.currentBadgeSize)
-                    .overlay(
-                        Circle().stroke(LearnNowPalette.gradient(for: .blue), lineWidth: 2)
-                    )
                     .overlay {
                         Image(systemName: "sparkles")
                             .font(.title3.weight(.bold))
-                            .foregroundStyle(LearnNowPalette.color(for: .blue))
+                            .foregroundStyle(LearnNowSemanticRole.brand.onFill)
                     }
             }
         case .locked:
             InsetCircle(size: PathNodeLayout.regularBadgeSize) {
                 Image(systemName: "lock.fill")
                     .font(.headline.weight(.bold))
-                    .foregroundStyle(LearnNowPalette.textMuted.opacity(0.6))
+                    .foregroundStyle(LearnNowSemanticRole.neutral.foreground.opacity(0.6))
             }
         }
     }
@@ -354,18 +356,18 @@ private struct PathModulePressStyle: ButtonStyle {
 }
 
 private struct PathModuleSurface<Content: View>: View {
-    let accent: LearnNowAccent?
+    let showsBrandBorder: Bool
     let isInset: Bool
     let contentPadding: CGFloat
     @ViewBuilder let content: Content
 
     init(
-        accent: LearnNowAccent? = nil,
+        showsBrandBorder: Bool = false,
         isInset: Bool = false,
         contentPadding: CGFloat = 18,
         @ViewBuilder content: () -> Content
     ) {
-        self.accent = accent
+        self.showsBrandBorder = showsBrandBorder
         self.isInset = isInset
         self.contentPadding = contentPadding
         self.content = content()
@@ -395,9 +397,9 @@ private struct PathModuleSurface<Content: View>: View {
 
     @ViewBuilder
     private var borderOverlay: some View {
-        if let accent {
+        if showsBrandBorder {
             RoundedRectangle(cornerRadius: PathNodeLayout.cardCornerRadius, style: .continuous)
-                .stroke(LearnNowPalette.gradient(for: accent), lineWidth: 1)
+                .stroke(LearnNowSemanticRole.brandGradient, lineWidth: 1)
         }
     }
 }

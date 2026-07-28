@@ -115,7 +115,7 @@ struct CompletionScreen: View {
             icon: "flame.fill",
             value: "\(model.streakDays)",
             title: "天连胜保持",
-            accent: .pink
+            role: .brand
         )
     }
 
@@ -124,7 +124,7 @@ struct CompletionScreen: View {
             icon: "bolt.fill",
             value: model.gainedXPText,
             title: "XP 经验值",
-            accent: .blue
+            role: .brand
         )
     }
 
@@ -222,7 +222,7 @@ private struct CompletionHero: View {
     var body: some View {
         AchievementSymbolBadge(
             size: 104,
-            accent: .mint,
+            role: .brand,
             glowSize: 132,
             glowOpacity: 0.18,
             glowBlur: 18,
@@ -256,7 +256,7 @@ private struct CompletionHero: View {
             .font(.largeTitle.weight(.semibold))
             .symbolRenderingMode(.hierarchical)
             .symbolColorRenderingMode(.gradient)
-            .foregroundStyle(LearnNowPalette.color(for: .mint))
+            .foregroundStyle(LearnNowSemanticRole.brand.foreground)
     }
 }
 
@@ -344,7 +344,7 @@ private struct CompletionStat: View {
     let icon: String
     let value: String
     let title: String
-    let accent: LearnNowAccent
+    let role: LearnNowSemanticRole
 
     var body: some View {
         VStack(spacing: 8) {
@@ -353,7 +353,7 @@ private struct CompletionStat: View {
                 Text(value)
             }
             .font(LearnNowTypography.metricValue)
-            .foregroundStyle(LearnNowPalette.color(for: accent))
+            .foregroundStyle(role.foreground)
 
             Text(title)
                 .font(LearnNowTypography.label)
@@ -388,7 +388,7 @@ private struct CompletionPrimaryCTAButton: View {
 
                 ZStack {
                     Circle()
-                        .fill(LearnNowPalette.color(for: .blue).opacity(0.12))
+                        .fill(LearnNowSemanticRole.brand.foreground.opacity(0.12))
 
                     Image(systemName: "chevron.forward")
                         .font(.subheadline.weight(.bold))
@@ -397,13 +397,13 @@ private struct CompletionPrimaryCTAButton: View {
                 .overlay {
                     Circle()
                         .stroke(
-                            LearnNowPalette.color(for: .blue).opacity(0.18),
+                            LearnNowSemanticRole.brand.foreground.opacity(0.18),
                             lineWidth: 1
                         )
                 }
                 .accessibilityHidden(true)
             }
-            .foregroundStyle(LearnNowPalette.color(for: .blue))
+            .foregroundStyle(LearnNowSemanticRole.brand.foreground)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 18)
             .padding(.vertical, 18)
@@ -447,7 +447,7 @@ private struct CompletionFinishCTAButton: View {
                 .font(LearnNowTypography.cardTitle)
                 .foregroundStyle(
                     isPrimary
-                        ? LearnNowPalette.color(for: .blue)
+                        ? LearnNowSemanticRole.brand.foreground
                         : LearnNowPalette.textPrimary
                 )
                 .frame(maxWidth: .infinity)

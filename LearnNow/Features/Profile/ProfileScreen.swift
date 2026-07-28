@@ -101,15 +101,15 @@ private struct ProfileIdentityCard: View {
                             .clipShape(Circle())
                             .overlay {
                                 Circle()
-                                    .stroke(.white.opacity(0.85), lineWidth: 2)
+                                    .stroke(LearnNowPalette.shadowLight, lineWidth: 2)
                             }
                             .softOuter(radius: 8, x: 3, y: 5)
 
                         Image(systemName: "pencil")
                             .font(.caption2.weight(.bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(LearnNowSemanticRole.brand.onFill)
                             .frame(width: 22, height: 22)
-                            .background(LearnNowPalette.color(for: .blue), in: Circle())
+                            .background(LearnNowSemanticRole.brand.foreground, in: Circle())
                     }
                     .accessibilityHidden(true)
 
@@ -239,7 +239,7 @@ private struct ProfileOverviewContent: View {
 
                             Text(metric.value)
                                 .font(LearnNowTypography.sectionTitle)
-                                .foregroundStyle(LearnNowPalette.color(for: metric.accent))
+                                .foregroundStyle(LearnNowPalette.textPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -283,13 +283,13 @@ private struct CompactHeatmap: View {
         case nil:
             LearnNowPalette.shadowDark.opacity(0.10)
         case 0:
-            LearnNowPalette.color(for: .mint).opacity(0.14)
+            LearnNowSemanticRole.brand.foreground.opacity(0.14)
         case 1:
-            LearnNowPalette.color(for: .mint).opacity(0.38)
+            LearnNowSemanticRole.brand.foreground.opacity(0.38)
         case 2:
-            LearnNowPalette.color(for: .mint).opacity(0.66)
+            LearnNowSemanticRole.brand.foreground.opacity(0.66)
         default:
-            LearnNowPalette.color(for: .mint)
+            LearnNowSemanticRole.brand.foreground
         }
     }
 }
@@ -492,7 +492,7 @@ private struct ProfileMemoryTrendContent: View {
     private var memoryEmptyIcon: some View {
         Image(systemName: "brain.head.profile")
             .font(.title2.weight(.bold))
-            .foregroundStyle(LearnNowPalette.color(for: .blue))
+            .foregroundStyle(LearnNowSemanticRole.brand.foreground)
     }
 
     private var memoryEmptyCopy: some View {
@@ -529,7 +529,7 @@ private struct MemoryTrendValue: View {
 
             Text(value)
                 .font(LearnNowTypography.sectionTitle)
-                .foregroundStyle(LearnNowPalette.color(for: .blue))
+                .foregroundStyle(LearnNowSemanticRole.brand.foreground)
         }
     }
 }
@@ -546,22 +546,22 @@ private struct MemoryTrendChart: View {
                     path.addLine(to: CGPoint(x: geometry.size.width, y: y))
                 }
                 .stroke(
-                    LearnNowPalette.color(for: .mint).opacity(0.7),
+                    LearnNowSemanticRole.neutral.foreground.opacity(0.7),
                     style: StrokeStyle(lineWidth: 1.5, dash: [5, 4])
                 )
 
                 ProfileChartAreaShape(values: values)
-                    .fill(LearnNowPalette.gradient(for: .blue).opacity(0.18))
+                    .fill(LearnNowSemanticRole.brandGradient.opacity(0.18))
 
                 ProfileChartLineShape(values: values)
                     .stroke(
-                        LearnNowPalette.color(for: .blue),
+                        LearnNowSemanticRole.brand.foreground,
                         style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
                     )
 
                 Text("目标 90%")
                     .font(LearnNowTypography.caption)
-                    .foregroundStyle(LearnNowPalette.color(for: .mint))
+                    .foregroundStyle(LearnNowSemanticRole.neutral.foreground)
                     .padding(.horizontal, 5)
                     .background(LearnNowPalette.base.opacity(0.86), in: Capsule())
             }
@@ -632,7 +632,7 @@ private struct ProfileShortcutCard: View {
 
                                 Image(systemName: shortcut.systemImage)
                                     .font(.subheadline.weight(.bold))
-                                    .foregroundStyle(LearnNowPalette.color(for: shortcut.accent))
+                                    .foregroundStyle(LearnNowSemanticRole.neutral.foreground)
                             }
 
                             VStack(

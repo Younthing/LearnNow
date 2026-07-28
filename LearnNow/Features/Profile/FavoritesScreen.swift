@@ -50,13 +50,13 @@ struct FavoritesScreen: View {
             if model.canStartReview {
                 FullWidthButton(
                     title: "开始收藏复习",
-                    accent: .pink,
+                    role: .brand,
                     systemImage: "play.fill",
                     action: onStartReview
                 )
                 .padding(.horizontal, LearnNowSpacing.screenHorizontal)
                 .padding(.vertical, 10)
-                .background(.ultraThinMaterial)
+                .learnNowBarBackground()
                 .padding(.bottom, LearnNowSpacing.floatingTabBarClearance)
                 .accessibilityIdentifier("favorites.startReview")
             }
@@ -175,7 +175,7 @@ private struct FavoriteCardRow: View {
         .buttonStyle(.plain)
         .foregroundStyle(
             item.isMastered
-                ? LearnNowPalette.color(for: .mint)
+                ? LearnNowSemanticRole.brand.foreground
                 : LearnNowPalette.textSecondary
         )
         .background(LearnNowPalette.base, in: Capsule())

@@ -1642,7 +1642,7 @@ Lesson 过程状态：
 
 #### 完成态
 
-- 用成功色 / 勾选图标表达
+- 用 `brand`（翡翠）+ 勾选图标共同表达，不得仅靠颜色
 
 #### 锁定态
 
@@ -1942,45 +1942,70 @@ struct LessonResumeState {
 
 整体视觉语言定义为：
 
-- 沉浸式环境光底色（Ambient Glow）
+- 中性灰白画布 + 单一翡翠色低透明静谧光（Quiet Emerald Glow）
 - 原生 `ultraThinMaterial` 毛玻璃表面
-- 夜间电影感与日间清透感并存的双主题系统
-- 高饱和功能色在深浅背景上的强对比视觉引导
+- 表面与文字保持中性、不带可感知色相；颜色只用于表达含义（品牌、状态、内容区分）
+- 日间 / 夜间双主题基于同一套中性基底与语义角色派生，不做风格分叉
 - 以弹簧为主的物理反馈交互
 - 保留外凸 / 内陷层级关系，但不再依赖传统双向新拟态阴影
+
+不再使用的旧规范：蓝 / 紫 / 薄荷三色 Ambient Glow、夜间电影感（Dark Cinematic）高饱和发光 accent，均已废弃。
 
 ### 6.2 主题模式策略
 
 - 默认跟随系统 `ColorScheme`，支持日间 / 夜间模式即时切换
 - 颜色 Token 必须通过动态 provider 生成；实现采用 `Color.dynamic(light:dark:)` + `UIColor(dynamicProvider:)`
 - 主题切换不依赖额外业务状态注入，不为 Light / Dark 单独维护页面状态
-- 夜间主题目标为 Premium Dark Cinematic：深空黑画布、半透明深色玻璃、高饱和发光 accent
-- 日间主题目标为 Light Glassmorphism：冷白画布、低透明白色玻璃、更明亮的彩色漫反射
+- 夜间主题目标为 Quiet Dark：近黑中性画布、半透明中性深色玻璃、克制的翡翠品牌色点缀
+- 日间主题目标为 Light Glassmorphism：灰白中性画布、低透明白色玻璃、安静低饱和的语义色
 
 ### 6.3 颜色 Token
 
-以下 Token 以 `LearnNowPalette` 为事实标准：
+以下 Token 以 `LearnNowPalette` 为事实标准。色板分为三层：中性基底、语义角色、内容色。
+
+#### 中性基底（文字与表面不带可感知色相）
 
 | Token           | Light                       | Dark                        | 用途 |
 | --------------- | --------------------------- | --------------------------- | ---- |
-| `canvas`        | `#F4F6F9`                   | `#07070A`                   | 全局画布底色 |
-| `base`          | `#FFFFFF @ 55%`            | `#1E1E24 @ 50%`            | 毛玻璃表面底漆 |
-| `textPrimary`   | `#1E293B @ 100%`           | `#FFFFFF @ 95%`            | 标题、核心信息 |
-| `textSecondary` | `#475569 @ 100%`           | `#FFFFFF @ 75%`            | 说明文、次级正文 |
-| `textMuted`     | `#94A3B8 @ 100%`           | `#FFFFFF @ 50%`            | 弱化标签、未选中状态 |
-| `shadowDark`    | `#A4ADC1 @ 40%`            | `#000000 @ 50%`            | 深度阴影 |
-| `shadowLight`   | `#FFFFFF @ 90%`            | `#FFFFFF @ 10%`            | 保留给高光或极浅边缘 |
-| `accentBlue`    | `#2563EB`                   | `#5E6AD2`                   | 主行动、进行中状态、关键路径 |
-| `accentPink`    | `#EC4899`                   | `#F43F5E`                   | 成就、情绪反馈、热度强调 |
-| `accentMint`    | `#10B981`                   | `#10B981`                   | 正向反馈、完成、健康值 |
-| `accentPurple`  | `#8B5CF6`                   | `#8B5CF6`                   | 辅助路径、次级高亮 |
-| `accentAmber`   | `#F59E0B`                   | `#F59E0B`                   | 提醒、告警但非危险态 |
+| `canvas`        | `#F4F6F5`                   | `#0B0D0C`                   | 全局画布底色 |
+| `glassBase`     | `#FFFFFF @ 58%`            | `#181C1A @ 65%`            | 毛玻璃表面底漆 |
+| `surfaceOpaque` | `#F9FBFA`                   | `#181C1A`                   | 无障碍降级用不透明表面 |
+| `textPrimary`   | `#1E2522 @ 100%`           | `#F3F6F4 @ 95%`            | 标题、核心信息 |
+| `textSecondary` | `#4A5551 @ 100%`           | `#C3CCC8 @ 100%`           | 说明文、次级正文 |
+| `textMuted`     | `#7E8985 @ 100%`           | `#8B9691 @ 100%`           | 弱化标签、未选中状态 |
+| `shadowDark`    | 中性灰黑                    | 中性灰黑                    | 深度阴影，仅微调不透明度 |
+| `shadowLight`   | 中性白高光                  | 中性白高光                  | 保留给高光或极浅边缘 |
+
+#### 品牌与语义角色（`LearnNowSemanticRole`）
+
+语义角色为 `brand` / `warning` / `danger` / `neutral` 四种，每种角色提供 `foreground` / `softFill` / `onFill` / `stroke` 四个 Token。语义角色只服务 UI 自身决定的颜色（CTA、进度、状态），不进入内容协议。
+
+| 角色      | Light                                        | Dark                          | 用途 |
+| --------- | -------------------------------------------- | ----------------------------- | ---- |
+| `brand`   | 前景 `#0B7A5C`；渐变 `#0B7A5C → #0D9A6B`；soft `#DEF2E9`；onBrand 白 | 前景 `#5FD3A6`；soft `#163529`；onBrand `#07110D` | 主行动 CTA、进度、正确 / 完成状态、品牌表达 |
+| `warning` | 前景 `#8C6410`；soft `#F6EEDA`              | 前景 `#E0C06A`；soft `#2B2416` | 提醒、告警但非危险态（沙金） |
+| `danger`  | 前景 `#B4434E`；soft `#F8E7E9`              | 前景 `#EC9AA2`；soft `#2F1D20` | 错误、答错反馈（灰玫瑰） |
+| `neutral` | 复用中性文字 / 描边 Token                    | 复用中性文字 / 描边 Token      | 锁定、XP、普通信息 |
+
+#### 内容色（`LearnNowPalette.color(for:)` 映射，安静但可分辨的 5 色相）
+
+`ContentAccent` / `LearnNowAccent` 的 raw value（blue / pink / mint / purple / amber）保持不变以兼容既有内容，仅在映射层换血：
+
+| Raw value | 实际色相 | Light     | Dark      |
+| --------- | -------- | --------- | --------- |
+| `mint`    | 翡翠（与品牌同族） | `#0F7258` | `#66CDA8` |
+| `blue`    | 青灰蓝   | `#4A7089` | `#8FB8CE` |
+| `purple`  | 青瓷     | `#337873` | `#7CC7C0` |
+| `amber`   | 沙金     | `#8C6410` | `#D9BC6E` |
+| `pink`    | 灰玫瑰   | `#A4525C` | `#DA9AA3` |
 
 补充规则：
 
-- 所有 accent 必须在深色大底上保持高饱和发光感，在浅色底上保持可见但不过曝。
-- 不再使用早期 `bgBase` / `brandBlue` 一类浅粉彩常量作为规范基准。
+- 颜色管道保持：ContentAccent（内容层）→ LearnNowAccent（UI 层）→ LearnNowPalette（唯一 hex 出口）。
+- 表面与文字回归中性，不做全局品牌色浸染；颜色只用于表达含义。
+- 不再使用高饱和 `accentBlue` / `accentPink` / `accentPurple` 一类旧 accent 常量作为规范基准。
 - 新增颜色应优先作为动态 Token 接入，不允许只定义单一模式颜色。
+- 实施时以对比度校验结果微调 hex（正文 4.5:1、大字与 UI 部件 3:1），本表为基准值。
 
 ### 6.4 字体 Token
 
@@ -2020,11 +2045,14 @@ struct LessonResumeState {
 
 #### 外凸玻璃表面（`OuterSurface`）
 
-- 底层使用 `base`
-- 背景使用系统 `.ultraThinMaterial`
-- 增加 `0.5pt` 白色至透明的对角渐变高光描边
+- 底层使用 `glassBase`
+- 背景默认使用系统 `.ultraThinMaterial`
+- `Reduce Transparency` / `Increase Contrast` 时降级为不透明 `surfaceOpaque`（见 6.12）
+- `Increase Contrast` 时叠加 `1pt`、对背景 ≥`3:1` 的中性描边（`textSecondary`）
+- 默认态增加 `0.5pt` 白色至透明的对角渐变高光描边
 - 使用单一纵向深度阴影：`radius 16 / y 8`
 - 适用于主卡片、浮动 Tab Bar、未按下按钮、默认胶囊控件
+- 底部操作条等通栏材质复用同一降级逻辑（`learnNowBarBackground` / `BarMaterialBackground`）
 
 #### 内陷玻璃表面（`InsetSurface`）
 
@@ -2044,11 +2072,11 @@ struct LessonResumeState {
 ### 6.7 背景与环境光规范
 
 - 全局背景分为两层：底层 `canvas`，其上为 `BackgroundGlow`
-- 环境光由 3 个动态漫游光球组成：蓝色、紫色、薄荷色
-- 标准尺寸与模糊值为：`320 / blur 60`、`280 / blur 50`、`300 / blur 70`
+- 环境光为单一翡翠色的低透明静谧光，由两层光斑组成，不透明度约 `0.10–0.16`
+- 不再使用蓝 / 紫 / 薄荷三色漫游光球
 - 动效采用 `withAnimation(.easeInOut(duration: 8).repeatForever(autoreverses: true))`
-- 日间模式下环境光透明度乘数为 `1.0`，夜间模式下为 `0.7`；即日间约为夜间的 `1.43x`
 - 环境光仅服务于氛围与层次，不应影响正文识别、点击反馈或可访问性对比度
+- `Reduce Transparency` 时整体隐藏 `BackgroundGlow`（见 6.12）
 
 ### 6.8 间距 Token
 
@@ -2088,7 +2116,7 @@ struct LessonResumeState {
 
 #### 环境光与列表入场
 
-- 背景光球使用 8 秒往返漫游，形成持续呼吸感
+- 背景翡翠环境光使用 8 秒往返漫游，形成持续呼吸感
 - 路径节点等序列化内容可使用 `delay(index * 0.1)` 的顺序弹入
 - 节点弹入参数采用 `.spring(response: 0.5, dampingFraction: 0.8)`
 
@@ -2099,16 +2127,26 @@ struct LessonResumeState {
 
 ### 6.11 反馈规范
 
+#### 状态色语义
+
+反馈状态统一映射到语义角色，不再使用旧 accent 常量：
+
+- 正确 / 完成 = `brand`（翡翠）
+- 错误 / 答错 = `danger`（灰玫瑰）
+- 提醒 / 低风险告警 = `warning`（沙金）
+
+#### 图标伴随规则
+
+- 所有状态反馈必须伴随图标（如正确 / 完成用 `checkmark`、错误用 `xmark`、提醒用 `exclamationmark` 系），不得仅靠颜色表达状态
+- 同为 `brand` 的“进行中”与“已完成”通过填充样式 + checkmark 图标区分，不引入第二个绿色
+
 #### 正向反馈
 
-- 优先使用 `accentMint`
-- 成就类反馈允许搭配 `accentPink`
+- 成就类反馈使用 `brand` 或 `neutral` + 图标，不再使用粉色成就强调
 - 反馈应体现“提升感”，避免使用过于廉价的闪烁效果
 
 #### 错误与提醒反馈
 
-- 低风险提示优先使用 `accentAmber`
-- 错误或答错提示优先使用 `accentPink`
 - 不使用高压纯红警告风格，避免破坏整体高级感
 
 #### 加载与占位反馈
@@ -2125,6 +2163,8 @@ struct LessonResumeState {
 - 纯图标按钮必须提供 `accessibilityLabel`
 - Progress、Flashcard 正反面、评分按钮应提供清晰的 VoiceOver 语义
 - `Reduce Motion` 下应将环境光漫游、Completion 弹入、Anki 翻卡退化为淡入淡出或轻微缩放
+- `Increase Contrast`（`colorSchemeContrast == .increased`）下：卡片与关键表面改用不透明表面 `surfaceOpaque`，并叠加对比度至少 `3:1` 的 `1pt` 边界描边
+- `Reduce Transparency` 下：关闭毛玻璃模糊（材质降级为 `surfaceOpaque`）并关闭 `BackgroundGlow` 环境光
 
 ---
 
@@ -2418,7 +2458,7 @@ Home 的月度学习记录遵循以下规则：
 
 | 类别 | Token |
 | ---- | ----- |
-| 颜色 | `canvas` / `base` / `textPrimary` / `textSecondary` / `textMuted` / `accentBlue` / `accentPink` / `accentMint` / `accentPurple` / `accentAmber` |
+| 颜色 | `canvas` / `glassBase` / `surfaceOpaque` / `textPrimary` / `textSecondary` / `textMuted` / 语义角色 `brand` / `warning` / `danger` / `neutral` / 内容色 `mint` / `blue` / `purple` / `amber` / `pink` |
 | 圆角 | `radiusXS` / `radiusS` / `radiusM` / `radiusL` / `radiusXL` / `radiusPill` |
 | 表面 | `OuterSurface` / `InsetSurface` / `SoftPressStyle` / `BackgroundGlow` |
 | 间距 | `space8` / `space12` / `space16` / `space18` / `space20` / `space24` / `space32` / `space60` / `space112` |

@@ -42,6 +42,7 @@ struct ContentView: View {
                 )
             }
         }
+        .tint(LearnNowSemanticRole.brand.foreground)
         .preferredColorScheme(store.flow.isNightModeEnabled ? .dark : .light)
         .task { await store.load(context: modelContext) }
         .onChange(of: scenePhase) { _, phase in
@@ -59,7 +60,7 @@ private struct LearnNowLoadingView: View {
             LearnNowPalette.canvas.ignoresSafeArea()
             ProgressView("正在准备课程与学习记录…")
                 .font(LearnNowTypography.body)
-                .tint(LearnNowPalette.color(for: .blue))
+                .tint(LearnNowSemanticRole.brand.foreground)
         }
         .accessibilityIdentifier("startup.loading")
     }

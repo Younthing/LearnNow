@@ -76,7 +76,7 @@ private struct LessonTopBar: View {
 
     var body: some View {
         HStack {
-            CircleIconButton(systemImage: "arrow.left", accent: .blue, action: onBack)
+            CircleIconButton(systemImage: "arrow.left", role: .brand, action: onBack)
             Spacer()
             Text(title)
                 .font(LearnNowTypography.cardTitle)
@@ -107,7 +107,7 @@ private struct LessonSegments: View {
                         .softOuter(radius: 4, x: 2, y: 2)
 
                     Capsule()
-                        .fill(LearnNowPalette.gradient(for: .blue))
+                        .fill(LearnNowSemanticRole.brandGradient)
                         .frame(
                             maxWidth: .infinity,
                             maxHeight: index == currentIndex ? 7 : 6,
@@ -224,7 +224,7 @@ private struct LessonContentBlockView: View {
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                         Text(ordered ? "\(index + 1)." : "•")
                             .font(LearnNowTypography.label)
-                            .foregroundStyle(LearnNowPalette.color(for: .blue))
+                            .foregroundStyle(LearnNowSemanticRole.brand.foreground)
                         InlineContentText(content: item.content)
                             .font(LearnNowTypography.body)
                             .foregroundStyle(LearnNowPalette.textSecondary)
@@ -335,6 +335,12 @@ private struct LessonOptionButton: View {
                     .multilineTextAlignment(.leading)
 
                 Spacer(minLength: 0)
+
+                if let statusIcon {
+                    Image(systemName: statusIcon)
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(labelColor)
+                }
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 18)
@@ -355,8 +361,8 @@ private struct LessonOptionButton: View {
 
     private var borderColor: Color {
         switch option.presentation {
-        case .correct: LearnNowPalette.color(for: .mint)
-        case .incorrect: LearnNowPalette.color(for: .pink)
+        case .correct: LearnNowSemanticRole.brand.foreground
+        case .incorrect: LearnNowSemanticRole.danger.foreground
         case .normal: .clear
         }
     }
@@ -367,9 +373,17 @@ private struct LessonOptionButton: View {
 
     private var labelColor: Color {
         switch option.presentation {
-        case .correct: LearnNowPalette.color(for: .mint)
-        case .incorrect: LearnNowPalette.color(for: .pink)
+        case .correct: LearnNowSemanticRole.brand.foreground
+        case .incorrect: LearnNowSemanticRole.danger.foreground
         case .normal: LearnNowPalette.textSecondary
+        }
+    }
+
+    private var statusIcon: String? {
+        switch option.presentation {
+        case .correct: "checkmark.circle.fill"
+        case .incorrect: "xmark.circle.fill"
+        case .normal: nil
         }
     }
 }

@@ -84,7 +84,7 @@ private struct ReviewBoardHeader: View {
                                 .font(.headline.weight(.bold))
                                 .foregroundStyle(
                                     activeFilterCount > 0
-                                        ? LearnNowPalette.color(for: .blue)
+                                        ? LearnNowSemanticRole.brand.foreground
                                         : LearnNowPalette.textMuted
                                 )
                         }
@@ -93,12 +93,12 @@ private struct ReviewBoardHeader: View {
                         Text("\(activeFilterCount)")
                             .font(LearnNowTypography.caption)
                             .fontWeight(.bold)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(LearnNowSemanticRole.brand.onFill)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 4)
                             .background(
                                 Capsule(style: .continuous)
-                                    .fill(LearnNowPalette.color(for: .pink))
+                                    .fill(LearnNowSemanticRole.brand.foreground)
                             )
                             .offset(x: 8, y: -4)
                     }
@@ -122,7 +122,7 @@ private struct ReviewSummaryPills: View {
             ForEach(summaries) { summary in
                 MetadataChip(
                     text: "\(summary.bucket.title) \(summary.count)",
-                    accent: summary.bucket.accent,
+                    role: .neutral,
                     isExpanded: true
                 )
                 .accessibilityIdentifier("anki.summary.\(summary.bucket.rawValue)")
@@ -265,13 +265,27 @@ private struct ReviewRatingGrid: View {
                         Text(intervals[rating] ?? rating.interval)
                             .font(LearnNowTypography.caption)
                     }
-                    .foregroundStyle(LearnNowPalette.color(for: rating.accent))
+                    .foregroundStyle(ratingColor(for: rating))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                 }
                 .buttonStyle(SoftPressStyle(cornerRadius: 18))
                 .accessibilityIdentifier("anki.rate.\(rating.rawValue)")
             }
+        }
+    }
+
+    /// 评分档位是 UI 语义而非内容属性：重来=danger、困难=warning、良好=brand、简单=青瓷内容色。
+    private func ratingColor(for rating: LearnNowReviewRating) -> Color {
+        switch rating {
+        case .again:
+            LearnNowSemanticRole.danger.foreground
+        case .hard:
+            LearnNowSemanticRole.warning.foreground
+        case .good:
+            LearnNowSemanticRole.brand.foreground
+        case .easy:
+            LearnNowPalette.color(for: .purple)
         }
     }
 }
@@ -286,7 +300,11 @@ private struct ReviewEmptyStateCard: View {
                 InsetCircle(size: 72) {
                     Image(systemName: state.hasActiveFilters ? "line.3.horizontal.decrease.circle" : "checkmark.circle")
                         .font(.title.weight(.bold))
-                        .foregroundStyle(LearnNowPalette.color(for: state.hasActiveFilters ? .amber : .mint))
+                        .foregroundStyle(
+                            state.hasActiveFilters
+                                ? LearnNowSemanticRole.neutral.foreground
+                                : LearnNowSemanticRole.brand.foreground
+                        )
                 }
 
                 VStack(spacing: 8) {
@@ -304,7 +322,7 @@ private struct ReviewEmptyStateCard: View {
 
                 FullWidthButton(
                     title: state.actionTitle,
-                    accent: state.actionAccent,
+                    role: .brand,
                     systemImage: state.actionSystemImage,
                     action: action
                 )

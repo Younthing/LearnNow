@@ -13,7 +13,6 @@ struct ProfileSettingsScreen: View {
         Form {
             Section {
                 Toggle("每日学习提醒", isOn: $remindersEnabled)
-                    .tint(LearnNowPalette.color(for: .blue))
                     .accessibilityIdentifier("settings.reminders.toggle")
 
                 if remindersEnabled {
@@ -22,7 +21,6 @@ struct ProfileSettingsScreen: View {
                         selection: $reminderTime,
                         displayedComponents: .hourAndMinute
                     )
-                    .tint(LearnNowPalette.color(for: .blue))
                     .accessibilityIdentifier("settings.reminders.time")
                 }
             } header: {
@@ -38,7 +36,6 @@ struct ProfileSettingsScreen: View {
                         systemImage: isNightModeEnabled ? "moon.stars.fill" : "sun.max.fill"
                     )
                 }
-                .tint(LearnNowPalette.color(for: .purple))
                 .accessibilityIdentifier("settings.appearance.toggle")
             }
 
@@ -50,14 +47,13 @@ struct ProfileSettingsScreen: View {
                         set: { cloudConfirmation = CloudSyncConfirmation(enabled: $0) }
                     )
                 )
-                .tint(LearnNowPalette.color(for: .blue))
                 .accessibilityIdentifier("settings.cloud.toggle")
 
                 LabeledContent("状态") {
                     Text(model.syncStatusText)
                         .foregroundStyle(
                             model.requiresRestart
-                                ? LearnNowPalette.color(for: .amber)
+                                ? LearnNowSemanticRole.warning.foreground
                                 : LearnNowPalette.textSecondary
                         )
                 }
@@ -70,7 +66,7 @@ struct ProfileSettingsScreen: View {
                     if model.requiresRestart {
                         Text("重新打开 App 后生效")
                             .fontWeight(.bold)
-                            .foregroundStyle(LearnNowPalette.color(for: .amber))
+                            .foregroundStyle(LearnNowSemanticRole.warning.foreground)
                     }
                 }
             }

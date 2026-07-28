@@ -63,7 +63,6 @@ struct HomeScreen: View {
                         title: model.continueCard.title,
                         progress: model.continueCard.progress,
                         progressText: model.continueCard.progressText,
-                        accent: .blue,
                         contentHeight: HomeLayout.contentHeight(for: cardHeights.secondary),
                         action: onContinueLearning
                     )
@@ -291,12 +290,12 @@ private struct StatusSummaryMetric: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(LearnNowPalette.color(for: metric.accent).opacity(0.07))
+                .fill(LearnNowSemanticRole.neutral.softFill)
         )
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(
-                    LearnNowPalette.color(for: metric.accent).opacity(0.13),
+                    LearnNowSemanticRole.neutral.foreground.opacity(0.13),
                     lineWidth: 0.75
                 )
         }
@@ -314,7 +313,7 @@ private struct StatusIconBadge: View {
                 .fill(LearnNowPalette.base)
                 .overlay {
                     Circle()
-                        .fill(LearnNowPalette.color(for: metric.accent).opacity(0.08))
+                        .fill(LearnNowSemanticRole.neutral.foreground.opacity(0.08))
                 }
                 .overlay {
                     Circle()
@@ -322,7 +321,7 @@ private struct StatusIconBadge: View {
                             LinearGradient(
                                 colors: [
                                     Color.white.opacity(colorScheme == .dark ? 0.14 : 0.48),
-                                    LearnNowPalette.color(for: metric.accent).opacity(0.18)
+                                    LearnNowSemanticRole.neutral.foreground.opacity(0.18)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -337,7 +336,7 @@ private struct StatusIconBadge: View {
                     .font(.headline.weight(.semibold))
                     .symbolRenderingMode(.hierarchical)
                     .symbolColorRenderingMode(.gradient)
-                    .foregroundStyle(LearnNowPalette.color(for: metric.accent))
+                    .foregroundStyle(LearnNowSemanticRole.neutral.foreground)
             }
         }
         .frame(width: 40, height: 40)
@@ -352,7 +351,6 @@ private struct ContinueLearningCard: View {
     let title: String
     let progress: Double
     let progressText: String
-    let accent: LearnNowAccent
     let contentHeight: CGFloat
     let action: () -> Void
 
@@ -367,12 +365,12 @@ private struct ContinueLearningCard: View {
 
                         Spacer()
 
-                        MetadataChip(text: progressText, accent: accent)
+                        MetadataChip(text: progressText, role: .brand)
                     }
 
                     HStack(alignment: .center, spacing: 16) {
                         VStack(alignment: .leading, spacing: 10) {
-                            MetadataChip(text: badge, accent: accent)
+                            MetadataChip(text: badge, role: .brand)
 
                             Text(title)
                                 .font(LearnNowTypography.cardHeadline)
@@ -381,12 +379,12 @@ private struct ContinueLearningCard: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                        ContinueLearningPlayIcon(accent: accent)
+                        ContinueLearningPlayIcon()
                     }
 
                     Spacer(minLength: HomeLayout.progressBottomSpacing)
 
-                    ProgressTrack(progress: progress, accent: accent, height: 12)
+                    ProgressTrack(progress: progress, height: 12)
                 }
                 .frame(minHeight: contentHeight, alignment: .top)
             }
@@ -402,8 +400,6 @@ private struct ContinueLearningCard: View {
 }
 
 private struct ContinueLearningPlayIcon: View {
-    let accent: LearnNowAccent
-
     var body: some View {
         Circle()
             .fill(LearnNowPalette.base)
@@ -412,7 +408,7 @@ private struct ContinueLearningPlayIcon: View {
             .overlay {
                 Image(systemName: "play.fill")
                     .font(.headline.weight(.bold))
-                    .foregroundStyle(LearnNowPalette.color(for: accent))
+                    .foregroundStyle(LearnNowSemanticRole.brand.foreground)
             }
             .accessibilityHidden(true)
             .allowsHitTesting(false)

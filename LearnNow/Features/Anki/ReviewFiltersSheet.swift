@@ -47,7 +47,7 @@ struct ReviewFiltersSheet: View {
                     .padding(.vertical, 8)
                     .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
                     .frame(maxWidth: .infinity)
-                    .background(.ultraThinMaterial)
+                    .learnNowBarBackground()
                 }
             }
         }
@@ -98,7 +98,6 @@ private struct ReviewFiltersContent: View {
             FlowLayout(items: model.timeOptions.map(SelectionChipItem.init)) { item in
                 FilterChip(
                     title: item.title,
-                    accent: .blue,
                     isSelected: item.isSelected,
                     accessibilityIdentifier: "review.filters.time.\(item.id)",
                     action: {
@@ -140,7 +139,6 @@ private struct ReviewFiltersContent: View {
             FlowLayout(items: model.topicOptions) { option in
                 FilterChip(
                     title: "\(option.title) \(option.count)",
-                    accent: option.accent,
                     isSelected: option.isSelected,
                     accessibilityIdentifier: "review.filters.topic.\(option.id)",
                     action: { onToggleTopic(option.id) }
@@ -154,7 +152,6 @@ private struct ReviewFiltersContent: View {
             FlowLayout(items: model.moduleOptions) { option in
                 FilterChip(
                     title: "\(option.title) \(option.count)",
-                    accent: option.accent,
                     isSelected: option.isSelected,
                     accessibilityIdentifier: "review.filters.module.\(option.id)",
                     action: { onToggleModule(option.id) }
@@ -168,7 +165,6 @@ private struct ReviewFiltersContent: View {
             FlowLayout(items: model.masteryOptions.map(SelectionChipItem.init)) { item in
                 FilterChip(
                     title: item.title,
-                    accent: .mint,
                     isSelected: item.isSelected,
                     accessibilityIdentifier: "review.filters.mastery.\(item.id)",
                     action: {
@@ -185,7 +181,6 @@ private struct ReviewFiltersContent: View {
             FlowLayout(items: model.favoriteOptions.map(SelectionChipItem.init)) { item in
                 FilterChip(
                     title: item.title,
-                    accent: .amber,
                     isSelected: item.isSelected,
                     accessibilityIdentifier: "review.filters.favorite.\(item.id)",
                     action: {
@@ -216,7 +211,7 @@ private struct ReviewFiltersHeader: View {
             if canReset {
                 Button("重置", action: onReset)
                     .font(LearnNowTypography.label)
-                    .foregroundStyle(LearnNowPalette.color(for: .amber))
+                    .foregroundStyle(LearnNowSemanticRole.brand.foreground)
                     .frame(minWidth: 44, minHeight: 44)
                     .contentShape(Rectangle())
                     .buttonStyle(.plain)
@@ -292,7 +287,7 @@ private struct ReviewFiltersEmptyState: View {
                 if state == .noMatches {
                     Button("清除筛选", action: onReset)
                         .font(LearnNowTypography.label)
-                        .foregroundStyle(LearnNowPalette.color(for: .amber))
+                        .foregroundStyle(LearnNowSemanticRole.brand.foreground)
                         .frame(minHeight: 44)
                         .contentShape(Rectangle())
                         .buttonStyle(.plain)
@@ -328,7 +323,7 @@ private struct ReviewFiltersFooter: View {
     var body: some View {
         FullWidthButton(
             title: "开始复习",
-            accent: .blue,
+            role: .brand,
             systemImage: "play.fill",
             action: onApply
         )
@@ -353,20 +348,27 @@ private struct FilterSection<Content: View>: View {
     }
 }
 
+/// 筛选分区不再用颜色区分（去彩虹化），统一 brand（选中）/ neutral（未选中），分区靠标题与图标区分。
 private struct FilterChip: View {
     let title: String
-    let accent: LearnNowAccent
     let isSelected: Bool
     let accessibilityIdentifier: String
     let action: () -> Void
 
     var body: some View {
-        MetadataChipButton(
-            title: title,
-            accent: accent,
-            isSelected: isSelected,
-            action: action
-        )
+        Button(action: action) {
+            MetadataChip(
+                text: title,
+                role: isSelected ? .brand : .neutral,
+                systemImage: isSelected ? "checkmark" : nil,
+                prominence: isSelected ? .selected : .subtle
+            )
+            .padding(.vertical, 7)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityValue(isSelected ? "已选择" : "未选择")
         .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
@@ -414,7 +416,7 @@ private struct AdvancedFiltersToggleControl: View {
                         .padding(.vertical, 3)
                         .background(
                             Capsule(style: .continuous)
-                                .fill(LearnNowPalette.color(for: .blue).opacity(0.14))
+                                .fill(LearnNowSemanticRole.brand.softFill)
                         )
                         .accessibilityLabel("\(activeCount) 个高级筛选条件")
                 }
@@ -425,7 +427,7 @@ private struct AdvancedFiltersToggleControl: View {
             .font(LearnNowTypography.label)
             .foregroundStyle(
                 activeCount > 0 || isExpanded
-                    ? LearnNowPalette.color(for: .blue)
+                    ? LearnNowSemanticRole.brand.foreground
                     : LearnNowPalette.textMuted
             )
             .padding(.horizontal, 14)
@@ -541,7 +543,8 @@ private struct ReviewCardPoolRow: View {
         ReviewStatusButton(
             title: card.isFavorited ? "已收藏" : "收藏",
             systemImage: card.isFavorited ? "bookmark.fill" : "bookmark",
-            accent: .amber,
+            // 收藏是内容属性，保留 pink 内容色（灰玫瑰）。
+            selectedColor: LearnNowPalette.color(for: .pink),
             isSelected: card.isFavorited,
             action: onToggleFavorite
         )
@@ -552,7 +555,8 @@ private struct ReviewCardPoolRow: View {
         ReviewStatusButton(
             title: card.isMastered ? "已掌握" : "标记掌握",
             systemImage: card.isMastered ? "checkmark.seal.fill" : "checkmark.seal",
-            accent: .mint,
+            // 掌握是成功状态，走 brand（success 并入 brand）。
+            selectedColor: LearnNowSemanticRole.brand.foreground,
             isSelected: card.isMastered,
             action: onToggleMastered
         )
@@ -563,7 +567,7 @@ private struct ReviewCardPoolRow: View {
 private struct ReviewStatusButton: View {
     let title: String
     let systemImage: String
-    let accent: LearnNowAccent
+    let selectedColor: Color
     let isSelected: Bool
     let action: () -> Void
 
@@ -573,7 +577,7 @@ private struct ReviewStatusButton: View {
                 .font(LearnNowTypography.label)
                 .foregroundStyle(
                     isSelected
-                        ? LearnNowPalette.color(for: accent)
+                        ? selectedColor
                         : LearnNowPalette.textMuted
                 )
                 .frame(maxWidth: .infinity, minHeight: 44)
