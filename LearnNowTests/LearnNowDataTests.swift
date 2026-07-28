@@ -273,6 +273,29 @@ struct LearnNowDataTests {
     }
 
     @Test
+    func easyReviewSchedulesCardBeyondToday() throws {
+        let clock = fixedClock()
+        let outcome = try FSRSReviewScheduler().schedule(
+            cardID: "card",
+            memory: nil,
+            rating: .easy,
+            now: clock.now
+        )
+        let tomorrow = try #require(
+            clock.calendar.date(
+                byAdding: .day,
+                value: 1,
+                to: clock.calendar.startOfDay(for: clock.now)
+            )
+        )
+
+        #expect(outcome.rating == .easy)
+        #expect(outcome.dueAt >= tomorrow)
+        #expect(outcome.memory.dueAt == outcome.dueAt)
+        #expect(outcome.memory.reps == 1)
+    }
+
+    @Test
     func reviewLogWritesAndLocalCacheCanBeRebuilt() async throws {
         let catalog = try CatalogDecoder.decode(data: catalogData())
         let container = try LearnNowModelContainerFactory.make(cloudSyncEnabled: false, inMemory: true)

@@ -2,7 +2,7 @@ import Foundation
 import LearnNowContentKit
 
 extension LearnNowFlowState {
-    mutating func selectTab(_ tab: LearnNowTab) {
+    mutating func selectTab(_ tab: LearnNowTab, now: Date = Date()) {
         selectedTab = tab
 
         switch tab {
@@ -12,7 +12,13 @@ extension LearnNowFlowState {
             currentScreen = .routes
         case .anki:
             currentScreen = .anki
+            refreshReviewBuckets(now: now)
             normalizeReviewState()
+            if appliedReviewFilters.isDefault,
+               activeReviewCards.isEmpty,
+               !Self.defaultReviewQueue(from: reviewCards, now: now).isEmpty {
+                rebuildReviewQueue(now: now)
+            }
         case .profile:
             currentScreen = .profile
         }

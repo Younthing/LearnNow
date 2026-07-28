@@ -46,6 +46,7 @@ extension LearnNowFlowState {
             moduleIDs: ["regression"]
         )
         flow.draftReviewFilters = flow.appliedReviewFilters
+        flow.applyReviewCardPoolFilters()
         flow.selectTab(.anki)
         return flow
     }
@@ -54,6 +55,7 @@ extension LearnNowFlowState {
         var flow = previewState()
         flow.appliedReviewFilters.favorite = .favoritedOnly
         flow.draftReviewFilters = flow.appliedReviewFilters
+        flow.applyReviewCardPoolFilters()
         flow.selectTab(.anki)
         return flow
     }

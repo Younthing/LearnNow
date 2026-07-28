@@ -84,6 +84,33 @@ final class LearnNowUITests: XCTestCase {
     }
 
     @MainActor
+    func testEasyRatingsAdvanceQueueAndMoveCardsToFutureReview() throws {
+        navigateToCompletion()
+        tapWhenHittable(element(matchingIdentifier: "completion.cta.review"))
+
+        let newSummary = element(matchingIdentifier: "anki.summary.new")
+        let reinforceSummary = element(matchingIdentifier: "anki.summary.reinforce")
+        assertExists(newSummary)
+        assertExists(reinforceSummary)
+        XCTAssertEqual(newSummary.value as? String, "2")
+        XCTAssertEqual(reinforceSummary.value as? String, "0")
+
+        tapWhenHittable(element(matchingIdentifier: "anki.card"))
+        tapWhenHittable(element(matchingIdentifier: "anki.rate.easy"))
+
+        XCTAssertEqual(newSummary.value as? String, "1")
+        XCTAssertEqual(reinforceSummary.value as? String, "1")
+        assertExists(app.staticTexts["第 2 / 2 张"])
+
+        tapWhenHittable(element(matchingIdentifier: "anki.card"))
+        tapWhenHittable(element(matchingIdentifier: "anki.rate.easy"))
+
+        assertExists(app.staticTexts["今日复习已完成"])
+        XCTAssertEqual(newSummary.value as? String, "0")
+        XCTAssertEqual(reinforceSummary.value as? String, "2")
+    }
+
+    @MainActor
     func testCardPoolUsesProgressiveDisclosureAndCompactCopy() throws {
         navigateToCompletion()
         openReviewCardPool()

@@ -448,7 +448,7 @@ extension LearnNowFlowState {
                 .init(
                     scope: .init(
                         current: currentReviewPosition,
-                        total: activeReviewCards.count,
+                        total: reviewQueueTotalCount,
                         title: reviewScopeTitle,
                         subtitle: reviewScopeSubtitle
                     ),
@@ -459,16 +459,17 @@ extension LearnNowFlowState {
                 )
             )
         } else {
+            let hasUnmatchedFilters = reviewFilterBadgeCount > 0 && !isReviewQueueCompleted
             stage = .empty(
                 .init(
-                    hasActiveFilters: reviewFilterBadgeCount > 0,
-                    title: reviewFilterBadgeCount > 0 ? "当前筛选下暂无卡片" : "今日复习已完成",
-                    message: reviewFilterBadgeCount > 0
+                    hasActiveFilters: hasUnmatchedFilters,
+                    title: hasUnmatchedFilters ? "当前筛选下暂无卡片" : "今日复习已完成",
+                    message: hasUnmatchedFilters
                         ? "可以清空筛选条件，回到全卡池继续复习。"
                         : "今天的复习范围已经处理完成，可以回到概览继续学习。",
-                    actionTitle: reviewFilterBadgeCount > 0 ? "清除筛选" : "返回概览",
-                    actionAccent: reviewFilterBadgeCount > 0 ? .amber : .blue,
-                    actionSystemImage: reviewFilterBadgeCount > 0 ? "line.3.horizontal.decrease.circle" : "house.fill"
+                    actionTitle: hasUnmatchedFilters ? "清除筛选" : "返回概览",
+                    actionAccent: hasUnmatchedFilters ? .amber : .blue,
+                    actionSystemImage: hasUnmatchedFilters ? "line.3.horizontal.decrease.circle" : "house.fill"
                 )
             )
         }

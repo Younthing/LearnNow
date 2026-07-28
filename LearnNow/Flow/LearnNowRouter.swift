@@ -3,8 +3,12 @@ import Foundation
 /// Owns screen and destination transitions. The app store coordinates data writes,
 /// while the router keeps navigation decisions independent of persistence.
 struct LearnNowRouter {
-    func selectTab(_ tab: LearnNowTab, flow: inout LearnNowFlowState) {
-        flow.selectTab(tab)
+    func selectTab(
+        _ tab: LearnNowTab,
+        now: Date = Date(),
+        flow: inout LearnNowFlowState
+    ) {
+        flow.selectTab(tab, now: now)
     }
 
     func showRoutes(flow: inout LearnNowFlowState) {
@@ -39,11 +43,17 @@ struct LearnNowRouter {
         flow.finishLearning()
     }
 
-    func openReviewBoard(flow: inout LearnNowFlowState) {
-        flow.openReviewBoard()
+    func openReviewBoard(
+        now: Date = Date(),
+        flow: inout LearnNowFlowState
+    ) {
+        flow.openReviewBoard(now: now)
     }
 
-    func openFavoritedReviewBoard(flow: inout LearnNowFlowState) {
-        flow.openFavoritedReviewBoard()
+    func openFavoritedReviewBoard(
+        now: Date = Date(),
+        flow: inout LearnNowFlowState
+    ) {
+        flow.openFavoritedReviewBoard(now: now)
     }
 }

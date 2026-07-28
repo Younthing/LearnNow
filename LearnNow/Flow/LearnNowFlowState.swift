@@ -345,7 +345,7 @@ struct LearnNowReviewCard: Identifiable, Equatable, Sendable {
     let topic: String
     let moduleID: String
     let moduleTitle: String
-    let bucket: LearnNowReviewBucket
+    var bucket: LearnNowReviewBucket
     let accent: LearnNowAccent
     let frontTitle: String
     let frontSubtitle: String?
@@ -447,6 +447,7 @@ struct LearnNowFlowState: Equatable {
     var lessonPages: [LearnNowLessonPage]
     var completionSummary: LearnNowCompletionSummary?
     var reviewCards: [LearnNowReviewCard]
+    var reviewQueueCardIDs: [String]
     var currentReviewCardIndex: Int = 0
     var isCurrentReviewCardFlipped = false
     var appliedReviewFilters: LearnNowReviewFilters = .empty
@@ -518,7 +519,12 @@ struct LearnNowFlowState: Equatable {
         self.loadedLessonModuleIndex = initialIndex
         self.currentLessonPageIndex = restoredPageIndex
         self.lessonPages = initialModule?.lessonPages ?? []
-        self.reviewCards = Self.makeReviewCards(catalog: catalog, snapshot: snapshot, now: now)
+        let initialReviewCards = Self.makeReviewCards(catalog: catalog, snapshot: snapshot, now: now)
+        self.reviewCards = initialReviewCards
+        self.reviewQueueCardIDs = Self.defaultReviewQueue(
+            from: initialReviewCards,
+            now: now
+        ).map(\.id)
         self.reminderTime = UserDefaults.standard.object(forKey: Self.reminderTimeKey) as? Date
             ?? Self.defaultReminderTime()
         self.remindersEnabled = UserDefaults.standard.object(forKey: Self.remindersEnabledKey) == nil
@@ -691,22 +697,37 @@ struct LearnNowFlowState: Equatable {
     }
 
     var activeReviewCards: [LearnNowReviewCard] {
-        filteredReviewCards(using: appliedReviewFilters)
+        let remainingIDs = reviewQueueCardIDs.dropFirst(
+            min(currentReviewCardIndex, reviewQueueCardIDs.count)
+        )
+        let cardsByID = Dictionary(uniqueKeysWithValues: reviewCards.map { ($0.id, $0) })
+        return remainingIDs.compactMap { cardsByID[$0] }
     }
 
     var stagedReviewCards: [LearnNowReviewCard] {
         filteredReviewCards(using: draftReviewFilters)
     }
 
+    var reviewQueueCards: [LearnNowReviewCard] {
+        let cardsByID = Dictionary(uniqueKeysWithValues: reviewCards.map { ($0.id, $0) })
+        return reviewQueueCardIDs.compactMap { cardsByID[$0] }
+    }
+
     var currentReviewCard: LearnNowReviewCard? {
-        let cards = activeReviewCards
-        guard !cards.isEmpty else { return nil }
-        return cards[min(currentReviewCardIndex, cards.count - 1)]
+        activeReviewCards.first
     }
 
     var currentReviewPosition: Int {
-        guard !activeReviewCards.isEmpty else { return 0 }
-        return min(currentReviewCardIndex + 1, activeReviewCards.count)
+        guard currentReviewCard != nil else { return 0 }
+        return min(currentReviewCardIndex + 1, reviewQueueCards.count)
+    }
+
+    var reviewQueueTotalCount: Int {
+        reviewQueueCards.count
+    }
+
+    var isReviewQueueCompleted: Bool {
+        reviewQueueTotalCount > 0 && activeReviewCards.isEmpty
     }
 
     var currentLessonTitle: String {
@@ -736,9 +757,13 @@ struct LearnNowFlowState: Equatable {
     }
 
     var reviewCardsDueTodayCount: Int {
-        let calendar = Calendar.current
+        reviewCardsDueTodayCount(asOf: Date(), calendar: .current)
+    }
+
+    func reviewCardsDueTodayCount(asOf now: Date, calendar: Calendar) -> Int {
+        let startOfToday = calendar.startOfDay(for: now)
         return reviewCards.filter { card in
-            card.dueAt < calendar.startOfDay(for: Date()) || calendar.isDateInToday(card.dueAt)
+            card.dueAt < startOfToday || calendar.isDate(card.dueAt, inSameDayAs: now)
         }.count
     }
 
@@ -782,7 +807,7 @@ struct LearnNowFlowState: Equatable {
     }
 
     var reviewSummaryByBucket: [LearnNowReviewBucket: Int] {
-        Dictionary(grouping: activeReviewCards, by: \.bucket).mapValues(\.count)
+        Dictionary(grouping: reviewQueueCards, by: \.bucket).mapValues(\.count)
     }
 
     var reviewTopicFacets: [LearnNowReviewFacet] {
@@ -799,6 +824,27 @@ struct LearnNowFlowState: Equatable {
         )
     }
 
+}
+
+extension LearnNowFlowState {
+    static func reviewBucket(
+        for memory: ReviewMemorySnapshot,
+        now: Date
+    ) -> LearnNowReviewBucket {
+        if memory.reps == 0 {
+            return .new
+        }
+        return memory.dueAt <= now ? .review : .reinforce
+    }
+
+    static func defaultReviewQueue(
+        from cards: [LearnNowReviewCard],
+        now: Date
+    ) -> [LearnNowReviewCard] {
+        cards
+            .filter { $0.dueAt <= now }
+            .sorted(by: reviewSort)
+    }
 }
 
 private extension LearnNowFlowState {
@@ -831,20 +877,12 @@ private extension LearnNowFlowState {
                   let module = catalog.module(id: definition.moduleID) else {
                 return nil
             }
-            let bucket: LearnNowReviewBucket
-            if memory.reps == 0 {
-                bucket = .new
-            } else if memory.dueAt <= now {
-                bucket = .review
-            } else {
-                bucket = .reinforce
-            }
             return LearnNowReviewCard(
                 id: definition.id,
                 topic: definition.topic,
                 moduleID: definition.moduleID,
                 moduleTitle: module.title,
-                bucket: bucket,
+                bucket: reviewBucket(for: memory, now: now),
                 accent: definition.accent,
                 frontTitle: definition.frontTitle,
                 frontSubtitle: definition.frontSubtitle,

@@ -244,6 +244,149 @@ struct LearnNowFlowStateTests {
     }
 
     @Test
+    func easyReviewConsumesCurrentQueueCardAndMovesItToFutureReview() throws {
+        let timeZone = try #require(TimeZone(identifier: "Asia/Shanghai"))
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let now = Date(timeIntervalSince1970: 1_752_787_800)
+        let previousReviewDate = try #require(
+            calendar.date(byAdding: .day, value: -9, to: now)
+        )
+        let scheduler = FSRSReviewScheduler()
+        let dueMemory = try scheduler.schedule(
+            cardID: "mean",
+            memory: nil,
+            rating: .easy,
+            now: previousReviewDate
+        ).memory
+        var sut = LearnNowFlowState(
+            catalog: LearnNowFlowFixtures.catalog,
+            snapshot: LearningSnapshot(
+                reviewMemoryByCardID: ["mean": dueMemory]
+            ),
+            now: now
+        )
+
+        #expect(dueMemory.dueAt <= now)
+        #expect(sut.currentReviewCard?.id == "mean")
+        #expect(sut.reviewSummaryByBucket[.review] == 1)
+        #expect(sut.reviewCardsDueTodayCount(asOf: now, calendar: calendar) == 1)
+
+        let outcome = try scheduler.schedule(
+            cardID: "mean",
+            memory: dueMemory,
+            rating: .easy,
+            now: now
+        )
+        sut.applyReviewOutcome(outcome, now: now)
+
+        #expect(outcome.dueAt > now)
+        #expect(sut.activeReviewCards.isEmpty)
+        #expect(sut.reviewQueueCards.count == 1)
+        #expect(sut.reviewSummaryByBucket[.review, default: 0] == 0)
+        #expect(sut.reviewSummaryByBucket[.reinforce] == 1)
+        #expect(sut.reviewCardsDueTodayCount(asOf: now, calendar: calendar) == 0)
+        guard case .empty(let state) = sut.reviewBoardModel.stage else {
+            Issue.record("完成本轮唯一卡片后应进入复习完成态")
+            return
+        }
+        #expect(state.title == "今日复习已完成")
+
+        sut.selectTab(.profile, now: now)
+        sut.selectTab(.anki, now: now)
+
+        #expect(sut.activeReviewCards.isEmpty)
+
+        sut.selectTab(.anki, now: outcome.dueAt)
+
+        #expect(sut.currentReviewCard?.id == "mean")
+        #expect(sut.reviewSummaryByBucket[.review] == 1)
+    }
+
+    @Test
+    func completedFilteredQueueStaysCompletedWhenReturningToReviewTab() throws {
+        let now = Date(timeIntervalSince1970: 1_752_787_800)
+        let memory = ReviewMemorySnapshot(
+            cardID: "mean",
+            dueAt: now,
+            lastReviewAt: nil,
+            stability: 0,
+            difficulty: 0,
+            elapsedDays: 0,
+            scheduledDays: 0,
+            stateRawValue: 0,
+            learningSteps: 0,
+            reps: 0,
+            lapses: 0,
+            retrievability: 0,
+            isFavorited: false,
+            isMastered: false
+        )
+        var sut = LearnNowFlowState(
+            catalog: LearnNowFlowFixtures.catalog,
+            snapshot: LearningSnapshot(
+                reviewMemoryByCardID: ["mean": memory]
+            ),
+            now: now
+        )
+        sut.toggleDraftTopic("描述统计")
+        sut.applyReviewCardPoolFilters(now: now)
+        let outcome = try FSRSReviewScheduler().schedule(
+            cardID: "mean",
+            memory: memory,
+            rating: .easy,
+            now: now
+        )
+
+        sut.applyReviewOutcome(outcome, now: now)
+        sut.selectTab(.profile, now: now)
+        sut.selectTab(.anki, now: now)
+
+        #expect(sut.activeReviewCards.isEmpty)
+        #expect(sut.isReviewQueueCompleted)
+        guard case .empty(let state) = sut.reviewBoardModel.stage else {
+            Issue.record("带筛选的本轮复习完成后应保持完成态")
+            return
+        }
+        #expect(!state.hasActiveFilters)
+        #expect(state.title == "今日复习已完成")
+        #expect(state.actionTitle == "返回概览")
+    }
+
+    @Test
+    func futureNewCardStaysInCardPoolButNotDefaultReviewQueue() throws {
+        let now = Date(timeIntervalSince1970: 1_752_787_800)
+        let future = now.addingTimeInterval(86_400)
+        let memory = ReviewMemorySnapshot(
+            cardID: "mean",
+            dueAt: future,
+            lastReviewAt: nil,
+            stability: 0,
+            difficulty: 0,
+            elapsedDays: 0,
+            scheduledDays: 0,
+            stateRawValue: 0,
+            learningSteps: 0,
+            reps: 0,
+            lapses: 0,
+            retrievability: 0,
+            isFavorited: false,
+            isMastered: false
+        )
+        let sut = LearnNowFlowState(
+            catalog: LearnNowFlowFixtures.catalog,
+            snapshot: LearningSnapshot(
+                reviewMemoryByCardID: ["mean": memory]
+            ),
+            now: now
+        )
+
+        #expect(sut.reviewCards.map(\.id) == ["mean"])
+        #expect(sut.stagedReviewCards.map(\.id) == ["mean"])
+        #expect(sut.activeReviewCards.isEmpty)
+    }
+
+    @Test
     func reviewFiltersDefaultModelContainsEveryCardAndNoEmptyState() {
         let sut = LearnNowFlowState.homePreview
         let model = sut.reviewFiltersSheetModel

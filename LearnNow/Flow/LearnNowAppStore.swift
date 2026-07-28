@@ -98,7 +98,7 @@ final class LearnNowAppStore {
     }
 
     func selectTab(_ tab: LearnNowTab) {
-        router.selectTab(tab, flow: &flow)
+        router.selectTab(tab, now: clock.now, flow: &flow)
         if tab == .profile {
             refreshMemoryTrend()
         }
@@ -155,12 +155,12 @@ final class LearnNowAppStore {
     func finishLearning() { router.finishLearning(flow: &flow) }
 
     func openReviewBoard() {
-        router.openReviewBoard(flow: &flow)
+        router.openReviewBoard(now: clock.now, flow: &flow)
         prepareReviewPreviews()
     }
 
     func openFavoritedReviewBoard() {
-        router.openFavoritedReviewBoard(flow: &flow)
+        router.openFavoritedReviewBoard(now: clock.now, flow: &flow)
         prepareReviewPreviews()
     }
 
@@ -174,11 +174,13 @@ final class LearnNowAppStore {
     func setDraftFavoriteFilter(_ filter: LearnNowReviewFavoriteFilter) { flow.setDraftFavoriteFilter(filter) }
 
     func applyReviewCardPoolFilters() {
-        flow.applyReviewCardPoolFilters()
+        flow.applyReviewCardPoolFilters(now: clock.now)
         prepareReviewPreviews()
     }
 
-    func handleReviewEmptyPrimaryAction() { flow.handleReviewEmptyPrimaryAction() }
+    func handleReviewEmptyPrimaryAction() {
+        flow.handleReviewEmptyPrimaryAction(now: clock.now)
+    }
 
     func flipCurrentReviewCard() {
         flow.flipCurrentReviewCard()
@@ -216,7 +218,7 @@ final class LearnNowAppStore {
                 memory: flow.reviewMemoryByCardID[cardID],
                 rating: rating
             )
-            flow.applyReviewOutcome(outcome)
+            flow.applyReviewOutcome(outcome, now: clock.now)
             refreshMemoryTrend()
             prepareReviewPreviews()
         } catch {

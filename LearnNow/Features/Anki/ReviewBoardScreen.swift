@@ -45,7 +45,6 @@ private struct ReviewBoardStage: View {
                     isFlipped: stage.isFlipped,
                     onFlip: onFlipCard
                 )
-                .accessibilityIdentifier("anki.card")
 
                 if stage.showsRatingGrid {
                     ReviewRatingGrid(intervals: stage.ratingIntervals, onRate: onRate)
@@ -126,6 +125,8 @@ private struct ReviewSummaryPills: View {
                     accent: summary.bucket.accent,
                     isExpanded: true
                 )
+                .accessibilityIdentifier("anki.summary.\(summary.bucket.rawValue)")
+                .accessibilityValue("\(summary.count)")
             }
         }
     }
@@ -229,6 +230,7 @@ private struct ReviewFlashcardView: View {
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("anki.card")
                     .accessibilityHint("双击翻转卡片查看答案与评分")
                 }
             }
