@@ -10,7 +10,16 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var store = LearnNowAppStore()
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var store: LearnNowAppStore
+
+    init(activeCloudSyncEnabled: Bool = true) {
+        _store = State(
+            initialValue: LearnNowAppStore(
+                activeCloudSyncEnabled: activeCloudSyncEnabled
+            )
+        )
+    }
 
     var body: some View {
         Group {
@@ -35,6 +44,11 @@ struct ContentView: View {
         }
         .preferredColorScheme(store.flow.isNightModeEnabled ? .dark : .light)
         .task { await store.load(context: modelContext) }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                store.refreshMemoryTrend()
+            }
+        }
     }
 }
 
@@ -79,5 +93,5 @@ private struct LearnNowStartupErrorView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(activeCloudSyncEnabled: false)
 }

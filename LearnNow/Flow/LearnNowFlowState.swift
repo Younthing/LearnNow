@@ -416,7 +416,11 @@ struct LearnNowFlowState: Equatable {
     var completedLessonIDs: Set<String>
     var activityByLocalDay: [String: Int]
     var reviewMemoryByCardID: [String: ReviewMemorySnapshot]
+    var profilePreference: ProfilePreference
+    var memoryTrend: MemoryTrend
     var syncAvailability: LearnNowSyncAvailability
+    var activeCloudSyncEnabled: Bool
+    var desiredCloudSyncEnabled: Bool
     var reviewIntervalTextByRating: [LearnNowReviewRating: String]
     var selectedTab: LearnNowTab = .home
     var currentScreen: LearnNowScreen = .home
@@ -444,7 +448,9 @@ struct LearnNowFlowState: Equatable {
     init(
         catalog: CourseCatalog = LearnNowFlowFixtures.catalog,
         snapshot: LearningSnapshot? = nil,
-        now: Date = Date()
+        now: Date = Date(),
+        activeCloudSyncEnabled: Bool = true,
+        desiredCloudSyncEnabled: Bool? = nil
     ) {
         let isPreviewFixture = snapshot == nil
         let resolvedSnapshot = snapshot ?? LearnNowFlowFixtures.learningSnapshot
@@ -472,7 +478,12 @@ struct LearnNowFlowState: Equatable {
         self.completedLessonIDs = completedIDs
         self.activityByLocalDay = resolvedSnapshot.activityByLocalDay
         self.reviewMemoryByCardID = resolvedSnapshot.reviewMemoryByCardID
+        self.profilePreference = resolvedSnapshot.profilePreference
+        self.memoryTrend = .empty
         self.syncAvailability = resolvedSnapshot.syncAvailability
+        self.activeCloudSyncEnabled = activeCloudSyncEnabled
+        self.desiredCloudSyncEnabled = desiredCloudSyncEnabled
+            ?? LearnNowCloudSyncPreference.isEnabled()
         self.reviewIntervalTextByRating = Dictionary(
             uniqueKeysWithValues: LearnNowReviewRating.allCases.map { ($0, $0.interval) }
         )
@@ -568,6 +579,17 @@ struct LearnNowFlowState: Equatable {
             let date = calendar.date(from: components) ?? now
             let count = activityByLocalDay[Self.localDayFormatter.string(from: date), default: 0]
             return LearnNowHeatCell(id: day, level: min(count, 3))
+        }
+    }
+
+    var rollingFourWeekHeatmap: [LearnNowHeatCell] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        return (-27...0).enumerated().map { index, dayOffset in
+            let date = calendar.date(byAdding: .day, value: dayOffset, to: today) ?? today
+            let count = activityByLocalDay[Self.localDayFormatter.string(from: date), default: 0]
+            return LearnNowHeatCell(id: index, level: min(count, 3))
         }
     }
 

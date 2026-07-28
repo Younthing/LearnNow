@@ -19,18 +19,29 @@ final class LearnNowAppStore {
     private let catalogRepository: any CatalogRepository
     private let scheduler: any ReviewScheduler
     private let clock: any LearnNowClock
+    private let activeCloudSyncEnabled: Bool
     private let router = LearnNowRouter()
     private var learningRepository: (any LearningRepository)?
 
     init(
         catalogRepository: (any CatalogRepository)? = nil,
         scheduler: (any ReviewScheduler)? = nil,
-        clock: (any LearnNowClock)? = nil
+        clock: (any LearnNowClock)? = nil,
+        activeCloudSyncEnabled: Bool = true
     ) {
-        self.flow = LearnNowFlowState(catalog: .empty, snapshot: .empty)
+        let resolvedScheduler = scheduler ?? FSRSReviewScheduler()
+        let resolvedClock = clock ?? SystemLearnNowClock()
+        self.flow = LearnNowFlowState(
+            catalog: .empty,
+            snapshot: .empty,
+            now: resolvedClock.now,
+            activeCloudSyncEnabled: activeCloudSyncEnabled,
+            desiredCloudSyncEnabled: LearnNowCloudSyncPreference.isEnabled()
+        )
         self.catalogRepository = catalogRepository ?? BundleCatalogRepository()
-        self.scheduler = scheduler ?? FSRSReviewScheduler()
-        self.clock = clock ?? SystemLearnNowClock()
+        self.scheduler = resolvedScheduler
+        self.clock = resolvedClock
+        self.activeCloudSyncEnabled = activeCloudSyncEnabled
     }
 
     func load(context: ModelContext, force: Bool = false) async {
@@ -48,13 +59,21 @@ final class LearnNowAppStore {
         let repository = SwiftDataLearningRepository(
             context: context,
             clock: clock,
-            scheduler: scheduler
+            scheduler: scheduler,
+            cloudSyncEnabled: activeCloudSyncEnabled
         )
         do {
             try LearnNowCloudKitSchemaInitializer.runIfRequested(context: context, now: clock.now)
             let snapshot = try await repository.loadSnapshot(catalog: loadedCatalog)
             learningRepository = repository
-            flow = LearnNowFlowState(catalog: loadedCatalog, snapshot: snapshot, now: clock.now)
+            flow = LearnNowFlowState(
+                catalog: loadedCatalog,
+                snapshot: snapshot,
+                now: clock.now,
+                activeCloudSyncEnabled: activeCloudSyncEnabled,
+                desiredCloudSyncEnabled: LearnNowCloudSyncPreference.isEnabled()
+            )
+            refreshMemoryTrend()
             prepareReviewPreviews()
             loadState = .ready
         } catch {
@@ -64,6 +83,9 @@ final class LearnNowAppStore {
 
     func selectTab(_ tab: LearnNowTab) {
         router.selectTab(tab, flow: &flow)
+        if tab == .profile {
+            refreshMemoryTrend()
+        }
         prepareReviewPreviews()
     }
 
@@ -171,6 +193,7 @@ final class LearnNowAppStore {
                 rating: rating
             )
             flow.applyReviewOutcome(outcome)
+            refreshMemoryTrend()
             prepareReviewPreviews()
         } catch {
             lastActionError = error.localizedDescription
@@ -180,6 +203,30 @@ final class LearnNowAppStore {
     func setReminderTime(_ date: Date) { flow.setReminderTime(date) }
     func setRemindersEnabled(_ enabled: Bool) { flow.setRemindersEnabled(enabled) }
     func setNightModeEnabled(_ enabled: Bool) { flow.setNightModeEnabled(enabled) }
+
+    func setCloudSyncEnabled(_ enabled: Bool) {
+        LearnNowCloudSyncPreference.setEnabled(enabled)
+        flow.desiredCloudSyncEnabled = enabled
+    }
+
+    func saveProfile(displayName: String, avatarID: String) {
+        guard let repository = learningRepository else { return }
+        let preference = ProfilePreference(displayName: displayName, avatarID: avatarID)
+        do {
+            try repository.saveProfilePreference(preference)
+            flow.profilePreference = preference
+        } catch {
+            lastActionError = error.localizedDescription
+        }
+    }
+
+    func refreshMemoryTrend() {
+        flow.memoryTrend = MemoryTrendCalculator(
+            scheduler: scheduler,
+            clock: clock
+        )
+        .calculate(memories: flow.reviewMemoryByCardID.values)
+    }
 
     private func completeCurrentLesson() {
         guard let repository = learningRepository,
