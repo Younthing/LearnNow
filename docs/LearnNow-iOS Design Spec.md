@@ -1946,7 +1946,7 @@ struct LessonResumeState {
 - 低饱和中性画布 + 单一品牌色低透明静谧光（主题品牌色驱动 Ambient Glow）
 - 原生 `ultraThinMaterial` 毛玻璃表面
 - 表面与文字保持中性、不带可感知色相；颜色只用于表达含义（品牌、状态、内容区分）
-- **五套可切换主题**（清水翡翠 / 暖沙米白 / 墨青素笺 / 石墨素灰 / 柔陶暖灰），每套各自具备日间 / 夜间派生；日夜模式与主题选择独立
+- **七套可切换主题**（清水翡翠 / 暖沙米白 / 墨青素笺 / 石墨素灰 / 柔陶暖灰 / 晴空琉璃 / 青柠晨光），每套各自具备日间 / 夜间派生；日夜模式与主题选择独立
 - 以弹簧为主的物理反馈交互
 - 保留外凸 / 内陷层级关系，但不再依赖传统双向新拟态阴影
 
@@ -1962,7 +1962,7 @@ struct LessonResumeState {
 - 夜间主题目标为 Quiet Dark：近黑中性画布、半透明中性深色玻璃、克制的品牌色点缀
 - 日间主题目标为 Light Glassmorphism：中性画布、低透明白色（或微暖 / 微冷）玻璃、安静低饱和的语义色
 
-五套主题气质：
+七套主题气质：
 
 | ID | 名称 | 气质 | Brand 色相 |
 | --- | --- | --- | --- |
@@ -1971,10 +1971,12 @@ struct LessonResumeState {
 | `ink` | 墨青素笺 | 冷灰画布 + 青墨 | 低饱和青蓝（非系统蓝） |
 | `graphite` | 石墨素灰 | 中性灰石 + 炭黑强调 | 冷灰 |
 | `clay` | 柔陶暖灰 | 暖灰粉画布 + 陶土 | 低饱和陶红（非深红） |
+| `sky` | 晴空琉璃 | 玻璃白画布 + 晴空青 | 明亮清透青蓝（非系统蓝） |
+| `citrus` | 青柠晨光 | 晨光浅画布 + 青柠绿 | 明亮清透黄绿（非雾翡翠） |
 
 ### 6.3 颜色 Token
 
-以下 Token 以 `LearnNowThemeCatalog` → `LearnNowPalette` / `LearnNowSemanticRole` 为事实标准。色板分为三层：中性基底、语义角色、内容色。下表以默认主题 **清水翡翠（`emerald`）** 为基准值；其余四套同结构，数值见 `LearnNowTheme.swift`。
+以下 Token 以 `LearnNowThemeCatalog` → `LearnNowPalette` / `LearnNowSemanticRole` 为事实标准。色板分为三层：中性基底、语义角色、内容色。下表以默认主题 **清水翡翠（`emerald`）** 为基准值；其余六套同结构，数值见 `LearnNowTheme.swift`。
 
 #### 中性基底（文字与表面不带可感知色相）
 
@@ -2019,7 +2021,7 @@ struct LessonResumeState {
 - 不把 `ContentAccent` 当作 App 主题；App 主题只走 `LearnNowTheme`。
 - 不再使用高饱和 `accentBlue` / `accentPink` / `accentPurple` 一类旧 accent 常量作为规范基准。
 - 新增颜色应优先作为动态 Token 接入，不允许只定义单一模式颜色。
-- 实施时以对比度校验结果微调 hex（正文 4.5:1、大字与 UI 部件 3:1），本表为基准值；用 `scripts/tmp_contrast_check.py` 覆盖 5 套 × light/dark。
+- 实施时以对比度校验结果微调 hex（正文 4.5:1、大字与 UI 部件 3:1），本表为基准值；用 `scripts/tmp_contrast_check.py` 覆盖 7 套 × light/dark。
 
 ### 6.4 字体 Token
 

@@ -6,6 +6,8 @@ enum LearnNowTheme: String, CaseIterable, Codable, Identifiable, Sendable {
     case ink
     case graphite
     case clay
+    case sky
+    case citrus
 
     var id: Self { self }
 
@@ -16,6 +18,8 @@ enum LearnNowTheme: String, CaseIterable, Codable, Identifiable, Sendable {
         case .ink: "墨青素笺"
         case .graphite: "石墨素灰"
         case .clay: "柔陶暖灰"
+        case .sky: "晴空琉璃"
+        case .citrus: "青柠晨光"
         }
     }
 }
@@ -89,6 +93,8 @@ enum LearnNowThemeCatalog {
         case .ink: ink
         case .graphite: graphite
         case .clay: clay
+        case .sky: sky
+        case .citrus: citrus
         }
     }
 
@@ -228,5 +234,57 @@ enum LearnNowThemeCatalog {
         accentMint: .init(light: 0x5A6A48, dark: 0xB0BC98),
         accentPurple: .init(light: 0x6A5A5E, dark: 0xC0A8B0),
         accentAmber: .init(light: 0x8C6410, dark: 0xD9BC6E)
+    )
+
+    /// Bright clear sky — cool cyan-blue brand, near-white glass canvas with a whisper of sky tint.
+    private static let sky = LearnNowThemeTokens(
+        base: .init(light: 0xFFFFFF, dark: 0x12181C, lightOpacity: 0.72, darkOpacity: 0.70),
+        surfaceOpaque: .init(light: 0xFBFEFF, dark: 0x12181C),
+        canvas: .init(light: 0xF8FCFE, dark: 0x070B0E),
+        textPrimary: .init(light: 0x1A252C, dark: 0xF2F8FA, lightOpacity: 1.0, darkOpacity: 0.95),
+        textSecondary: .init(light: 0x465660, dark: 0xB8C8D0),
+        textMuted: .init(light: 0x7A8A92, dark: 0x8898A0),
+        shadowDark: .init(light: 0xB0B8BC, dark: 0x000000, lightOpacity: 0.35, darkOpacity: 0.5),
+        shadowLight: .init(light: 0xFFFFFF, dark: 0xFFFFFF, lightOpacity: 0.95, darkOpacity: 0.12),
+        brand: LearnNowRoleTokens(
+            foreground: .init(light: 0x0E7888, dark: 0x7AD4E4),
+            softFill: .init(light: 0xECF9FC, dark: 0x102832),
+            onFill: .init(light: 0xFFFFFF, dark: 0x051014)
+        ),
+        warning: sharedWarning,
+        danger: sharedDanger,
+        brandGradientStart: .init(light: 0x0E7888, dark: 0x54BCD0),
+        brandGradientEnd: .init(light: 0x1898A8, dark: 0x7AD4E4),
+        accentBlue: .init(light: 0x3A7088, dark: 0x92C0D4),
+        accentPink: .init(light: 0xA45868, dark: 0xD8A8B8),
+        accentMint: .init(light: 0x2A7888, dark: 0x78C8D0),
+        accentPurple: .init(light: 0x4A7080, dark: 0x98B8C8),
+        accentAmber: .init(light: 0x8C6410, dark: 0xE0C878)
+    )
+
+    /// Bright citrus-lime — luminous yellow-green brand, sunlit near-white canvas.
+    private static let citrus = LearnNowThemeTokens(
+        base: .init(light: 0xFFFFFF, dark: 0x161812, lightOpacity: 0.72, darkOpacity: 0.70),
+        surfaceOpaque: .init(light: 0xFEFDF8, dark: 0x161812),
+        canvas: .init(light: 0xFAFBF5, dark: 0x090B07),
+        textPrimary: .init(light: 0x222818, dark: 0xF6F8EE, lightOpacity: 1.0, darkOpacity: 0.95),
+        textSecondary: .init(light: 0x525A45, dark: 0xC4CCB4),
+        textMuted: .init(light: 0x828A75, dark: 0x949C88),
+        shadowDark: .init(light: 0xB4B8A8, dark: 0x000000, lightOpacity: 0.35, darkOpacity: 0.5),
+        shadowLight: .init(light: 0xFFFFFF, dark: 0xFFFFFF, lightOpacity: 0.95, darkOpacity: 0.12),
+        brand: LearnNowRoleTokens(
+            foreground: .init(light: 0x4C7812, dark: 0xC4DC70),
+            softFill: .init(light: 0xF5FADF, dark: 0x1E2214),
+            onFill: .init(light: 0xFFFFFF, dark: 0x0E1206)
+        ),
+        warning: sharedWarning,
+        danger: sharedDanger,
+        brandGradientStart: .init(light: 0x4C7812, dark: 0xA4CC48),
+        brandGradientEnd: .init(light: 0x5E9018, dark: 0xC4DC70),
+        accentBlue: .init(light: 0x4A7080, dark: 0xA0B8C8),
+        accentPink: .init(light: 0xA45858, dark: 0xD8A8A8),
+        accentMint: .init(light: 0x4A7818, dark: 0xA8D068),
+        accentPurple: .init(light: 0x5A7860, dark: 0xA8C8B0),
+        accentAmber: .init(light: 0x8C6410, dark: 0xE0C878)
     )
 }

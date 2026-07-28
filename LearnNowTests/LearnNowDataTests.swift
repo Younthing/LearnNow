@@ -515,11 +515,14 @@ struct LearnNowDataTests {
 
     @Test
     func themeCatalogProvidesDistinctBrandForegroundsForAllThemes() {
+        #expect(LearnNowTheme.allCases.count == 7)
         let brands = LearnNowTheme.allCases.map {
             LearnNowThemeCatalog.tokens(for: $0).brand.foreground.light
         }
         #expect(Set(brands).count == LearnNowTheme.allCases.count)
         #expect(LearnNowThemeCatalog.tokens(for: .emerald).brand.foreground.light == 0x0B7A5C)
+        #expect(LearnNowThemeCatalog.tokens(for: .sky).brand.foreground.light == 0x0E7888)
+        #expect(LearnNowThemeCatalog.tokens(for: .citrus).brand.foreground.light == 0x4C7812)
     }
 
     @Test
@@ -530,6 +533,8 @@ struct LearnNowDataTests {
             .ink: "墨青素笺",
             .graphite: "石墨素灰",
             .clay: "柔陶暖灰",
+            .sky: "晴空琉璃",
+            .citrus: "青柠晨光",
         ]
         for theme in LearnNowTheme.allCases {
             #expect(theme.displayName == expected[theme])
