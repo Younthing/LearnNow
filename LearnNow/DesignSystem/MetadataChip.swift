@@ -12,6 +12,7 @@ struct MetadataChip: View {
     var systemImage: String? = nil
     var prominence: MetadataChipProminence = .accented
     var isExpanded = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var accentColor: Color {
         LearnNowPalette.color(for: accent)
@@ -52,14 +53,15 @@ struct MetadataChip: View {
         HStack(spacing: 6) {
             if let systemImage {
                 Image(systemName: systemImage)
-                    .font(.system(size: 11, weight: .black))
+                    .font(.caption.weight(.bold))
             }
 
             Text(text)
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
+                .font(LearnNowTypography.label)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .font(LearnNowTypography.label)
         .foregroundStyle(foregroundColor)
         .padding(.horizontal, 11)
         .padding(.vertical, 6)

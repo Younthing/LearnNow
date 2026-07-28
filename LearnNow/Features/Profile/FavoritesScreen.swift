@@ -7,33 +7,40 @@ struct FavoritesScreen: View {
     let onStartReview: () -> Void
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Text(model.countText)
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textSecondary)
+        GeometryReader { geometry in
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text(model.countText)
+                            .font(LearnNowTypography.body)
+                            .foregroundStyle(LearnNowPalette.textSecondary)
 
-                    Spacer()
-                }
+                        Spacer()
+                    }
 
-                if model.items.isEmpty {
-                    FavoritesEmptyState()
-                } else {
-                    LazyVStack(spacing: 12) {
-                        ForEach(model.items) { item in
-                            FavoriteCardRow(
-                                item: item,
-                                onToggleFavorite: { onToggleFavorite(item.id) },
-                                onToggleMastered: { onToggleMastered(item.id) }
-                            )
+                    if model.items.isEmpty {
+                        FavoritesEmptyState()
+                    } else {
+                        LazyVStack(spacing: 12) {
+                            ForEach(model.items) { item in
+                                FavoriteCardRow(
+                                    item: item,
+                                    onToggleFavorite: { onToggleFavorite(item.id) },
+                                    onToggleMastered: { onToggleMastered(item.id) }
+                                )
+                            }
                         }
                     }
                 }
+                .padding(
+                    .horizontal,
+                    LearnNowSpacing.screenHorizontal(for: geometry.size.width)
+                )
+                .padding(.top, 16)
+                .padding(.bottom, 20)
+                .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
+                .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, LearnNowSpacing.screenHorizontal)
-            .padding(.top, 16)
-            .padding(.bottom, 20)
         }
         .background(LearnNowPalette.canvas.ignoresSafeArea())
         .navigationTitle(model.title)
@@ -50,6 +57,7 @@ struct FavoritesScreen: View {
                 .padding(.horizontal, LearnNowSpacing.screenHorizontal)
                 .padding(.vertical, 10)
                 .background(.ultraThinMaterial)
+                .padding(.bottom, LearnNowSpacing.floatingTabBarClearance)
                 .accessibilityIdentifier("favorites.startReview")
             }
         }
@@ -62,7 +70,7 @@ private struct FavoritesEmptyState: View {
         SoftCard(contentPadding: 24) {
             VStack(alignment: .leading, spacing: 12) {
                 Image(systemName: "bookmark")
-                    .font(.system(size: 30, weight: .bold))
+                    .font(.title.weight(.bold))
                     .foregroundStyle(LearnNowPalette.color(for: .pink))
 
                 Text("还没有收藏卡片")
@@ -82,6 +90,7 @@ private struct FavoriteCardRow: View {
     let item: FavoritesScreenModel.Item
     let onToggleFavorite: () -> Void
     let onToggleMastered: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SoftCard(contentPadding: 16) {
@@ -94,7 +103,7 @@ private struct FavoriteCardRow: View {
                             .modifier(InsetSurface(cornerRadius: 21))
 
                         Image(systemName: "bookmark.fill")
-                            .font(.system(size: 15, weight: .black))
+                            .font(.subheadline.weight(.bold))
                             .foregroundStyle(LearnNowPalette.color(for: item.accent))
                     }
 
@@ -107,56 +116,85 @@ private struct FavoriteCardRow: View {
                         Text(item.subtitle)
                             .font(LearnNowTypography.screenSubtitle)
                             .foregroundStyle(LearnNowPalette.textMuted)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Spacer(minLength: 0)
                 }
 
-                HStack(spacing: 8) {
-                    MetadataChip(text: item.topic, accent: item.accent, prominence: .subtle)
-                    MetadataChip(
-                        text: item.dueText,
-                        accent: .blue,
-                        prominence: .subtle
-                    )
-
-                    Spacer()
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 8) {
+                        topicChip
+                        dueChip
+                    }
+                } else {
+                    HStack(spacing: 8) {
+                        topicChip
+                        dueChip
+                        Spacer()
+                    }
                 }
 
-                HStack(spacing: 10) {
-                    Button(action: onToggleMastered) {
-                        Label(
-                            item.isMastered ? "已掌握" : "标为掌握",
-                            systemImage: item.isMastered ? "checkmark.seal.fill" : "checkmark.seal"
-                        )
-                        .font(LearnNowTypography.label)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 44)
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(spacing: 10) {
+                        masteryButton
+                        removeButton
                     }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(
-                        item.isMastered
-                            ? LearnNowPalette.color(for: .mint)
-                            : LearnNowPalette.textSecondary
-                    )
-                    .background(LearnNowPalette.base, in: Capsule())
-                    .modifier(InsetSurface(cornerRadius: 22))
-                    .accessibilityIdentifier("favorites.mastered.\(item.id)")
-
-                    Button(action: onToggleFavorite) {
-                        Label("取消收藏", systemImage: "bookmark.slash")
-                            .font(LearnNowTypography.label)
-                            .frame(maxWidth: .infinity)
-                            .frame(minHeight: 44)
+                } else {
+                    HStack(spacing: 10) {
+                        masteryButton
+                        removeButton
                     }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(LearnNowPalette.color(for: .pink))
-                    .background(LearnNowPalette.base, in: Capsule())
-                    .modifier(InsetSurface(cornerRadius: 22))
-                    .accessibilityIdentifier("favorites.remove.\(item.id)")
                 }
             }
         }
+    }
+
+    private var topicChip: some View {
+        MetadataChip(text: item.topic, accent: item.accent, prominence: .subtle)
+    }
+
+    private var dueChip: some View {
+        MetadataChip(
+            text: item.dueText,
+            accent: .blue,
+            prominence: .subtle
+        )
+    }
+
+    private var masteryButton: some View {
+        Button(action: onToggleMastered) {
+            Label(
+                item.isMastered ? "已掌握" : "标为掌握",
+                systemImage: item.isMastered ? "checkmark.seal.fill" : "checkmark.seal"
+            )
+            .font(LearnNowTypography.label)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 44)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(
+            item.isMastered
+                ? LearnNowPalette.color(for: .mint)
+                : LearnNowPalette.textSecondary
+        )
+        .background(LearnNowPalette.base, in: Capsule())
+        .modifier(InsetSurface(cornerRadius: 22))
+        .accessibilityIdentifier("favorites.mastered.\(item.id)")
+    }
+
+    private var removeButton: some View {
+        Button(action: onToggleFavorite) {
+            Label("取消收藏", systemImage: "bookmark.slash")
+                .font(LearnNowTypography.label)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 44)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(LearnNowPalette.color(for: .pink))
+        .background(LearnNowPalette.base, in: Capsule())
+        .modifier(InsetSurface(cornerRadius: 22))
+        .accessibilityIdentifier("favorites.remove.\(item.id)")
     }
 }
 

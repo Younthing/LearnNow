@@ -11,6 +11,7 @@ struct CompletionScreen: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.learnNowAnimationsEnabled) private var animationsEnabled
     @Environment(\.learnNowReduceMotionOverride) private var reduceMotionOverride
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State private var isHeroPresented = false
     @State private var isSymbolPresented = false
@@ -29,7 +30,7 @@ struct CompletionScreen: View {
             .frame(maxWidth: .infinity)
 
             Text(model.title)
-                .font(.system(size: 32, weight: .black, design: .rounded))
+                .font(LearnNowTypography.screenTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
                 .frame(maxWidth: .infinity)
                 .completionReveal(
@@ -39,24 +40,23 @@ struct CompletionScreen: View {
                 .accessibilityAddTraits(.isHeader)
 
             SoftCard {
-                HStack {
-                    CompletionStat(
-                        icon: "flame.fill",
-                        value: "\(model.streakDays)",
-                        title: "天连胜保持",
-                        accent: .pink
-                    )
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(spacing: 16) {
+                        streakStat
+                        Divider()
+                            .overlay(LearnNowPalette.textMuted.opacity(0.25))
+                        experienceStat
+                    }
+                } else {
+                    HStack {
+                        streakStat
 
-                    Divider()
-                        .frame(height: 48)
-                        .overlay(LearnNowPalette.textMuted.opacity(0.25))
+                        Divider()
+                            .frame(height: 48)
+                            .overlay(LearnNowPalette.textMuted.opacity(0.25))
 
-                    CompletionStat(
-                        icon: "bolt.fill",
-                        value: model.gainedXPText,
-                        title: "XP 经验值",
-                        accent: .blue
-                    )
+                        experienceStat
+                    }
                 }
             }
             .completionReveal(
@@ -67,7 +67,7 @@ struct CompletionScreen: View {
             InsetCard {
                 VStack(alignment: .leading, spacing: 16) {
                     Label("已提炼 \(model.reviewCount) 张记忆卡片", systemImage: "square.stack.3d.up")
-                        .font(.system(size: 16, weight: .heavy, design: .rounded))
+                        .font(LearnNowTypography.cardTitle)
                         .foregroundStyle(LearnNowPalette.textPrimary)
 
                     FlowLayout(items: model.reviewTags) { tag in
@@ -108,6 +108,24 @@ struct CompletionScreen: View {
         .sensoryFeedback(.success, trigger: isActive) { oldValue, newValue in
             animationsEnabled && !oldValue && newValue
         }
+    }
+
+    private var streakStat: some View {
+        CompletionStat(
+            icon: "flame.fill",
+            value: "\(model.streakDays)",
+            title: "天连胜保持",
+            accent: .pink
+        )
+    }
+
+    private var experienceStat: some View {
+        CompletionStat(
+            icon: "bolt.fill",
+            value: model.gainedXPText,
+            title: "XP 经验值",
+            accent: .blue
+        )
     }
 
     private var usesFullMotion: Bool {
@@ -235,7 +253,7 @@ private struct CompletionHero: View {
 
     private var completionSymbol: some View {
         Image(systemName: "checkmark.seal.fill")
-            .font(.system(size: 58, weight: .semibold))
+            .font(.largeTitle.weight(.semibold))
             .symbolRenderingMode(.hierarchical)
             .symbolColorRenderingMode(.gradient)
             .foregroundStyle(LearnNowPalette.color(for: .mint))
@@ -270,10 +288,10 @@ private struct CompletionActionGroup: View {
                         Text("去复习看板看看")
 
                         Image(systemName: "chevron.forward")
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.caption.weight(.bold))
                             .accessibilityHidden(true)
                     }
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .font(LearnNowTypography.label)
                     .foregroundStyle(LearnNowPalette.textMuted)
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity)
@@ -298,24 +316,17 @@ private struct CompletionActionGroup: View {
                 .accessibilityIdentifier("completion.cta.finish")
             }
         } else {
-            GeometryReader { proxy in
-                let spacing: CGFloat = 12
-                let primaryWidth = max((proxy.size.width - spacing) * 0.66, 0)
-                let secondaryWidth = max((proxy.size.width - spacing) * 0.34, 0)
+            HStack(spacing: 12) {
+                nextLessonButton(nextLessonTitle: nextLessonTitle)
+                    .frame(maxWidth: .infinity)
 
-                HStack(spacing: spacing) {
-                    nextLessonButton(nextLessonTitle: nextLessonTitle)
-                        .frame(width: primaryWidth)
-
-                    CompletionSecondaryCTAButton(
-                        title: "完成学习",
-                        action: onFinish
-                    )
-                    .frame(width: secondaryWidth)
-                    .accessibilityIdentifier("completion.cta.finish")
-                }
+                CompletionSecondaryCTAButton(
+                    title: "完成学习",
+                    action: onFinish
+                )
+                .frame(minWidth: 104, maxWidth: 140)
+                .accessibilityIdentifier("completion.cta.finish")
             }
-            .frame(height: 74)
         }
     }
 
@@ -341,7 +352,7 @@ private struct CompletionStat: View {
                 Image(systemName: icon)
                 Text(value)
             }
-            .font(.system(size: 26, weight: .black, design: .rounded))
+            .font(LearnNowTypography.metricValue)
             .foregroundStyle(LearnNowPalette.color(for: accent))
 
             Text(title)
@@ -364,13 +375,13 @@ private struct CompletionPrimaryCTAButton: View {
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(title)
-                        .font(.system(.headline, design: .rounded, weight: .heavy))
+                        .font(LearnNowTypography.cardTitle)
 
                     Text(subtitle)
-                        .font(.system(.subheadline, design: .rounded, weight: .bold))
+                        .font(LearnNowTypography.screenSubtitle)
                         .foregroundStyle(LearnNowPalette.textMuted)
-                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
-                        .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.85)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Spacer(minLength: 0)
@@ -380,7 +391,7 @@ private struct CompletionPrimaryCTAButton: View {
                         .fill(LearnNowPalette.color(for: .blue).opacity(0.12))
 
                     Image(systemName: "chevron.forward")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.subheadline.weight(.bold))
                 }
                 .frame(width: 32, height: 32)
                 .overlay {
@@ -412,7 +423,7 @@ private struct CompletionSecondaryCTAButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(.subheadline, design: .rounded, weight: .heavy))
+                .font(LearnNowTypography.label)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(LearnNowPalette.textPrimary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -433,7 +444,7 @@ private struct CompletionFinishCTAButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(.headline, design: .rounded, weight: .heavy))
+                .font(LearnNowTypography.cardTitle)
                 .foregroundStyle(
                     isPrimary
                         ? LearnNowPalette.color(for: .blue)

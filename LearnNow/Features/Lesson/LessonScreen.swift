@@ -15,23 +15,34 @@ struct LessonScreen: View {
     }
 
     var body: some View {
-        VStack(spacing: 18) {
-            LessonTopBar(title: model.title, onBack: onBack)
+        GeometryReader { geometry in
+            let horizontalPadding = LearnNowSpacing.screenHorizontal(for: geometry.size.width)
 
-            LessonSegments(count: model.pageCount, currentIndex: model.currentPageIndex)
-                .padding(.horizontal, LearnNowSpacing.screenHorizontal)
+            VStack(spacing: 18) {
+                LessonTopBar(
+                    title: model.title,
+                    horizontalPadding: horizontalPadding,
+                    onBack: onBack
+                )
 
-            TabView(selection: selectionBinding) {
-                ForEach(Array(model.pages.enumerated()), id: \.element.id) { index, page in
-                    LessonPageView(
-                        page: page,
-                        onAnswer: onAnswer,
-                        onCallToAction: onCallToAction
-                    )
-                    .tag(index)
+                LessonSegments(count: model.pageCount, currentIndex: model.currentPageIndex)
+                    .padding(.horizontal, horizontalPadding)
+                    .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
+                    .frame(maxWidth: .infinity)
+
+                TabView(selection: selectionBinding) {
+                    ForEach(Array(model.pages.enumerated()), id: \.element.id) { index, page in
+                        LessonPageView(
+                            page: page,
+                            horizontalPadding: horizontalPadding,
+                            onAnswer: onAnswer,
+                            onCallToAction: onCallToAction
+                        )
+                        .tag(index)
+                    }
                 }
+                .learnNowLessonTabStyle()
             }
-            .learnNowLessonTabStyle()
         }
         .accessibilityIdentifier("screen.lesson")
     }
@@ -50,6 +61,7 @@ private extension View {
 
 private struct LessonTopBar: View {
     let title: String
+    let horizontalPadding: CGFloat
     let onBack: () -> Void
 
     var body: some View {
@@ -59,8 +71,9 @@ private struct LessonTopBar: View {
             Spacer()
 
             Text(title)
-                .font(.system(size: 18, weight: .heavy, design: .rounded))
+                .font(LearnNowTypography.cardTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
+                .multilineTextAlignment(.center)
                 .accessibilityIdentifier("lesson.title")
 
             Spacer()
@@ -68,8 +81,10 @@ private struct LessonTopBar: View {
             Color.clear
                 .frame(width: 44, height: 44)
         }
-        .padding(.horizontal, LearnNowSpacing.screenHorizontal)
+        .padding(.horizontal, horizontalPadding)
         .padding(.top, LearnNowSpacing.screenTop)
+        .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -103,6 +118,7 @@ private struct LessonSegments: View {
 
 private struct LessonPageView: View {
     let page: LessonScreenModel.Page
+    let horizontalPadding: CGFloat
     let onAnswer: (String) -> Void
     let onCallToAction: (LearnNowLessonCallToAction) -> Void
 
@@ -117,9 +133,11 @@ private struct LessonPageView: View {
                     onCallToAction: onCallToAction
                 )
             }
-            .padding(.horizontal, LearnNowSpacing.screenHorizontal)
+            .padding(.horizontal, horizontalPadding)
             .padding(.top, 12)
             .padding(.bottom, 30)
+            .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
+            .frame(maxWidth: .infinity)
         }
     }
 }
@@ -132,7 +150,7 @@ private struct LessonHeroSection: View {
             MetadataChip(text: page.badge, accent: page.accent)
 
             Text(page.title)
-                .font(.system(size: 30, weight: .black, design: .rounded))
+                .font(LearnNowTypography.sheetTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
                 .multilineTextAlignment(.center)
         }
@@ -146,7 +164,7 @@ private struct LessonExplanationSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(page.summary)
-                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .font(LearnNowTypography.body)
                 .foregroundStyle(LearnNowPalette.textSecondary)
                 .lineSpacing(6)
 
@@ -167,11 +185,11 @@ private struct LessonPracticeSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Label("随堂练习", systemImage: "square.and.pencil")
-                .font(.system(size: 16, weight: .heavy, design: .rounded))
+                .font(LearnNowTypography.sectionTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
 
             Text(page.questionPrompt)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(LearnNowTypography.cardTitle)
                 .foregroundStyle(LearnNowPalette.textSecondary)
                 .lineSpacing(4)
 
@@ -203,17 +221,19 @@ private struct LessonOptionButton: View {
     let option: LessonScreenModel.Option
     let action: () -> Void
 
+    @ScaledMetric(relativeTo: .subheadline) private var badgeSize: CGFloat = 34
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
-                InsetCircle(size: 34) {
+                InsetCircle(size: badgeSize) {
                     Text(option.badge)
-                        .font(.system(size: 14, weight: .black, design: .rounded))
+                        .font(LearnNowTypography.label)
                         .foregroundStyle(LearnNowPalette.textMuted)
                 }
 
                 Text(option.title)
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .font(LearnNowTypography.label)
                     .foregroundStyle(labelColor)
                     .multilineTextAlignment(.leading)
 
@@ -275,11 +295,11 @@ private struct FeedbackCard: View {
         InsetCard(contentPadding: 16) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(feedback.title)
-                    .font(.system(size: 15, weight: .heavy, design: .rounded))
+                    .font(LearnNowTypography.cardTitle)
                     .foregroundStyle(LearnNowPalette.color(for: feedback.accent))
 
                 Text(feedback.body)
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .font(LearnNowTypography.body)
                     .foregroundStyle(LearnNowPalette.textSecondary)
                     .lineSpacing(4)
             }
@@ -297,12 +317,12 @@ private struct CalloutCard: View {
                     Image(systemName: callout.accent == .amber ? "exclamationmark.triangle.fill" : "lightbulb.fill")
 
                     Text(callout.title)
-                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                        .font(LearnNowTypography.label)
                 }
                 .foregroundStyle(LearnNowPalette.color(for: callout.accent))
 
                 Text(callout.message)
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .font(LearnNowTypography.body)
                     .foregroundStyle(LearnNowPalette.textSecondary)
                     .lineSpacing(4)
             }
@@ -316,7 +336,7 @@ private struct CodeSampleCard: View {
     var body: some View {
         InsetCard(contentPadding: 18) {
             Text(code)
-                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .font(LearnNowTypography.body.monospaced())
                 .foregroundStyle(LearnNowPalette.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

@@ -198,6 +198,7 @@ struct ScreenHeader<Trailing: View>: View {
     var subtitle: String?
     var centered = false
     @ViewBuilder var trailing: () -> Trailing
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     init(
         title: String,
@@ -212,22 +213,39 @@ struct ScreenHeader<Trailing: View>: View {
     }
 
     var body: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: centered ? .center : .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 30, weight: .black, design: .rounded))
-                    .foregroundStyle(LearnNowPalette.textPrimary)
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textMuted)
+        Group {
+            if centered {
+                titleBlock
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 12) {
+                    titleBlock
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    trailing()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else {
+                HStack(alignment: .center, spacing: 12) {
+                    titleBlock
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    trailing()
                 }
             }
-            .frame(maxWidth: .infinity, alignment: centered ? .center : .leading)
+        }
+    }
 
-            if !centered {
-                trailing()
+    private var titleBlock: some View {
+        VStack(alignment: centered ? .center : .leading, spacing: 4) {
+            Text(title)
+                .font(LearnNowTypography.screenTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let subtitle {
+                Text(subtitle)
+                    .font(LearnNowTypography.screenSubtitle)
+                    .foregroundStyle(LearnNowPalette.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -257,7 +275,7 @@ struct FloatingTabBar: View {
                         }
 
                         Image(systemName: tab.systemImage)
-                            .font(.system(size: 21, weight: .bold))
+                            .font(.title3.weight(.bold))
                             .foregroundStyle(
                                 tab == selectedTab
                                     ? LearnNowPalette.color(for: .blue)
@@ -348,7 +366,7 @@ struct CircleIconButton: View {
                 .modifier(OuterSurface(cornerRadius: size / 2))
                 .overlay {
                     Image(systemName: systemImage)
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.headline.weight(.bold))
                         .foregroundStyle(LearnNowPalette.color(for: accent))
                 }
         }
@@ -437,11 +455,13 @@ struct FullWidthButton: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Text(title)
-                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .font(LearnNowTypography.label)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 if let systemImage {
                     Image(systemName: systemImage)
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.subheadline.weight(.bold))
                 }
             }
             .foregroundStyle(accentColor)

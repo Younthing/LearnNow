@@ -31,13 +31,13 @@ private struct RouteCard: View {
                 HStack(alignment: .top, spacing: 16) {
                     InsetCircle(size: 52) {
                         Image(systemName: iconName)
-                            .font(.system(size: 22, weight: .bold))
+                            .font(.title2.weight(.bold))
                             .foregroundStyle(LearnNowPalette.color(for: route.accent))
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
                         Text(route.title)
-                            .font(.system(size: 20, weight: .heavy, design: .rounded))
+                            .font(LearnNowTypography.cardHeadline)
                             .foregroundStyle(LearnNowPalette.textPrimary)
                             .multilineTextAlignment(.leading)
 
@@ -46,13 +46,19 @@ private struct RouteCard: View {
                             .foregroundStyle(LearnNowPalette.textMuted)
                             .multilineTextAlignment(.leading)
 
-                        HStack {
-                            Text(route.progress == 0 ? "未开始" : "已完成 \(Int(route.progress * 100))%")
+                        ViewThatFits(in: .horizontal) {
+                            HStack {
+                                progressText
 
-                            Spacer()
+                                Spacer()
 
-                            Text(route.cta)
-                                .foregroundStyle(LearnNowPalette.color(for: route.accent))
+                                callToActionText
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                progressText
+                                callToActionText
+                            }
                         }
                         .font(LearnNowTypography.label)
                         .foregroundStyle(LearnNowPalette.textMuted)
@@ -65,6 +71,15 @@ private struct RouteCard: View {
         }
         .buttonStyle(.plain)
         .disabled(!route.interactive)
+    }
+
+    private var progressText: some View {
+        Text(route.progress == 0 ? "未开始" : "已完成 \(Int(route.progress * 100))%")
+    }
+
+    private var callToActionText: some View {
+        Text(route.cta)
+            .foregroundStyle(LearnNowPalette.color(for: route.accent))
     }
 
     private var iconName: String {

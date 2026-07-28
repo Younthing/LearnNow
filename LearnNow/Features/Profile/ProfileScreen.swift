@@ -15,7 +15,7 @@ struct ProfileScreen: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: spacing(for: geometry.size.height)) {
                     Text(model.title)
-                        .font(.system(.largeTitle, design: .rounded, weight: .black))
+                        .font(LearnNowTypography.screenTitle)
                         .foregroundStyle(LearnNowPalette.textPrimary)
                         .accessibilityAddTraits(.isHeader)
 
@@ -25,7 +25,7 @@ struct ProfileScreen: View {
                         overview: model.overview,
                         memoryTrend: model.memoryTrend,
                         selection: $insightMode,
-                        usesFlexibleHeight: dynamicTypeSize.isAccessibilitySize
+                        usesFlexibleHeight: usesFlexibleInsightHeight
                     )
 
                     ProfileShortcutCard(
@@ -33,10 +33,23 @@ struct ProfileScreen: View {
                         onSelect: handleShortcut
                     )
                 }
-                .padding(.horizontal, 20)
+                .padding(
+                    .horizontal,
+                    LearnNowSpacing.screenHorizontal(for: geometry.size.width)
+                )
                 .padding(.top, 12)
-                .padding(.bottom, 12)
-                .frame(minHeight: geometry.size.height, alignment: .top)
+                .padding(
+                    .bottom,
+                    usesFlexibleInsightHeight
+                        ? LearnNowSpacing.floatingTabBarClearance
+                        : 12
+                )
+                .frame(
+                    maxWidth: LearnNowSpacing.maximumContentWidth,
+                    minHeight: geometry.size.height,
+                    alignment: .top
+                )
+                .frame(maxWidth: .infinity)
             }
         }
         .accessibilityIdentifier("screen.profile")
@@ -44,6 +57,15 @@ struct ProfileScreen: View {
 
     private func spacing(for height: CGFloat) -> CGFloat {
         height < 700 ? 10 : 12
+    }
+
+    private var usesFlexibleInsightHeight: Bool {
+        switch dynamicTypeSize {
+        case .xSmall, .small, .medium, .large:
+            false
+        default:
+            true
+        }
     }
 
     private func handleShortcut(_ shortcut: ProfileShortcutKind) {
@@ -61,6 +83,7 @@ struct ProfileScreen: View {
 private struct ProfileIdentityCard: View {
     let identity: ProfileScreenModel.Identity
     let onEdit: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var avatar: AvatarOption {
         AvatarOption.option(for: identity.avatarID)
@@ -83,7 +106,7 @@ private struct ProfileIdentityCard: View {
                             .softOuter(radius: 8, x: 3, y: 5)
 
                         Image(systemName: "pencil")
-                            .font(.system(size: 9, weight: .black))
+                            .font(.caption2.weight(.bold))
                             .foregroundStyle(.white)
                             .frame(width: 22, height: 22)
                             .background(LearnNowPalette.color(for: .blue), in: Circle())
@@ -92,21 +115,22 @@ private struct ProfileIdentityCard: View {
 
                     VStack(alignment: .leading, spacing: 6) {
                         Text(identity.displayName)
-                            .font(.system(.title2, design: .rounded, weight: .heavy))
+                            .font(LearnNowTypography.sheetTitle)
                             .foregroundStyle(LearnNowPalette.textPrimary)
-                            .lineLimit(1)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                            .fixedSize(horizontal: false, vertical: true)
 
                         Text(identity.activityText)
-                            .font(.body)
+                            .font(LearnNowTypography.body)
                             .foregroundStyle(LearnNowPalette.textSecondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.82)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Spacer(minLength: 0)
 
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .black))
+                        .font(.subheadline.weight(.bold))
                         .foregroundStyle(LearnNowPalette.textMuted)
                         .accessibilityHidden(true)
                 }
@@ -141,7 +165,7 @@ private struct ProfileInsightCard: View {
                             .transition(.opacity)
                     }
                 }
-                .frame(height: usesFlexibleHeight ? nil : 150, alignment: .top)
+                .frame(height: usesFlexibleHeight ? nil : 160, alignment: .top)
                 .animation(.easeInOut(duration: 0.2), value: selection)
             }
         }
@@ -168,7 +192,7 @@ private struct ProfileInsightCard: View {
 
     private var insightTitle: some View {
         Text("学习洞察")
-            .font(.system(.headline, design: .rounded, weight: .heavy))
+            .font(LearnNowTypography.cardTitle)
             .foregroundStyle(LearnNowPalette.textPrimary)
     }
 
@@ -185,43 +209,63 @@ private struct ProfileInsightCard: View {
 
 private struct ProfileOverviewContent: View {
     let overview: ProfileScreenModel.Overview
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var metricColumns: [GridItem] {
+        Array(
+            repeating: GridItem(.flexible(), spacing: 8),
+            count: dynamicTypeSize.isAccessibilitySize ? 1 : 3
+        )
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
+            LazyVGrid(columns: metricColumns, spacing: 8) {
                 ForEach(overview.metrics) { metric in
                     InsetCard(contentPadding: 10) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(metric.title)
-                                .font(.system(.caption2, design: .rounded, weight: .bold))
+                                .font(LearnNowTypography.caption)
                                 .foregroundStyle(LearnNowPalette.textMuted)
-                                .lineLimit(1)
+                                .fixedSize(horizontal: false, vertical: true)
 
                             Text(metric.value)
-                                .font(.system(.title3, design: .rounded, weight: .black))
+                                .font(LearnNowTypography.sectionTitle)
                                 .foregroundStyle(LearnNowPalette.color(for: metric.accent))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.72)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
             }
 
-            HStack {
-                Text("近四周学习")
-                    .font(.caption)
-                    .foregroundStyle(LearnNowPalette.textSecondary)
-
-                Spacer()
-
-                Text("越深代表学习越多")
-                    .font(.system(.caption2, design: .rounded, weight: .bold))
-                    .foregroundStyle(LearnNowPalette.textMuted)
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    heatmapTitle
+                    heatmapLegend
+                }
+            } else {
+                HStack {
+                    heatmapTitle
+                    Spacer()
+                    heatmapLegend
+                }
             }
 
             CompactHeatmap(cells: overview.heatmap)
         }
+    }
+
+    private var heatmapTitle: some View {
+        Text("近四周学习")
+            .font(LearnNowTypography.caption)
+            .foregroundStyle(LearnNowPalette.textSecondary)
+    }
+
+    private var heatmapLegend: some View {
+        Text("越深代表学习越多")
+            .font(LearnNowTypography.caption)
+            .foregroundStyle(LearnNowPalette.textMuted)
     }
 }
 
@@ -259,36 +303,37 @@ private struct CompactHeatmap: View {
 
 private struct ProfileMemoryTrendContent: View {
     let memoryTrend: ProfileScreenModel.MemoryTrend
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         if memoryTrend.isEmpty {
             InsetCard(contentPadding: 16) {
-                HStack(spacing: 14) {
-                    Image(systemName: "brain.head.profile")
-                        .font(.system(size: 25, weight: .bold))
-                        .foregroundStyle(LearnNowPalette.color(for: .blue))
-
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("完成首次复习后生成趋势")
-                            .font(.system(.headline, design: .rounded, weight: .heavy))
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-
-                        Text("LearnNow 会依据 FSRS 预测未来 7 天的平均记忆保持率。")
-                            .font(.body)
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                            .fixedSize(horizontal: false, vertical: true)
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 12) {
+                        memoryEmptyIcon
+                        memoryEmptyCopy
+                    }
+                } else {
+                    HStack(spacing: 14) {
+                        memoryEmptyIcon
+                        memoryEmptyCopy
                     }
                 }
             }
             .accessibilityIdentifier("profile.memory.empty")
         } else {
             VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    MemoryTrendValue(title: "当前保持率", value: memoryTrend.currentText ?? "—")
-
-                    Spacer()
-
-                    MemoryTrendValue(title: "7 天预测", value: memoryTrend.seventhDayText ?? "—")
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 8) {
+                        currentValue
+                        predictedValue
+                    }
+                } else {
+                    HStack {
+                        currentValue
+                        Spacer()
+                        predictedValue
+                    }
                 }
 
                 MemoryTrendChart(values: memoryTrend.values)
@@ -300,6 +345,33 @@ private struct ProfileMemoryTrendContent: View {
             }
         }
     }
+
+    private var memoryEmptyIcon: some View {
+        Image(systemName: "brain.head.profile")
+            .font(.title2.weight(.bold))
+            .foregroundStyle(LearnNowPalette.color(for: .blue))
+    }
+
+    private var memoryEmptyCopy: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("完成首次复习后生成趋势")
+                .font(LearnNowTypography.cardTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
+
+            Text("LearnNow 会依据 FSRS 预测未来 7 天的平均记忆保持率。")
+                .font(LearnNowTypography.body)
+                .foregroundStyle(LearnNowPalette.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var currentValue: some View {
+        MemoryTrendValue(title: "当前保持率", value: memoryTrend.currentText ?? "—")
+    }
+
+    private var predictedValue: some View {
+        MemoryTrendValue(title: "7 天预测", value: memoryTrend.seventhDayText ?? "—")
+    }
 }
 
 private struct MemoryTrendValue: View {
@@ -309,11 +381,11 @@ private struct MemoryTrendValue: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.system(.caption2, design: .rounded, weight: .bold))
+                .font(LearnNowTypography.caption)
                 .foregroundStyle(LearnNowPalette.textMuted)
 
             Text(value)
-                .font(.system(.title2, design: .rounded, weight: .black))
+                .font(LearnNowTypography.sectionTitle)
                 .foregroundStyle(LearnNowPalette.color(for: .blue))
         }
     }
@@ -345,7 +417,7 @@ private struct MemoryTrendChart: View {
                     )
 
                 Text("目标 90%")
-                    .font(.system(.caption2, design: .rounded, weight: .bold))
+                    .font(LearnNowTypography.caption)
                     .foregroundStyle(LearnNowPalette.color(for: .mint))
                     .padding(.horizontal, 5)
                     .background(LearnNowPalette.base.opacity(0.86), in: Capsule())
@@ -392,6 +464,7 @@ private struct ProfileChartAreaShape: Shape {
 private struct ProfileShortcutCard: View {
     let shortcuts: [ProfileScreenModel.Shortcut]
     let onSelect: (ProfileShortcutKind) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SoftCard(contentPadding: 8) {
@@ -408,25 +481,26 @@ private struct ProfileShortcutCard: View {
                                     .modifier(InsetSurface(cornerRadius: 19))
 
                                 Image(systemName: shortcut.systemImage)
-                                    .font(.system(size: 14, weight: .black))
+                                    .font(.subheadline.weight(.bold))
                                     .foregroundStyle(LearnNowPalette.color(for: shortcut.accent))
                             }
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(shortcut.title)
-                                    .font(.system(.body, design: .rounded, weight: .heavy))
+                                    .font(LearnNowTypography.cardTitle)
                                     .foregroundStyle(LearnNowPalette.textPrimary)
 
                                 Text(shortcut.subtitle)
-                                    .font(.caption)
+                                    .font(LearnNowTypography.caption)
                                     .foregroundStyle(LearnNowPalette.textMuted)
-                                    .lineLimit(1)
+                                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
 
                             Spacer()
 
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .black))
+                                .font(.caption.weight(.bold))
                                 .foregroundStyle(LearnNowPalette.textMuted)
                         }
                         .frame(minHeight: 48)

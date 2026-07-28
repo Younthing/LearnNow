@@ -52,7 +52,7 @@ struct ProfileEditSheet: View {
                             }
 
                         Text("\(displayName.count)/12")
-                            .font(LearnNowTypography.screenSubtitle)
+                            .font(LearnNowTypography.metadata)
                             .foregroundStyle(LearnNowPalette.textMuted)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                     }
@@ -86,7 +86,7 @@ struct ProfileEditSheet: View {
 
                                         if selectedAvatarID == avatar.id {
                                             Image(systemName: "checkmark.circle.fill")
-                                                .font(.system(size: 20, weight: .bold))
+                                                .font(.title3.weight(.bold))
                                                 .foregroundStyle(LearnNowPalette.color(for: .blue))
                                                 .background(.white, in: Circle())
                                         }

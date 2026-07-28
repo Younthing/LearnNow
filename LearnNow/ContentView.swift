@@ -75,7 +75,7 @@ private struct LearnNowStartupErrorView: View {
             SoftCard(contentPadding: 24) {
                 VStack(spacing: 16) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.title.weight(.bold))
                         .foregroundStyle(LearnNowPalette.color(for: .amber))
                     Text(title)
                         .font(LearnNowTypography.screenTitle)

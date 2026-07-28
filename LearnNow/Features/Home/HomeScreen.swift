@@ -2,7 +2,6 @@ import SwiftUI
 
 private enum HomeLayout {
     static let topPadding: CGFloat = LearnNowSpacing.screenTop
-    static let horizontalPadding: CGFloat = LearnNowSpacing.screenHorizontal
     static let headerHeight: CGFloat = 58
     static let bottomPadding: CGFloat = 0
     static let cardContentPadding: CGFloat = 20
@@ -49,7 +48,7 @@ struct HomeScreen: View {
                         title: model.title,
                         subtitle: model.subtitle
                     )
-                    .frame(height: HomeLayout.headerHeight, alignment: .center)
+                    .frame(minHeight: HomeLayout.headerHeight, alignment: .center)
 
                     TodayStatusCard(
                         metrics: model.statusMetrics,
@@ -75,9 +74,13 @@ struct HomeScreen: View {
                         contentHeight: HomeLayout.contentHeight(for: cardHeights.secondary)
                     )
                 }
-                .padding(.horizontal, HomeLayout.horizontalPadding)
+                .padding(
+                    .horizontal,
+                    LearnNowSpacing.screenHorizontal(for: geometry.size.width)
+                )
                 .padding(.top, HomeLayout.topPadding)
                 .padding(.bottom, HomeLayout.bottomPadding)
+                .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height, alignment: .top)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -124,7 +127,7 @@ private struct TodayStatusCard: View {
                         StatusMetricsBand(metrics: Array(supportingMetrics.prefix(2)))
                     }
                 }
-                .frame(height: contentHeight, alignment: .center)
+                .frame(minHeight: contentHeight, alignment: .center)
             }
         }
         .buttonStyle(SoftPressStyle(cornerRadius: HomeLayout.cardCornerRadius))
@@ -150,7 +153,7 @@ private struct StatusSoftCardContent<Content: View>: View {
         content
             .padding(HomeLayout.cardContentPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: cardHeight, alignment: .center)
+            .frame(minHeight: cardHeight, alignment: .center)
             .contentShape(RoundedRectangle(cornerRadius: HomeLayout.cardCornerRadius, style: .continuous))
     }
 }
@@ -169,16 +172,12 @@ private struct StreakAchievementHero: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(metric.value)
-                        .font(.system(size: 54, weight: .black, design: .rounded))
+                        .font(LearnNowTypography.metricValue)
                         .foregroundStyle(LearnNowPalette.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
 
                     Text(streakSuffix)
-                        .font(.system(size: 21, weight: .heavy, design: .rounded))
+                        .font(LearnNowTypography.metricUnit)
                         .foregroundStyle(LearnNowPalette.textSecondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
                 }
 
                 MetadataChip(text: milestoneText, accent: metric.accent)
@@ -224,7 +223,7 @@ private struct StreakIconBadge: View {
             showsGlow: isActive && !reduceTransparency
         ) {
             Image(systemName: isActive ? "flame.fill" : "flame")
-                .font(.system(size: 38, weight: .semibold))
+                .font(.largeTitle.weight(.semibold))
                 .symbolRenderingMode(.hierarchical)
                 .symbolColorRenderingMode(.gradient)
                 .foregroundStyle(
@@ -245,9 +244,17 @@ private struct StatusMetricsBand: View {
     let metrics: [LearnNowMetric]
 
     var body: some View {
-        HStack(spacing: 12) {
-            ForEach(metrics) { metric in
-                StatusSummaryMetric(metric: metric)
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                ForEach(metrics) { metric in
+                    StatusSummaryMetric(metric: metric)
+                }
+            }
+
+            VStack(spacing: 12) {
+                ForEach(metrics) { metric in
+                    StatusSummaryMetric(metric: metric)
+                }
             }
         }
     }
@@ -262,17 +269,13 @@ private struct StatusSummaryMetric: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(metric.title)
-                    .font(.system(size: 12, weight: .heavy, design: .rounded))
+                    .font(LearnNowTypography.caption)
                     .foregroundStyle(LearnNowPalette.textMuted)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(metric.value)
-                        .font(.system(size: 18, weight: .black, design: .rounded))
+                        .font(LearnNowTypography.cardTitle)
                         .foregroundStyle(LearnNowPalette.textPrimary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
 
                     if let unit = metric.unit {
                         Text(unit)
@@ -331,7 +334,7 @@ private struct StatusIconBadge: View {
 
             if let systemImage = metric.systemImage {
                 Image(systemName: systemImage)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.headline.weight(.semibold))
                     .symbolRenderingMode(.hierarchical)
                     .symbolColorRenderingMode(.gradient)
                     .foregroundStyle(LearnNowPalette.color(for: metric.accent))
@@ -373,8 +376,6 @@ private struct ContinueLearningCard: View {
                         Text(title)
                             .font(LearnNowTypography.cardHeadline)
                             .foregroundStyle(LearnNowPalette.textPrimary)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.82)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -396,6 +397,7 @@ private struct KnowledgeTipCard: View {
     let title: String
     let tip: HomeScreenModel.KnowledgeTip
     let contentHeight: CGFloat
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SoftCard(contentPadding: 20) {
@@ -404,23 +406,35 @@ private struct KnowledgeTipCard: View {
                     .font(LearnNowTypography.cardTitle)
                     .foregroundStyle(LearnNowPalette.color(for: .mint))
 
-                HStack(alignment: .center, spacing: 10) {
-                    TipIcon(systemImage: tip.systemImage, accent: tip.accent)
-
-                    TipCopy(tip: tip)
-                        .padding(.trailing, 72)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 12) {
+                        TipIcon(systemImage: tip.systemImage, accent: tip.accent)
+                        TipCopy(tip: tip)
+                    }
+                    .padding(.top, 8)
+                } else {
+                    standardContent
                 }
-                .overlay(alignment: .trailing) {
-                    TipIllustration(accent: tip.accent)
-                        .frame(width: 70, height: 54)
-                        .allowsHitTesting(false)
-                }
-                .padding(.top, 8)
             }
-            .frame(height: contentHeight, alignment: .top)
+            .frame(minHeight: contentHeight, alignment: .top)
         }
         .accessibilityElement(children: .combine)
+    }
+
+    private var standardContent: some View {
+        HStack(alignment: .center, spacing: 10) {
+            TipIcon(systemImage: tip.systemImage, accent: tip.accent)
+
+            TipCopy(tip: tip)
+                .padding(.trailing, 72)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .overlay(alignment: .trailing) {
+            TipIllustration(accent: tip.accent)
+                .frame(width: 70, height: 54)
+                .allowsHitTesting(false)
+        }
+        .padding(.top, 8)
     }
 }
 
@@ -441,7 +455,7 @@ private struct TipIcon: View {
                 .opacity(0.18)
 
             Image(systemName: systemImage)
-                .font(.system(size: 21, weight: .medium))
+                .font(.title3.weight(.medium))
                 .foregroundStyle(LearnNowPalette.color(for: accent))
         }
         .frame(width: 52, height: 52)
@@ -454,15 +468,13 @@ private struct TipCopy: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             Text(tip.title)
-                .font(.system(size: 15, weight: .heavy, design: .rounded))
+                .font(LearnNowTypography.cardTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
-                .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text(tip.body)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .font(LearnNowTypography.screenSubtitle)
                 .foregroundStyle(LearnNowPalette.textSecondary)
-                .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
 
         }
