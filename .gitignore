@@ -279,3 +279,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local one-off scripts
+scripts/tmp_*.py
