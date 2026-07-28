@@ -1,16 +1,3 @@
----
-format: learnnow.lesson/v1
-id: stats-page-1
-module: stats
-order: 1
-title: 均值描述数据中心
-accent: mint
-revision: 1
-locale: zh-Hans
-objectives:
-  - stats.mean.outlier-effect
----
-
 均值把一组观测值压缩成一个中心位置，是理解数据分布最常用的起点。
 
 @Callout(title: "核心认知", tone: "warning", accent: "amber") {

@@ -61,8 +61,12 @@ xcrun simctl list devices available
 
 ## 课程内容
 
-课程正文、随堂练习、复习卡片和 Tips 的作者源位于 `ContentSource/`。日常更新编辑
-Markdown/YAML，再由本地 SwiftPM 工具生成 App 使用的强类型 `CatalogV2.json`：
+课程正文、随堂练习、复习卡片和 Tips 的作者源位于 `ContentSource/`。唯一固定入口是
+`ContentSource/learnnow.yml`；它显式编排 Route、Track 和 Lesson 顺序。每个
+由根配置列出的 manifest 管理一个自包含 Lesson Bundle，页面正文、`cards.md`、
+`tips.md` 和本地资源都相对该 manifest 组织；除根入口外，目录名没有编译语义。日常
+更新编辑 Markdown/YAML，再由本地 SwiftPM 工具生成 App 使用的强类型
+`CatalogV2.json`：
 
 ```bash
 swift run --package-path Packages/LearnNowContentKit learnnow-content lint \
@@ -72,6 +76,9 @@ swift run --package-path Packages/LearnNowContentKit learnnow-content build \
   --source ContentSource \
   --output .build/content
 ```
+
+需要同时检查尚未加入根课程树的 Lesson 草稿时，运行
+`learnnow-content lint --source ContentSource --all`。
 
 不要手改 `LearnNow/Resources/CatalogV2.json`。语法、稳定 ID、预览、语义 diff、
 签名发布和远程更新配置见 [内容编写与发布](docs/ContentAuthoring.md)。

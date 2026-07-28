@@ -4,6 +4,33 @@ import LearnNowContentKit
 import XCTest
 
 final class CompilerTests: XCTestCase {
+    func testLessonBundleMigrationPreservesCompleteCatalogSemantics() throws {
+        let catalog = try ContentCompiler().compile(sourceDirectory: contentSourceURL).catalog
+        let encoded = try DeterministicJSON.encode(catalog, prettyPrinted: false)
+        var object = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+        )
+
+        // The authoring refactor intentionally changes the release version and
+        // emits lesson-owned tips in lesson order. Normalize only those two
+        // representation details before comparing with the pre-migration V2 golden.
+        object["releaseVersion"] = "migration-golden"
+        var tips = try XCTUnwrap(object["knowledgeTips"] as? [[String: Any]])
+        tips.sort {
+            ($0["id"] as? String ?? "") < ($1["id"] as? String ?? "")
+        }
+        object["knowledgeTips"] = tips
+
+        let normalized = try JSONSerialization.data(
+            withJSONObject: object,
+            options: [.sortedKeys]
+        )
+        XCTAssertEqual(
+            ContentDigest.sha256Hex(of: normalized),
+            "475175bc47082a2846fde16408f5cc430da6d9382ab80afdad7ca3945a52ec65"
+        )
+    }
+
     func testMigratedContentPreservesEveryV1StableID() throws {
         let catalog = try ContentCompiler().compile(sourceDirectory: contentSourceURL).catalog
         let v1 = try XCTUnwrap(
@@ -77,10 +104,14 @@ final class CompilerTests: XCTestCase {
     func testDSLCompilesEveryV1BlockAndSafeInlineStyle() throws {
         let source = try copiedContentSource()
         defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
-        let lessonURL = source.appending(path: "lessons/stats/stats-page-1.md")
+        let lessonURL = source.appending(path: "lessons/stats/pages/mean.md")
         try Data(allBlocksLesson.utf8).write(to: lessonURL, options: .atomic)
+        try FileManager.default.createDirectory(
+            at: source.appending(path: "lessons/stats/assets"),
+            withIntermediateDirectories: true
+        )
         try validPNGHeader.write(
-            to: source.appending(path: "assets/example.png"),
+            to: source.appending(path: "lessons/stats/assets/example.png"),
             options: .atomic
         )
 
@@ -115,21 +146,21 @@ final class CompilerTests: XCTestCase {
     func testUnknownDirectiveReportsFileAndLine() throws {
         let source = try copiedContentSource()
         defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
-        let lessonURL = source.appending(path: "lessons/stats/stats-page-1.md")
+        let lessonURL = source.appending(path: "lessons/stats/pages/mean.md")
         let original = try String(contentsOf: lessonURL, encoding: .utf8)
         try Data(original.replacingOccurrences(of: "@Callout", with: "@Mystery").utf8)
             .write(to: lessonURL, options: .atomic)
 
         let diagnostics = ContentCompiler().lint(sourceDirectory: source)
         let issue = try XCTUnwrap(diagnostics.first { $0.code == "directive.unknown" })
-        XCTAssertEqual(issue.file, "lessons/stats/stats-page-1.md")
+        XCTAssertEqual(issue.file, "lessons/stats/pages/mean.md")
         XCTAssertNotNil(issue.line)
     }
 
     func testMissingFeedbackFailsAtQuizLine() throws {
         let source = try copiedContentSource()
         defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
-        let lessonURL = source.appending(path: "lessons/stats/stats-page-1.md")
+        let lessonURL = source.appending(path: "lessons/stats/pages/mean.md")
         let broken = allBlocksLesson.replacingOccurrences(
             of: """
 
@@ -140,8 +171,12 @@ final class CompilerTests: XCTestCase {
             with: ""
         )
         try Data(broken.utf8).write(to: lessonURL, options: .atomic)
+        try FileManager.default.createDirectory(
+            at: source.appending(path: "lessons/stats/assets"),
+            withIntermediateDirectories: true
+        )
         try validPNGHeader.write(
-            to: source.appending(path: "assets/example.png"),
+            to: source.appending(path: "lessons/stats/assets/example.png"),
             options: .atomic
         )
 
@@ -152,7 +187,7 @@ final class CompilerTests: XCTestCase {
     func testYAMLAnchorsAliasesAndTagsAreRejected() throws {
         let source = try copiedContentSource()
         defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
-        let catalogURL = source.appending(path: "catalog.yaml")
+        let catalogURL = source.appending(path: "learnnow.yml")
         var catalogText = try String(contentsOf: catalogURL, encoding: .utf8)
         catalogText += "\nunsafe: &shared value\n"
         try Data(catalogText.utf8).write(to: catalogURL, options: .atomic)
@@ -161,26 +196,32 @@ final class CompilerTests: XCTestCase {
         XCTAssertTrue(diagnostics.contains { $0.code == "yaml.unsafeFeature" })
     }
 
-    func testDuplicateModuleIDProducesDiagnosticInsteadOfTrap() throws {
+    func testDuplicateLessonIDProducesDiagnosticInsteadOfTrap() throws {
         let source = try copiedContentSource()
         defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
-        try FileManager.default.copyItem(
-            at: source.appending(path: "modules/stats.yaml"),
-            to: source.appending(path: "modules/stats-duplicate.yaml")
+        let manifestURL = source.appending(path: "lessons/probability/lesson.yml")
+        let manifest = try String(contentsOf: manifestURL, encoding: .utf8)
+        try Data(
+            manifest.replacingOccurrences(
+                of: "\nid: probability\n",
+                with: "\nid: stats\n"
+            ).utf8
         )
+        .write(to: manifestURL, options: .atomic)
 
         let diagnostics = ContentCompiler().lint(sourceDirectory: source)
         XCTAssertTrue(
             diagnostics.contains {
                 $0.code == "id.duplicate" && $0.message.contains("stats")
-            }
+            },
+            diagnostics.map(\.description).joined(separator: "\n")
         )
     }
 
     func testDuplicateDirectiveArgumentProducesDiagnosticInsteadOfTrap() throws {
         let source = try copiedContentSource()
         defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
-        let lessonURL = source.appending(path: "lessons/stats/stats-page-1.md")
+        let lessonURL = source.appending(path: "lessons/stats/pages/mean.md")
         let original = try String(contentsOf: lessonURL, encoding: .utf8)
         let broken = original.replacingOccurrences(
             of: #"@Callout(title: "核心认知""#,
@@ -201,10 +242,10 @@ final class CompilerTests: XCTestCase {
         for invalidVersion in ["1..2", "v1.2", "1.-2", "18446744073709551616"] {
             let source = try copiedContentSource()
             defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
-            let catalogURL = source.appending(path: "catalog.yaml")
+            let catalogURL = source.appending(path: "learnnow.yml")
             let original = try String(contentsOf: catalogURL, encoding: .utf8)
             let broken = original.replacingOccurrences(
-                of: #"releaseVersion: "2026.07.28.1""#,
+                of: #"releaseVersion: "2026.07.28.2""#,
                 with: #"releaseVersion: "\#(invalidVersion)""#
             )
             try Data(broken.utf8).write(to: catalogURL, options: .atomic)
@@ -229,7 +270,7 @@ final class CompilerTests: XCTestCase {
         }
         XCTAssertTrue(
             ContentCompiler().lint(sourceDirectory: badExtensionSource)
-                .contains { $0.code == "asset.invalidPath" }
+                .contains { $0.code == "asset.invalidExtension" }
         )
 
         let badSignatureSource = try sourceWithImage(
@@ -292,14 +333,22 @@ final class CompilerTests: XCTestCase {
 
     private func sourceWithImage(path: String, data: Data) throws -> URL {
         let source = try copiedContentSource()
-        let lessonURL = source.appending(path: "lessons/stats/stats-page-1.md")
+        let lessonURL = source.appending(path: "lessons/stats/pages/mean.md")
         let original = try String(contentsOf: lessonURL, encoding: .utf8)
         let image = #"""
 
         @Image(path: "\#(path)", alt: "测试图片")
         """#
         try Data((original + image).utf8).write(to: lessonURL, options: .atomic)
-        try data.write(to: source.appending(path: path), options: .atomic)
+        try FileManager.default.createDirectory(
+            at: source.appending(path: "lessons/stats/\(path)")
+                .deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try data.write(
+            to: source.appending(path: "lessons/stats/\(path)"),
+            options: .atomic
+        )
         return source
     }
 
@@ -312,18 +361,6 @@ final class CompilerTests: XCTestCase {
     }
 
     private let allBlocksLesson = """
-    ---
-    format: learnnow.lesson/v1
-    id: stats-page-1
-    module: stats
-    order: 1
-    title: 均值描述数据中心
-    accent: mint
-    revision: 1
-    locale: zh-Hans
-    objectives: [stats.mean.outlier-effect]
-    ---
-
     # 标题
 
     普通文本、**重点**、*强调*和 `inline code`。

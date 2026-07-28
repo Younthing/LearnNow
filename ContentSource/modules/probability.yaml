@@ -1,9 +1,0 @@
-id: probability
-trackID: statistics
-title: 概率论基础
-subtitle: 1 个小节
-lessonTitle: 概率论基础
-prerequisiteModuleIDs:
-  - stats
-completionXP: 15
-reviewMessage: 条件概率与贝叶斯更新已经加入复习池。

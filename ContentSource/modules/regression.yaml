@@ -1,9 +1,0 @@
-id: regression
-trackID: machineLearning
-title: 线性回归模型
-subtitle: 2 个小节
-lessonTitle: 线性回归模型
-prerequisiteModuleIDs:
-  - hypothesis
-completionXP: 15
-reviewMessage: 回归系数与 R² 已加入复习池。

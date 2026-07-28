@@ -1,16 +1,3 @@
----
-format: learnnow.lesson/v1
-id: regression-page-1
-module: regression
-order: 1
-title: 回归系数的方向
-accent: purple
-revision: 1
-locale: zh-Hans
-objectives:
-  - regression.coefficient.direction
----
-
 在线性回归中，系数的正负首先说明变量变化的方向。
 
 @Callout(title: "阅读顺序", tone: "information", accent: "blue") {

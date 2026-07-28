@@ -1,16 +1,3 @@
----
-format: learnnow.lesson/v1
-id: stats-page-2
-module: stats
-order: 2
-title: 方差刻画波动
-accent: blue
-revision: 1
-locale: zh-Hans
-objectives:
-  - stats.variance.compare-spread
----
-
 方差衡量每个观测值与均值之间的平方偏差，值越大通常表示数据越分散。
 
 @Callout(title: "理解方式", tone: "information", accent: "mint") {

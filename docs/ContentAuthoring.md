@@ -7,41 +7,117 @@
 
 ```text
 ContentSource/
-  catalog.yaml       # 发布、locale 与路线 Track
-  routes/*.yaml      # 路线、Track 顺序和模块顺序
-  modules/*.yaml     # 先修、XP 和完成文案
-  lessons/**/*.md    # 页面正文和随堂练习
-  cards/**/*.md      # 独立 FSRS 卡片
-  tips/*.md          # 首页 Tip 内容池
-  assets/            # 只允许包内本地资源
+  learnnow.yml                 # 唯一固定入口和完整课程编排
+  lessons/
+    stats/
+      lesson.yml               # Lesson、页面和完成信息
+      pages/
+        mean.md                # 一页正文与随堂练习
+        variance.md
+      cards.md                 # 本 Lesson 的 FSRS 卡片
+      tips.md                  # 本 Lesson 的首页 Tips
+      assets/                  # 本 Lesson 的本地媒体
+  shared/
+    tips.md                    # 可选的全局 Tips
 ```
 
-文件名只用于查找。`id` 才是用户进度、卡片记忆和引用的稳定身份：
+除 `learnnow.yml` 外，目录名和文件名没有编译语义。编译器只跟随根配置直接列出的
+Lesson manifest，再跟随 manifest 列出的页面、Card 和 Tip 文件；可以按团队需要移动
+或拆分文件。`id` 才是用户进度、卡片记忆和引用的稳定身份：
 
 - ID 必须显式填写，并匹配 `[A-Za-z0-9][A-Za-z0-9._-]*`。
 - 已发布 ID 不从标题生成、不改名、不复用。
 - 文案修正保留 ID；学习含义发生实质变化且应重置记忆时创建新 ID。
-- 删除任何稳定实体（包括题目选项）时把旧 ID 加入 `catalog.yaml` 的
+- 删除任何稳定实体（包括题目选项）时把旧 ID 加入 `learnnow.yml` 的
   `retiredIDs`；该列表只增不减，退休 ID 永远不能重新使用。
-- 页面顺序使用 `order`，选项显示 badge 和页面 badge 由客户端派生。
+- Route、Track 和 Lesson 顺序由根 YAML 数组决定，页面顺序由 `lesson.yml` 的
+  `pages` 数组决定；作者格式中没有 `order`。
+- Card 和 Tip 按 manifest 文件数组及文件内声明顺序编译；选项和页面 badge 由
+  客户端派生。
 
-## Lesson DSL
+## 项目与路线编排
 
-每个 Lesson 以 JSON-compatible YAML front matter 开始：
+根配置包含发布信息，并把 Route、Track 和 Lesson manifest 路径放在同一棵有序树中：
 
-```markdown
----
-format: learnnow.lesson/v1
-id: stats-page-1
-module: stats
-order: 1
-title: 均值描述数据中心
-accent: mint
-revision: 1
+```yaml
+format: learnnow.project/v1
+schemaVersion: 2
+releaseVersion: "2026.07.28.2"
 locale: zh-Hans
-objectives: [stats.mean.outlier-effect]
----
+primaryRouteID: datascience
+minAppBuild: 1
+publishedAt: "2026-07-28T00:00:00Z"
+retiredIDs: []
+
+routes:
+  - id: datascience
+    title: 数据科学与人工智能
+    subtitle: 统计 · 机器学习 · 深度学习
+    systemImage: cpu
+    accent: blue
+    cta: 继续学习
+    interactive: true
+    tracks:
+      - id: statistics
+        title: 统计基础
+        lessons:
+          - lessons/stats/lesson.yml
 ```
+
+Track ID 全局唯一；同一 Lesson manifest 不得挂载到多个 Track 或 Route。Lesson
+先修使用稳定 Lesson ID，不使用文件路径。`requiredCapabilities` 始终由编译后的 IR
+推导，作者不填写。
+
+项目、Route、Track 和 Lesson 都可声明同形的 `defaults`：
+
+```yaml
+defaults:
+  locale: zh-Hans
+  page:
+    accent: blue
+  card:
+    accent: mint
+    topic: 描述统计
+  tip:
+    accent: amber
+    systemImage: lightbulb
+```
+
+优先级为 `project → route → track → lesson → page/card/tip`。只允许继承 `locale`、
+page accent、card accent/topic、tip accent/systemImage；Map 深合并。V1 不开放数组
+defaults，后续若开放也只会整体覆盖而不拼接。ID、revision、路径、顺序、先修、XP、
+答案和正文必须显式定义。未知字段、类型冲突以及不同于项目 locale 的覆盖都会报错。
+
+## Lesson Bundle
+
+作者语义中的一个 Lesson 会编译为 App 的一个可完成 Module；`pages` 中的每一项会
+编译为一个稳定 Page：
+
+```yaml
+format: learnnow.lesson-bundle/v1
+id: stats
+title: 描述统计与数据探索
+prerequisites: []
+completion:
+  xp: 15
+  message: 均值与方差已经加入复习池。
+
+pages:
+  - id: stats-page-1
+    title: 均值描述数据中心
+    source: pages/mean.md
+    accent: mint
+    revision: 1
+    objectives: [stats.mean.outlier-effect]
+
+cards:
+  - cards.md
+tips:
+  - tips.md
+```
+
+页面始终一页一个 Markdown 文件，且不允许 YAML front matter。页面文件只保存正文、
+`@Quiz`、`@Callout` 等内容块。
 
 正文基于 CommonMark，允许段落、1–6 级标题、单层列表、fenced code，以及有限的
 inline `**strong**`、`*emphasis*` 和 `` `code` ``。不允许 raw HTML、链接、脚本、
@@ -79,13 +155,43 @@ inline `**strong**`、`*emphasis*` 和 `` `code` ``。不允许 raw HTML、链�
 
 单选题必须有至少两个不同 ID 的选项、恰好一个 `correct: true`，以及 correct 和
 incorrect 两种反馈。`@Option` 内还可带一个不含 `when` 的 `@Feedback`，用于
-选项级解释。图片路径必须以 `assets/` 开头，仅使用 ASCII 字母、数字、
-`._/-`，扩展名限 `png/jpg/jpeg/gif/webp`。单个图片必须为 1 字节至 8 MiB，编译器会核对
-扩展名与 PNG/JPEG/GIF/WebP 文件签名；路径不能包含空段、`.`、`..`、绝对路径、
-URL 或符号链接。
+选项级解释。
 
-Card 的普通 Markdown 正文是背面正文，并且必须有一个 `@Highlight`。Tip 只接受
-段落正文。YAML anchors、aliases 和 custom tags 被禁用。
+Lesson 的 `cards.md` 可以聚合多张 Card：
+
+```markdown
+@Card(id: "mean", revision: 1, sourcePage: "stats-page-1", topic: "描述统计", accent: "mint", frontTitle: "均值", frontSubtitle: "平均数的中心位置", backTitle: "核心定义") {
+均值是所有样本值之和除以样本个数。
+
+@Highlight {
+极端值会显著拉动均值，偏态分布下应搭配中位数。
+}
+}
+```
+
+Card 必须有普通 Markdown 背面正文和一个 `@Highlight`。所属 Lesson 自动继承；
+`sourcePage` 可省略，填写时必须引用当前 Lesson 的 Page，并映射为 Catalog 的
+`sourceLessonID`。
+
+Lesson 的 `tips.md` 使用同样的聚合方式：
+
+```markdown
+@Tip(id: "mean-tip", revision: 1, sourcePage: "stats-page-1", title: "偏态分布别只看均值", systemImage: "chart.bar.xaxis", accent: "mint") {
+极端值会拉动均值；同时查看中位数与分位数，通常更接近数据全貌。
+}
+```
+
+Tip 只接受段落正文。根配置可通过 `globalTips: [shared/tips.md]` 引用使用相同
+`@Tip` 语法的全局 Tip；全局 Tip 不允许填写 `sourcePage`。Cards、Tips 及
+`globalTips` 均可为空；lint 会给出教学质量 warning，但不阻止构建。
+
+Lesson 子文件和媒体路径都相对 `lesson.yml` 解析，并且必须留在该 Lesson 目录内。
+图片用 `@Image(path: "assets/chart.png", ...)` 引用；输出路径会改写为
+`assets/<lessonID>/<relative-path>`。路径仅允许 ASCII 字母、数字和 `._/-`，扩展名
+限 `png/jpg/jpeg/gif/webp`。单个图片必须为 1 字节至 8 MiB，编译器会核对扩展名与
+PNG/JPEG/GIF/WebP 文件签名；路径不能包含空段、`.`、`..`、绝对路径、URL 或符号
+链接，也不能仅以字母大小写不同而产生跨文件系统资源碰撞。YAML anchors、aliases 和
+custom tags 被禁用。
 
 ## 编译器命令
 
@@ -94,6 +200,10 @@ Card 的普通 Markdown 正文是背面正文，并且必须有一个 `@Highligh
 ```bash
 swift run --package-path Packages/LearnNowContentKit learnnow-content lint \
   --source ContentSource
+
+swift run --package-path Packages/LearnNowContentKit learnnow-content lint \
+  --source ContentSource \
+  --all
 
 swift run --package-path Packages/LearnNowContentKit learnnow-content build \
   --source ContentSource \
@@ -110,6 +220,11 @@ swift run --package-path Packages/LearnNowContentKit learnnow-content diff \
   --strict
 ```
 
+普通 `lint/build/preview/publish` 只处理 `learnnow.yml` 引用的发布树。`lint --all`
+还会递归发现带 `format: learnnow.lesson-bundle/v1` 的未引用 Lesson 草稿，对其执行
+完整校验并输出 `lesson.unreferenced` warning；草稿不会进入发布包。warning 返回成功，
+error 返回失败。
+
 提供 `--old-manifest` 时，`diff --strict` 会比较完整的无签名内容包，因此同路径媒体
 hash、`minAppBuild`、`publishedAt`、`compilerVersion`、能力列表或其他 manifest
 字段变化也必须递增 `releaseVersion`。版本号在任何情况下都不允许倒退。首迁移若旧
@@ -125,7 +240,7 @@ hash、`minAppBuild`、`publishedAt`、`compilerVersion`、能力列表或其他
 同一 source 的两次输出必须逐字节相同。每次 `build` 都会把输出目录的 `assets/`
 同步为当前引用集合，删除该编译输出中的陈旧媒体。`requiredCapabilities` 永远从实际
 block 与 inline IR 推导后写入 manifest，不信任作者手写列表。`publishedAt` 是
-`catalog.yaml` 中的固定发布值，不使用本机当前时间。
+`learnnow.yml` 中的固定发布值，不使用本机当前时间。
 
 App Bundle 基线必须与同一次编译的 Catalog、无签名 manifest 和媒体逐字节一致。
 不要手改它们；从仓库根目录执行：

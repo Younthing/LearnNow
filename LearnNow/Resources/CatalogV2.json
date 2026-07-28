@@ -381,22 +381,6 @@
   ],
   "knowledgeTips" : [
     {
-      "accent" : "amber",
-      "body" : [
-        {
-          "text" : "它表示：在原假设成立时，观察到当前结果或更极端结果的概率。",
-          "type" : "text"
-        }
-      ],
-      "id" : "p-value-tip",
-      "locale" : "zh-Hans",
-      "moduleID" : "hypothesis",
-      "revision" : 1,
-      "sourceLessonID" : "hypothesis-page-2",
-      "systemImage" : "lightbulb",
-      "title" : "p 值不是「原假设为真的概率」"
-    },
-    {
       "accent" : "mint",
       "body" : [
         {
@@ -411,6 +395,22 @@
       "sourceLessonID" : "stats-page-1",
       "systemImage" : "chart.bar.xaxis",
       "title" : "偏态分布别只看均值"
+    },
+    {
+      "accent" : "amber",
+      "body" : [
+        {
+          "text" : "它表示：在原假设成立时，观察到当前结果或更极端结果的概率。",
+          "type" : "text"
+        }
+      ],
+      "id" : "p-value-tip",
+      "locale" : "zh-Hans",
+      "moduleID" : "hypothesis",
+      "revision" : 1,
+      "sourceLessonID" : "hypothesis-page-2",
+      "systemImage" : "lightbulb",
+      "title" : "p 值不是「原假设为真的概率」"
     }
   ],
   "lessons" : [
@@ -790,7 +790,7 @@
     }
   ],
   "primaryRouteID" : "datascience",
-  "releaseVersion" : "2026.07.28.1",
+  "releaseVersion" : "2026.07.28.2",
   "retiredIDs" : [
 
   ],

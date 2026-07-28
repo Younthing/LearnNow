@@ -266,7 +266,7 @@ extension LearnNowFlowState {
     var reviewDueMetric: LearnNowMetric {
         LearnNowMetric(
             id: "review",
-            title: "待复习卡片",
+            title: "卡片",
             value: "\(reviewCardsDueTodayCount)",
             unit: "张",
             systemImage: "calendar.badge.clock",

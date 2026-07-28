@@ -121,7 +121,7 @@ final class ValidationTests: XCTestCase {
 
         let incrementedVersion = replacing(
             unchangedVersion,
-            releaseVersion: "2026.7.28.2"
+            releaseVersion: "2026.7.28.3"
         )
         XCTAssertTrue(
             ContentDiffer.diff(old: old, new: incrementedVersion)
@@ -155,7 +155,7 @@ final class ValidationTests: XCTestCase {
         let catalog = try compiledCatalog()
         let oldManifest = manifest(for: catalog)
         let changedManifests = [
-            manifest(for: catalog, compilerVersion: "2.0.0"),
+            manifest(for: catalog, compilerVersion: "2.0.1"),
             manifest(for: catalog, minAppBuild: 2),
             manifest(
                 for: catalog,
@@ -195,7 +195,7 @@ final class ValidationTests: XCTestCase {
 
     func testStrictDiffAcceptsFullPackageChangeAfterVersionIncrease() throws {
         let old = try compiledCatalog()
-        let new = replacing(old, releaseVersion: "2026.7.28.2")
+        let new = replacing(old, releaseVersion: "2026.7.28.3")
 
         let report = ContentDiffer.diff(
             old: old,
@@ -225,7 +225,7 @@ final class ValidationTests: XCTestCase {
         let removedTipID = try XCTUnwrap(old.knowledgeTips.first?.id)
         let new = replacing(
             old,
-            releaseVersion: "2026.7.28.2",
+            releaseVersion: "2026.7.28.3",
             knowledgeTips: Array(old.knowledgeTips.dropFirst())
         )
 
@@ -243,7 +243,7 @@ final class ValidationTests: XCTestCase {
 
         let dropped = replacing(
             old,
-            releaseVersion: "2026.7.28.2",
+            releaseVersion: "2026.7.28.3",
             retiredIDs: []
         )
         XCTAssertTrue(
@@ -253,7 +253,7 @@ final class ValidationTests: XCTestCase {
 
         let reused = replacing(
             old,
-            releaseVersion: "2026.7.28.2",
+            releaseVersion: "2026.7.28.3",
             tracks: old.tracks + [
                 TrackDefinition(id: "legacy-content", title: "非法复用"),
             ],

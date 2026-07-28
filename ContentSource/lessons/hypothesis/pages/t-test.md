@@ -1,16 +1,3 @@
----
-format: learnnow.lesson/v1
-id: hypothesis-page-1
-module: hypothesis
-order: 1
-title: t检验与小样本
-accent: blue
-revision: 1
-locale: zh-Hans
-objectives:
-  - hypothesis.t-test.robustness
----
-
 t检验是比较均值差异的核心工具，适合小样本且总体方差未知的场景。
 
 @Callout(title: "核心认知", tone: "warning", accent: "amber") {

@@ -1,16 +1,16 @@
 {
-  "compilerVersion" : "1.0.0",
+  "compilerVersion" : "2.0.0",
   "files" : [
     {
       "path" : "CatalogV2.json",
-      "sha256" : "5fb497fae89fffeaa10512f94e9f8ca7317632ff40225d76e6429407881b93be",
+      "sha256" : "44387db2f2f702b9e256ad701239f812cf022e9dd66287d73b82170ffeae0230",
       "size" : 27149
     }
   ],
   "locale" : "zh-Hans",
   "minAppBuild" : 1,
   "publishedAt" : "2026-07-28T00:00:00Z",
-  "releaseVersion" : "2026.07.28.1",
+  "releaseVersion" : "2026.07.28.2",
   "requiredCapabilities" : [
     "callout",
     "code",

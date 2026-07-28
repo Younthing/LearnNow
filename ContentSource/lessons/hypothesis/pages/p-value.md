@@ -1,16 +1,3 @@
----
-format: learnnow.lesson/v1
-id: hypothesis-page-2
-module: hypothesis
-order: 2
-title: P值的真正含义
-accent: pink
-revision: 1
-locale: zh-Hans
-objectives:
-  - hypothesis.p-value.interpretation
----
-
 P值经常被误解为原假设为真的概率，但它描述的是数据在假设下的极端程度。
 
 @Callout(title: "避坑提示", tone: "warning", accent: "mint") {

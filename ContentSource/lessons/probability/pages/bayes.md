@@ -1,16 +1,3 @@
----
-format: learnnow.lesson/v1
-id: probability-page-1
-module: probability
-order: 1
-title: 用证据更新判断
-accent: purple
-revision: 1
-locale: zh-Hans
-objectives:
-  - probability.bayes.update-belief
----
-
 贝叶斯公式把先验认识与新证据结合起来，得到更新后的后验概率。
 
 @Callout(title: "应用视角", tone: "information", accent: "blue") {

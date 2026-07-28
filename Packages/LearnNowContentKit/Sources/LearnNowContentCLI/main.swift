@@ -33,12 +33,20 @@ enum LearnNowContentCommand {
 
         switch command {
         case "lint":
-            try options.requireOnly(["source"])
-            let diagnostics = compiler.lint(sourceDirectory: source)
-            if diagnostics.isEmpty {
+            try options.requireOnly(["source", "all"])
+            let diagnostics = compiler.lint(
+                sourceDirectory: source,
+                includeUnreferenced: options.contains("all")
+            )
+            let warnings = diagnostics.filter { $0.severity == .warning }
+            let errors = diagnostics.filter { $0.severity == .error }
+            for diagnostic in warnings {
+                FileHandle.standardError.write(Data((diagnostic.description + "\n").utf8))
+            }
+            if errors.isEmpty {
                 print("Content is valid: \(source.path)")
             } else {
-                throw ContentValidationError(diagnostics: diagnostics)
+                throw ContentValidationError(diagnostics: errors)
             }
         case "build":
             try options.requireOnly(["source", "output"])
@@ -208,7 +216,7 @@ enum LearnNowContentCommand {
 
     private static let usage = """
     Usage:
-      learnnow-content lint [--source <ContentSource>]
+      learnnow-content lint [--source <ContentSource>] [--all]
       learnnow-content build [--source <ContentSource>] [--output <directory>]
       learnnow-content preview [--source <ContentSource>] [--output <directory>]
       learnnow-content diff --old <CatalogV2.json>
@@ -248,7 +256,7 @@ private struct Options {
             guard values[key] == nil, !flags.contains(key) else {
                 throw CLIError("Option '--\(key)' was provided more than once.")
             }
-            if key == "strict" {
+            if key == "strict" || key == "all" {
                 flags.insert(key)
                 index += 1
                 continue

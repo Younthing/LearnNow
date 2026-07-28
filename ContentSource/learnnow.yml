@@ -1,0 +1,47 @@
+format: learnnow.project/v1
+schemaVersion: 2
+releaseVersion: "2026.07.28.2"
+locale: zh-Hans
+primaryRouteID: datascience
+minAppBuild: 1
+publishedAt: "2026-07-28T00:00:00Z"
+retiredIDs: []
+
+routes:
+  - id: datascience
+    title: 数据科学与人工智能
+    subtitle: 统计 · 机器学习 · 深度学习
+    systemImage: cpu
+    accent: blue
+    cta: 继续学习
+    interactive: true
+    tracks:
+      - id: statistics
+        title: 统计基础
+        lessons:
+          - lessons/stats/lesson.yml
+          - lessons/probability/lesson.yml
+          - lessons/hypothesis/lesson.yml
+      - id: machineLearning
+        title: 机器学习
+        lessons:
+          - lessons/regression/lesson.yml
+      - id: deepLearning
+        title: 深度学习
+        lessons: []
+  - id: design
+    title: UI/UX 设计进阶
+    subtitle: 色彩体系 · 组件化设计 · 交互
+    systemImage: paintpalette
+    accent: pink
+    cta: 即将开放
+    interactive: false
+    tracks: []
+  - id: web
+    title: 全栈 Web 开发
+    subtitle: React · Node.js · 数据库架构
+    systemImage: chevron.left.forwardslash.chevron.right
+    accent: mint
+    cta: 即将开放
+    interactive: false
+    tracks: []
