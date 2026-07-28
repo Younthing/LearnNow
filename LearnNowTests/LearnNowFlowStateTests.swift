@@ -161,6 +161,68 @@ struct LearnNowFlowStateTests {
     }
 
     @Test
+    func reviewFiltersDefaultModelContainsEveryCardAndNoEmptyState() {
+        let sut = LearnNowFlowState()
+        let model = sut.reviewFiltersSheetModel
+
+        #expect(model.resultCount == 7)
+        #expect(model.resultCards.count == 7)
+        #expect(model.emptyState == nil)
+        #expect(!model.canReset)
+        #expect(model.activeFilterCount == 0)
+    }
+
+    @Test
+    func incompatibleReviewFacetsShowNoMatchesAndResetRestoresDefaultResults() {
+        var sut = LearnNowFlowState()
+
+        sut.toggleDraftTopic("描述统计")
+        sut.toggleDraftModule("regression")
+
+        #expect(sut.reviewFiltersSheetModel.resultCount == 0)
+        #expect(sut.reviewFiltersSheetModel.emptyState == .noMatches)
+        #expect(sut.reviewFiltersSheetModel.canReset)
+
+        sut.resetDraftReviewFilters()
+
+        #expect(sut.draftReviewFilters == .empty)
+        #expect(sut.reviewFiltersSheetModel.resultCount == 7)
+        #expect(sut.reviewFiltersSheetModel.emptyState == nil)
+        #expect(!sut.reviewFiltersSheetModel.canReset)
+    }
+
+    @Test
+    func reviewFiltersDistinguishAnEmptyCardPoolFromNoMatches() {
+        let sut = LearnNowFlowState(snapshot: .empty)
+        let model = sut.reviewFiltersSheetModel
+
+        #expect(sut.reviewCards.isEmpty)
+        #expect(model.resultCount == 0)
+        #expect(model.resultCards.isEmpty)
+        #expect(model.emptyState == .noCards)
+        #expect(!model.canReset)
+    }
+
+    @Test
+    func draftReviewFiltersDoNotChangeActiveCardsUntilApplied() {
+        var sut = LearnNowFlowState()
+        let initialActiveIDs = sut.activeReviewCards.map(\.id)
+
+        sut.toggleDraftTopic("描述统计")
+
+        #expect(sut.stagedReviewCards.map(\.id) == ["mean", "variance"])
+        #expect(sut.activeReviewCards.map(\.id) == initialActiveIDs)
+        #expect(sut.appliedReviewFilters == .empty)
+        #expect(sut.draftReviewFilters.topics == ["描述统计"])
+
+        sut.applyReviewCardPoolFilters()
+
+        #expect(sut.appliedReviewFilters == sut.draftReviewFilters)
+        #expect(sut.activeReviewCards.map(\.id) == ["mean", "variance"])
+        #expect(sut.activeReviewSheet == nil)
+    }
+
+    @Test
     func profileModelUsesSavedIdentityAndShowsReviewedMemoryTrend() {
         var sut = LearnNowFlowState.profilePreview
         sut.profilePreference = ProfilePreference(

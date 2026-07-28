@@ -84,6 +84,58 @@ final class LearnNowUITests: XCTestCase {
     }
 
     @MainActor
+    func testCardPoolUsesProgressiveDisclosureAndCompactCopy() throws {
+        navigateToCompletion()
+        openReviewCardPool()
+
+        let moreFilters = element(matchingIdentifier: "review.filters.more")
+        let resultCount = element(matchingIdentifier: "review.filters.result-count")
+
+        assertExists(moreFilters)
+        XCTAssertEqual(moreFilters.value as? String, "已折叠")
+        XCTAssertFalse(element(matchingIdentifier: "review.filters.topic.描述统计").exists)
+        assertExists(resultCount)
+        XCTAssertTrue(resultCount.label.contains("共 2 张卡片"))
+        assertExists(element(matchingIdentifier: "review.filters.apply"))
+
+        [
+            "先浏览这一轮卡池，再按需收窄范围。",
+            "当前范围",
+            "先用时间范围快速收窄，再浏览下方卡池。",
+            "按当前条件实时刷新，默认按到期时间排序。",
+        ].forEach { oldHint in
+            XCTAssertFalse(app.staticTexts[oldHint].exists)
+        }
+    }
+
+    @MainActor
+    func testCardPoolNoMatchesHidesApplyAndClearRestoresResults() throws {
+        navigateToCompletion()
+        completeProbabilityLesson()
+        openReviewCardPool()
+
+        let moreFilters = element(matchingIdentifier: "review.filters.more")
+        tapWhenHittable(moreFilters)
+        XCTAssertEqual(moreFilters.value as? String, "已展开")
+
+        tapWhenHittable(element(matchingIdentifier: "review.filters.topic.描述统计"))
+        tapWhenHittable(element(matchingIdentifier: "review.filters.module.probability"))
+
+        let resultCount = element(matchingIdentifier: "review.filters.result-count")
+        let clearFilters = element(matchingIdentifier: "review.filters.empty.reset")
+        assertExists(resultCount)
+        XCTAssertTrue(resultCount.label.contains("共 0 张卡片"))
+        assertExists(clearFilters)
+        XCTAssertFalse(element(matchingIdentifier: "review.filters.apply").exists)
+
+        tapWhenHittable(clearFilters)
+
+        XCTAssertTrue(clearFilters.waitForNonExistence(timeout: defaultTimeout))
+        assertExists(element(matchingIdentifier: "review.filters.apply"))
+        XCTAssertTrue(resultCount.label.contains("共 3 张卡片"))
+    }
+
+    @MainActor
     func testPathTrackTabsSwitchVisibleContent() throws {
         tapWhenHittable(element(matchingIdentifier: "tab.routes"))
         tapWhenHittable(element(matchingIdentifier: "route.datascience"))
@@ -170,6 +222,11 @@ final class LearnNowUITests: XCTestCase {
             .firstMatch
         assertExists(cloudToggle)
         XCTAssertEqual(cloudToggle.value as? String, "1")
+        scrollIntoViewIfNeeded(cloudToggle)
+        XCTAssertFalse(
+            isCoveredByFloatingTabBar(cloudToggle),
+            "Cloud sync toggle should be visible above the floating tab bar."
+        )
         cloudToggle
             .coordinate(withNormalizedOffset: CGVector(dx: 0.88, dy: 0.5))
             .tap()
@@ -204,11 +261,12 @@ final class LearnNowUITests: XCTestCase {
         tapWhenHittable(element(matchingIdentifier: "tab.anki"))
         assertExists(element(matchingIdentifier: "screen.anki"))
         tapWhenHittable(element(matchingIdentifier: "anki.filters"))
-        app.swipeUp()
-        app.swipeUp()
         let favorite = element(matchingIdentifier: "review.pool.favorite.mean")
         tapWhenHittable(favorite)
         XCTAssertTrue(favorite.label.contains("已收藏"))
+        let masteredInPool = element(matchingIdentifier: "review.pool.mastered.mean")
+        tapWhenHittable(masteredInPool)
+        XCTAssertTrue(masteredInPool.label.contains("已掌握"))
         tapWhenHittable(element(matchingIdentifier: "review.filters.apply"))
 
         tapWhenHittable(element(matchingIdentifier: "tab.profile"))
@@ -217,8 +275,9 @@ final class LearnNowUITests: XCTestCase {
 
         let mastered = element(matchingIdentifier: "favorites.mastered.mean")
         assertExists(mastered)
-        tapWhenHittable(mastered)
         XCTAssertTrue(mastered.label.contains("已掌握"))
+        tapWhenHittable(mastered)
+        XCTAssertTrue(mastered.label.contains("标为掌握"))
 
         tapWhenHittable(app.buttons["开始收藏复习"].firstMatch)
         assertExists(element(matchingIdentifier: "screen.anki"))
@@ -276,20 +335,39 @@ final class LearnNowUITests: XCTestCase {
             file: file,
             line: line
         )
+        XCTAssertFalse(
+            isCoveredByFloatingTabBar(element),
+            "Element \(element) remained behind the floating tab bar.",
+            file: file,
+            line: line
+        )
 
         element.tap()
     }
 
     /// Some lesson controls live below the initial viewport inside a scroll view.
     /// A few upward swipes are enough to expose them on the tested device size.
-    private func scrollIntoViewIfNeeded(_ element: XCUIElement, maxSwipes: Int = 4) {
+    private func scrollIntoViewIfNeeded(_ element: XCUIElement, maxSwipes: Int = 8) {
         guard element.exists else { return }
 
         var remainingSwipes = maxSwipes
-        while !element.isHittable && remainingSwipes > 0 {
+        while (!element.isHittable || isCoveredByFloatingTabBar(element)),
+              remainingSwipes > 0 {
             app.swipeUp()
             remainingSwipes -= 1
         }
+    }
+
+    /// A translucent floating tab bar can leave an underlying control reporting
+    /// `isHittable == true` even though its activation point belongs to a tab.
+    private func isCoveredByFloatingTabBar(_ element: XCUIElement) -> Bool {
+        guard !element.identifier.hasPrefix("tab.") else { return false }
+
+        let homeTab = self.element(matchingIdentifier: "tab.home")
+        guard homeTab.exists, homeTab.isHittable else { return false }
+
+        let floatingBarHitRegionTop = homeTab.frame.minY - 24
+        return element.frame.midY >= floatingBarHitRegionTop
     }
 
     @MainActor
@@ -316,5 +394,27 @@ final class LearnNowUITests: XCTestCase {
 
         // 6  Completion screen
         assertExists(element(matchingIdentifier: "screen.completion"))
+    }
+
+    @MainActor
+    private func completeProbabilityLesson() {
+        let nextLesson = app.buttons
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "学习下一章节"))
+            .firstMatch
+        tapWhenHittable(nextLesson)
+        assertExists(element(matchingIdentifier: "screen.lesson"))
+
+        tapWhenHittable(element(matchingIdentifier: "lesson.option.bayes-update"))
+        tapWhenHittable(element(matchingIdentifier: "lesson.cta"))
+
+        assertExists(element(matchingIdentifier: "screen.completion"))
+    }
+
+    @MainActor
+    private func openReviewCardPool() {
+        tapWhenHittable(element(matchingIdentifier: "tab.anki"))
+        assertExists(element(matchingIdentifier: "screen.anki"))
+        tapWhenHittable(element(matchingIdentifier: "anki.filters"))
+        assertExists(element(matchingIdentifier: "screen.review.filters"))
     }
 }
