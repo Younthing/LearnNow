@@ -5,6 +5,7 @@
 //  Created by Codex on 4/3/26.
 //
 
+import Foundation
 import Testing
 @testable import LearnNow
 
@@ -157,5 +158,81 @@ struct LearnNowFlowStateTests {
         sut.openReviewBoard()
         #expect(sut.selectedTab == .anki)
         #expect(sut.currentScreen == .anki)
+    }
+
+    @Test
+    func profileModelUsesSavedIdentityAndShowsReviewedMemoryTrend() {
+        var sut = LearnNowFlowState.profilePreview
+        sut.profilePreference = ProfilePreference(
+            displayName: "小岚",
+            avatarID: "otter"
+        )
+        sut.memoryTrend = MemoryTrend(
+            points: (0...7).map { day in
+                MemoryTrendPoint(
+                    dayOffset: day,
+                    date: Date(timeIntervalSince1970: Double(day) * 86_400),
+                    retrievability: 0.96 - (Double(day) * 0.02)
+                )
+            }
+        )
+
+        let model = sut.profileScreenModel
+
+        #expect(model.identity.displayName == "小岚")
+        #expect(model.identity.avatarID == "otter")
+        #expect(model.identity.activityText == "12 天连续 · 累计 1240 XP")
+        #expect(model.memoryTrend.values.count == 8)
+        #expect(model.memoryTrend.currentText == "96%")
+        #expect(model.memoryTrend.seventhDayText == "82%")
+        #expect(model.overview.metrics.first(where: { $0.id == "mastery" })?.value == "—")
+        #expect(model.overview.heatmap.count == 28)
+    }
+
+    @Test
+    func favoritesModelContainsEveryFavoriteAndSupportsManagementAndReview() {
+        var sut = LearnNowFlowState.profilePreview
+
+        #expect(Set(sut.favoritesScreenModel.items.map(\.id)) == ["variance", "p-value", "r2"])
+        #expect(sut.favoritesScreenModel.canStartReview)
+
+        sut.toggleReviewCardMastered(id: "variance")
+        #expect(
+            sut.favoritesScreenModel.items
+                .first(where: { $0.id == "variance" })?
+                .isMastered == true
+        )
+
+        sut.toggleReviewCardFavorited(id: "variance")
+        #expect(Set(sut.favoritesScreenModel.items.map(\.id)) == ["p-value", "r2"])
+
+        sut.openFavoritedReviewBoard()
+        #expect(sut.selectedTab == .anki)
+        #expect(sut.appliedReviewFilters.favorite == .favoritedOnly)
+        #expect(Set(sut.activeReviewCards.map(\.id)) == ["p-value", "r2"])
+    }
+
+    @Test
+    func settingsModelSeparatesActiveAndNextLaunchCloudSyncChoices() {
+        var sut = LearnNowFlowState(
+            activeCloudSyncEnabled: true,
+            desiredCloudSyncEnabled: false
+        )
+        sut.syncAvailability = .available
+
+        #expect(sut.settingsScreenModel.requiresRestart)
+        #expect(sut.settingsScreenModel.syncStatusText == "等待关闭")
+        #expect(
+            sut.profileScreenModel.shortcuts
+                .first(where: { $0.kind == .settings })?
+                .subtitle == "重新打开 App 后生效"
+        )
+
+        sut.activeCloudSyncEnabled = false
+        sut.syncAvailability = .disabled
+
+        #expect(!sut.settingsScreenModel.requiresRestart)
+        #expect(sut.settingsScreenModel.syncStatusText == "同步已关闭")
+        #expect(sut.settingsScreenModel.syncDetailText.contains("重新开启后可恢复合并"))
     }
 }

@@ -262,6 +262,249 @@ struct LearnNowDataTests {
         #expect(restored.isNightModeEnabled == true)
     }
 
+    @Test
+    func cloudSyncPreferenceDefaultsOnAndPersistsExplicitChoice() throws {
+        let suiteName = "LearnNowDataTests.cloudSync.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        #expect(LearnNowCloudSyncPreference.isEnabled(in: defaults))
+
+        LearnNowCloudSyncPreference.setEnabled(false, in: defaults)
+        #expect(!LearnNowCloudSyncPreference.isEnabled(in: defaults))
+
+        LearnNowCloudSyncPreference.setEnabled(true, in: defaults)
+        #expect(LearnNowCloudSyncPreference.isEnabled(in: defaults))
+    }
+
+    @Test
+    func profilePreferenceDefaultsThenSurvivesRepositoryReload() async throws {
+        let catalog = try CatalogDecoder.decode(data: catalogData())
+        let container = try LearnNowModelContainerFactory.make(cloudSyncEnabled: false, inMemory: true)
+        let context = ModelContext(container)
+        let repository = SwiftDataLearningRepository(
+            context: context,
+            clock: fixedClock(),
+            syncAvailabilityOverride: .localOnly
+        )
+
+        let initial = try await repository.loadSnapshot(catalog: catalog)
+        #expect(initial.profilePreference == ProfilePreference())
+        #expect(initial.profilePreference.displayName == "学习者")
+        #expect(initial.profilePreference.avatarID == "fox")
+
+        try repository.saveProfilePreference(
+            ProfilePreference(displayName: "小林", avatarID: "otter")
+        )
+
+        let reloadedRepository = SwiftDataLearningRepository(
+            context: context,
+            clock: fixedClock(),
+            syncAvailabilityOverride: .localOnly
+        )
+        let reloaded = try await reloadedRepository.loadSnapshot(catalog: catalog)
+        #expect(reloaded.profilePreference.displayName == "小林")
+        #expect(reloaded.profilePreference.avatarID == "otter")
+    }
+
+    @Test
+    func duplicateProfilePreferencesUseTimestampThenStableIDAndAreCleanedUp() async throws {
+        let catalog = try CatalogDecoder.decode(data: catalogData())
+        let container = try LearnNowModelContainerFactory.make(cloudSyncEnabled: false, inMemory: true)
+        let context = ModelContext(container)
+        let now = fixedClock().now
+        context.insert(
+            ProfilePreferenceRecord(
+                id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+                displayName: "旧资料",
+                avatarID: "cat",
+                updatedAt: now.addingTimeInterval(-60)
+            )
+        )
+        context.insert(
+            ProfilePreferenceRecord(
+                id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
+                displayName: "同时间较小 ID",
+                avatarID: "rabbit",
+                updatedAt: now
+            )
+        )
+        context.insert(
+            ProfilePreferenceRecord(
+                id: UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
+                displayName: "最终资料",
+                avatarID: "panda",
+                updatedAt: now
+            )
+        )
+        try context.save()
+
+        let repository = SwiftDataLearningRepository(
+            context: context,
+            clock: fixedClock(),
+            syncAvailabilityOverride: .localOnly
+        )
+        let snapshot = try await repository.loadSnapshot(catalog: catalog)
+        let remaining = try context.fetch(FetchDescriptor<ProfilePreferenceRecord>())
+            .filter { $0.profileID == ProfilePreference.stableID }
+
+        #expect(snapshot.profilePreference.displayName == "最终资料")
+        #expect(snapshot.profilePreference.avatarID == "panda")
+        #expect(remaining.count == 1)
+        #expect(remaining.first?.id == UUID(uuidString: "00000000-0000-0000-0000-000000000003"))
+    }
+
+    @Test
+    func disabledCloudSyncHasExplicitAvailability() async throws {
+        let catalog = try CatalogDecoder.decode(data: catalogData())
+        let container = try LearnNowModelContainerFactory.make(cloudSyncEnabled: false, inMemory: true)
+        let repository = SwiftDataLearningRepository(
+            context: ModelContext(container),
+            clock: fixedClock(),
+            syncAvailabilityOverride: .available,
+            cloudSyncEnabled: false
+        )
+
+        let snapshot = try await repository.loadSnapshot(catalog: catalog)
+        #expect(snapshot.syncAvailability == .disabled)
+        #expect(snapshot.syncAvailability.displayText == "同步已关闭")
+    }
+
+    @Test
+    func cloudSyncChoiceChangesKeepTheSameLocalCloudSyncStore() async throws {
+        let suiteName = "LearnNowDataTests.cloudSyncContinuity.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("LearnNowCloudSync-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let storeURL = directory.appendingPathComponent("CloudSync.store")
+        let catalog = try CatalogDecoder.decode(data: catalogData())
+
+        func makeLocalCloudSyncContainer() throws -> ModelContainer {
+            let schema = Schema(versionedSchema: LearnNowSchemaV2.self)
+            let configuration = ModelConfiguration(
+                "CloudSync",
+                schema: schema,
+                url: storeURL,
+                cloudKitDatabase: .none
+            )
+            return try ModelContainer(
+                for: schema,
+                migrationPlan: LearnNowMigrationPlan.self,
+                configurations: [configuration]
+            )
+        }
+
+        LearnNowCloudSyncPreference.setEnabled(true, in: defaults)
+        do {
+            let container = try makeLocalCloudSyncContainer()
+            let repository = SwiftDataLearningRepository(
+                context: ModelContext(container),
+                clock: fixedClock(),
+                cloudSyncEnabled: true
+            )
+            try repository.saveProfilePreference(
+                ProfilePreference(displayName: "云朵", avatarID: "seal")
+            )
+        }
+
+        LearnNowCloudSyncPreference.setEnabled(false, in: defaults)
+        do {
+            let container = try makeLocalCloudSyncContainer()
+            let repository = SwiftDataLearningRepository(
+                context: ModelContext(container),
+                clock: fixedClock(),
+                cloudSyncEnabled: LearnNowCloudSyncPreference.isEnabled(in: defaults)
+            )
+            let snapshot = try await repository.loadSnapshot(catalog: catalog)
+            #expect(snapshot.profilePreference == ProfilePreference(displayName: "云朵", avatarID: "seal"))
+            #expect(snapshot.syncAvailability == .disabled)
+        }
+
+        LearnNowCloudSyncPreference.setEnabled(true, in: defaults)
+        do {
+            let container = try makeLocalCloudSyncContainer()
+            let repository = SwiftDataLearningRepository(
+                context: ModelContext(container),
+                clock: fixedClock(),
+                syncAvailabilityOverride: .available,
+                cloudSyncEnabled: LearnNowCloudSyncPreference.isEnabled(in: defaults)
+            )
+            let snapshot = try await repository.loadSnapshot(catalog: catalog)
+            #expect(snapshot.profilePreference == ProfilePreference(displayName: "云朵", avatarID: "seal"))
+            #expect(snapshot.syncAvailability == .available)
+        }
+    }
+
+    @Test
+    func v1StoreLightweightMigratesToV2AndAddsProfilePreferenceModel() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("LearnNowMigration-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let storeURL = directory.appendingPathComponent("Migration.store")
+
+        do {
+            let schema = Schema(versionedSchema: LearnNowSchemaV1.self)
+            let configuration = ModelConfiguration(
+                "Migration",
+                schema: schema,
+                url: storeURL,
+                cloudKitDatabase: .none
+            )
+            let container = try ModelContainer(
+                for: schema,
+                configurations: [configuration]
+            )
+            let context = ModelContext(container)
+            context.insert(
+                LessonProgressRecord(
+                    lessonID: "first",
+                    lastPageID: "first-page",
+                    highestPageOrder: 0,
+                    completedAt: fixedClock().now,
+                    updatedAt: fixedClock().now
+                )
+            )
+            try context.save()
+        }
+
+        let schema = Schema(versionedSchema: LearnNowSchemaV2.self)
+        let configuration = ModelConfiguration(
+            "Migration",
+            schema: schema,
+            url: storeURL,
+            cloudKitDatabase: .none
+        )
+        let container = try ModelContainer(
+            for: schema,
+            migrationPlan: LearnNowMigrationPlan.self,
+            configurations: [configuration]
+        )
+        let context = ModelContext(container)
+        #expect(try context.fetch(FetchDescriptor<LessonProgressRecord>()).count == 1)
+        #expect(try context.fetch(FetchDescriptor<ProfilePreferenceRecord>()).isEmpty)
+
+        let repository = SwiftDataLearningRepository(
+            context: context,
+            clock: fixedClock(),
+            syncAvailabilityOverride: .localOnly
+        )
+        let catalog = try CatalogDecoder.decode(data: catalogData())
+        let snapshot = try await repository.loadSnapshot(catalog: catalog)
+        #expect(snapshot.completedLessonIDs == ["first"])
+        #expect(snapshot.profilePreference == ProfilePreference())
+    }
+
     enum CatalogMutation: CaseIterable, CustomTestStringConvertible {
         case duplicateModuleID
         case missingPrerequisite

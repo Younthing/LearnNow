@@ -25,6 +25,9 @@ final class LearnNowUITests: XCTestCase {
         // synchronous and deterministic.
         app.launchArguments += ["-UIAnimationsDisabled", "YES"]
         app.launchArguments += ["-UITestingResetData", "YES"]
+        app.launchArguments += ["-UITestingActiveCloudSyncEnabled"]
+        app.launchArguments += ["-learnnow.settings.cloudSyncEnabled", "YES"]
+        app.launchArguments += ["-learnnow.settings.nightMode", "NO"]
 
         app.launch()
 
@@ -93,6 +96,134 @@ final class LearnNowUITests: XCTestCase {
         assertExists(element(matchingIdentifier: "path.empty"))
     }
 
+    @MainActor
+    func testProfileRootFitsWithoutScrollingAndInsightSwitchKeepsLayoutStable() throws {
+        let profileTab = element(matchingIdentifier: "tab.profile")
+        tapWhenHittable(profileTab)
+
+        let editProfile = element(matchingIdentifier: "profile.edit")
+        let insight = element(matchingIdentifier: "profile.insight")
+        let career = element(matchingIdentifier: "profile.shortcut.career")
+        let favorites = element(matchingIdentifier: "profile.shortcut.favorites")
+        let settings = element(matchingIdentifier: "profile.shortcut.settings")
+
+        [editProfile, insight, career, favorites, settings].forEach {
+            assertExists($0)
+            XCTAssertGreaterThan($0.frame.height, 0, "\($0) should have a visible frame.")
+        }
+        [editProfile, career, favorites, settings].forEach {
+            XCTAssertTrue($0.isHittable, "\($0) should be tappable without scrolling.")
+        }
+        XCTAssertLessThanOrEqual(
+            settings.frame.maxY,
+            profileTab.frame.minY,
+            "The last shortcut should remain above the floating tab bar."
+        )
+
+        let shortcutY = career.frame.minY
+        tapWhenHittable(app.buttons["记忆趋势"].firstMatch)
+        assertExists(app.staticTexts["完成首次复习后生成趋势"])
+        XCTAssertEqual(
+            career.frame.minY,
+            shortcutY,
+            accuracy: 2,
+            "Switching insight modes should not move content below the card."
+        )
+    }
+
+    @MainActor
+    func testProfileEditingUpdatesAvatarAndNicknameAcrossNavigation() throws {
+        tapWhenHittable(element(matchingIdentifier: "tab.profile"))
+        tapWhenHittable(element(matchingIdentifier: "profile.edit"))
+
+        let nameField = element(matchingIdentifier: "profile.name.field")
+        tapWhenHittable(nameField)
+        nameField.typeText("Nova")
+        tapWhenHittable(element(matchingIdentifier: "profile.avatar.cat"))
+        tapWhenHittable(element(matchingIdentifier: "profile.edit.save"))
+
+        tapWhenHittable(element(matchingIdentifier: "tab.home"))
+        tapWhenHittable(element(matchingIdentifier: "tab.profile"))
+
+        let editProfile = element(matchingIdentifier: "profile.edit")
+        assertExists(editProfile)
+        XCTAssertTrue(editProfile.label.contains("Nova"))
+
+        tapWhenHittable(editProfile)
+        assertExists(nameField)
+        XCTAssertTrue((nameField.value as? String)?.contains("Nova") == true)
+        XCTAssertEqual(
+            element(matchingIdentifier: "profile.avatar.cat").value as? String,
+            "已选择"
+        )
+    }
+
+    @MainActor
+    func testProfileSecondaryPagesAndCloudSyncConfirmation() throws {
+        let profileTab = element(matchingIdentifier: "tab.profile")
+        tapWhenHittable(profileTab)
+        tapWhenHittable(element(matchingIdentifier: "profile.shortcut.settings"))
+        assertExists(element(matchingIdentifier: "screen.profile.settings"))
+
+        let cloudToggle = app.switches
+            .matching(identifier: "settings.cloud.toggle")
+            .firstMatch
+        assertExists(cloudToggle)
+        XCTAssertEqual(cloudToggle.value as? String, "1")
+        cloudToggle
+            .coordinate(withNormalizedOffset: CGVector(dx: 0.88, dy: 0.5))
+            .tap()
+
+        let confirmation = app.alerts.firstMatch
+        assertExists(confirmation)
+        XCTAssertTrue(confirmation.label.contains("关闭云同步"))
+        tapWhenHittable(confirmation.buttons["关闭"])
+        assertExists(
+            app.staticTexts
+                .matching(NSPredicate(format: "label CONTAINS %@", "等待关闭"))
+                .firstMatch
+        )
+        assertExists(app.staticTexts["重新打开 App 后生效"])
+
+        tapWhenHittable(profileTab)
+        assertExists(element(matchingIdentifier: "screen.profile"))
+        XCTAssertFalse(element(matchingIdentifier: "screen.profile.settings").exists)
+
+        tapWhenHittable(element(matchingIdentifier: "profile.shortcut.favorites"))
+        assertExists(element(matchingIdentifier: "screen.favorites"))
+        XCTAssertFalse(app.buttons["开始收藏复习"].exists)
+
+        tapWhenHittable(profileTab)
+        assertExists(element(matchingIdentifier: "screen.profile"))
+    }
+
+    @MainActor
+    func testFavoriteCanBeManagedAndStartedAsFilteredReview() throws {
+        navigateToCompletion()
+
+        tapWhenHittable(element(matchingIdentifier: "tab.anki"))
+        assertExists(element(matchingIdentifier: "screen.anki"))
+        tapWhenHittable(element(matchingIdentifier: "anki.filters"))
+        app.swipeUp()
+        app.swipeUp()
+        let favorite = element(matchingIdentifier: "review.pool.favorite.mean")
+        tapWhenHittable(favorite)
+        XCTAssertTrue(favorite.label.contains("已收藏"))
+        tapWhenHittable(element(matchingIdentifier: "review.filters.apply"))
+
+        tapWhenHittable(element(matchingIdentifier: "tab.profile"))
+        tapWhenHittable(element(matchingIdentifier: "profile.shortcut.favorites"))
+        assertExists(element(matchingIdentifier: "screen.favorites"))
+
+        let mastered = element(matchingIdentifier: "favorites.mastered.mean")
+        assertExists(mastered)
+        tapWhenHittable(mastered)
+        XCTAssertTrue(mastered.label.contains("已掌握"))
+
+        tapWhenHittable(app.buttons["开始收藏复习"].firstMatch)
+        assertExists(element(matchingIdentifier: "screen.anki"))
+    }
+
     // MARK: - Helpers
 
     /// Assert that an element appears within the timeout.
@@ -114,7 +245,9 @@ final class LearnNowUITests: XCTestCase {
     /// Identifiers in the app are attached to a mix of `ScrollView`, `VStack`,
     /// and `Button` containers, so tests must not hard-code an element type.
     private func element(matchingIdentifier identifier: String) -> XCUIElement {
-        app.descendants(matching: .any)[identifier]
+        app.descendants(matching: .any)
+            .matching(identifier: identifier)
+            .firstMatch
     }
 
     /// Wait for the element to exist **and be hittable** (not obscured / off-screen),
