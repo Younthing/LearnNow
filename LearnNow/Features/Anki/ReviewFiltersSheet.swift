@@ -12,58 +12,46 @@ struct ReviewFiltersSheet: View {
     let onToggleMastered: (String) -> Void
     let onApply: () -> Void
 
-    @State private var showsAdvancedFilters: Bool
-
-    init(
-        model: ReviewFiltersSheetModel,
-        onReset: @escaping () -> Void,
-        onSelectTime: @escaping (LearnNowReviewTimeFilter) -> Void,
-        onToggleTopic: @escaping (String) -> Void,
-        onToggleModule: @escaping (String) -> Void,
-        onSelectMastery: @escaping (LearnNowReviewMasteryFilter) -> Void,
-        onSelectFavorite: @escaping (LearnNowReviewFavoriteFilter) -> Void,
-        onToggleFavorite: @escaping (String) -> Void,
-        onToggleMastered: @escaping (String) -> Void,
-        onApply: @escaping () -> Void
-    ) {
-        self.model = model
-        self.onReset = onReset
-        self.onSelectTime = onSelectTime
-        self.onToggleTopic = onToggleTopic
-        self.onToggleModule = onToggleModule
-        self.onSelectMastery = onSelectMastery
-        self.onSelectFavorite = onSelectFavorite
-        self.onToggleFavorite = onToggleFavorite
-        self.onToggleMastered = onToggleMastered
-        self.onApply = onApply
-        _showsAdvancedFilters = State(initialValue: model.hasAdvancedSelections || model.resultCards.isEmpty)
-    }
+    @State private var showsAdvancedFilters = false
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            ReviewFiltersContent(
-                model: model,
-                showsAdvancedFilters: $showsAdvancedFilters,
-                onReset: onReset,
-                onSelectTime: onSelectTime,
-                onToggleTopic: onToggleTopic,
-                onToggleModule: onToggleModule,
-                onSelectMastery: onSelectMastery,
-                onSelectFavorite: onSelectFavorite,
-                onToggleFavorite: onToggleFavorite,
-                onToggleMastered: onToggleMastered
-            )
+        GeometryReader { geometry in
+            let horizontalPadding = LearnNowSpacing.screenHorizontal(for: geometry.size.width)
+
+            ScrollView(showsIndicators: false) {
+                ReviewFiltersContent(
+                    model: model,
+                    showsAdvancedFilters: $showsAdvancedFilters,
+                    onReset: onReset,
+                    onSelectTime: onSelectTime,
+                    onToggleTopic: onToggleTopic,
+                    onToggleModule: onToggleModule,
+                    onSelectMastery: onSelectMastery,
+                    onSelectFavorite: onSelectFavorite,
+                    onToggleFavorite: onToggleFavorite,
+                    onToggleMastered: onToggleMastered
+                )
+                .padding(.horizontal, horizontalPadding)
+                .padding(.top, LearnNowSpacing.screenTop)
+                .padding(.bottom, 24)
+                .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
+                .frame(maxWidth: .infinity)
+            }
+            .accessibilityIdentifier("screen.review.filters")
+            .safeAreaInset(edge: .bottom) {
+                if model.resultCount > 0 {
+                    ReviewFiltersFooter(
+                        onApply: onApply
+                    )
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
+                    .frame(maxWidth: .infinity)
+                    .background(.ultraThinMaterial)
+                }
+            }
         }
         .background(LearnNowPalette.canvas.ignoresSafeArea())
-        .safeAreaInset(edge: .bottom) {
-            ReviewFiltersFooter(
-                countText: model.footerCountText,
-                summary: model.footerSummary,
-                applyButtonTitle: model.applyButtonTitle,
-                canApply: model.canApply,
-                onApply: onApply
-            )
-        }
     }
 }
 
@@ -82,98 +70,63 @@ private struct ReviewFiltersContent: View {
     let onToggleMastered: (String) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: 20) {
             ReviewFiltersHeader(
                 title: model.title,
-                subtitle: model.subtitle,
                 canReset: model.canReset,
                 onReset: onReset
             )
 
-            ReviewFiltersSummaryCard(
-                stagedResultSummary: model.stagedResultSummary,
-                activeFilterCount: model.activeFilterCount,
-                summaryMessage: model.summaryMessage,
-                activeFilterLabels: model.activeFilterLabels
-            )
+            if model.emptyState != .noCards {
+                filterControls
+            }
 
-            quickFiltersSection
+            ReviewFiltersResultsSection(
+                resultCount: model.resultCount,
+                emptyState: model.emptyState,
+                resultCards: model.resultCards,
+                onReset: onReset,
+                onToggleFavorite: onToggleFavorite,
+                onToggleMastered: onToggleMastered
+            )
+        }
+        .animation(.spring(response: 0.34, dampingFraction: 0.84), value: showsAdvancedFilters)
+    }
+
+    private var filterControls: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            FlowLayout(items: model.timeOptions.map(SelectionChipItem.init)) { item in
+                FilterChip(
+                    title: item.title,
+                    accent: .blue,
+                    isSelected: item.isSelected,
+                    accessibilityIdentifier: "review.filters.time.\(item.id)",
+                    action: {
+                        guard let filter = LearnNowReviewTimeFilter(rawValue: item.id) else { return }
+                        onSelectTime(filter)
+                    }
+                )
+            }
+
+            AdvancedFiltersToggleControl(
+                isExpanded: showsAdvancedFilters,
+                activeCount: model.advancedFilterCount
+            ) {
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
+                    showsAdvancedFilters.toggle()
+                }
+            }
 
             if showsAdvancedFilters {
                 advancedFiltersSection
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
-
-            ReviewFiltersResultsSection(
-                title: model.resultsTitle,
-                countText: model.footerCountText,
-                emptyTitle: model.emptyResultsTitle,
-                emptyMessage: model.emptyResultsMessage,
-                resultCards: model.resultCards,
-                onToggleFavorite: onToggleFavorite,
-                onToggleMastered: onToggleMastered
-            )
-        }
-        .padding(.horizontal, LearnNowSpacing.screenHorizontal)
-        .padding(.top, LearnNowSpacing.screenTop)
-        .padding(.bottom, 24)
-        .animation(.spring(response: 0.36, dampingFraction: 0.84), value: showsAdvancedFilters)
-    }
-
-    private var quickFiltersSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("快速筛选")
-                        .font(.system(size: 18, weight: .heavy, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-
-                    Text("先用时间范围快速收窄，再浏览下方卡池。")
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textMuted)
-                }
-
-                Spacer(minLength: 0)
-
-                AdvancedFiltersToggleControl(
-                    isExpanded: showsAdvancedFilters,
-                    activeCount: model.advancedFilterCount
-                ) {
-                    withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) {
-                        showsAdvancedFilters.toggle()
-                    }
-                }
-            }
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(model.timeOptions) { option in
-                        FilterChip(
-                            title: option.title,
-                            accent: .blue,
-                            isSelected: option.isSelected,
-                            action: { onSelectTime(option.filter) }
-                        )
-                    }
-                }
-                .padding(.vertical, 2)
-            }
         }
     }
 
     private var advancedFiltersSection: some View {
-        SoftCard(contentPadding: 18) {
+        SoftCard(contentPadding: 16) {
             VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("高级筛选")
-                        .font(.system(size: 18, weight: .heavy, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-
-                    Text("按主题、课程模块和卡片状态继续收窄范围，结果会即时刷新。")
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textMuted)
-                }
-
                 topicSection
                 moduleSection
                 masterySection
@@ -183,12 +136,13 @@ private struct ReviewFiltersContent: View {
     }
 
     private var topicSection: some View {
-        FilterSection(title: "主题", subtitle: "按知识点聚焦当前问题域") {
+        FilterSection(title: "主题") {
             FlowLayout(items: model.topicOptions) { option in
                 FilterChip(
                     title: "\(option.title) \(option.count)",
                     accent: option.accent,
                     isSelected: option.isSelected,
+                    accessibilityIdentifier: "review.filters.topic.\(option.id)",
                     action: { onToggleTopic(option.id) }
                 )
             }
@@ -196,12 +150,13 @@ private struct ReviewFiltersContent: View {
     }
 
     private var moduleSection: some View {
-        FilterSection(title: "课程模块", subtitle: "只看指定课程中的卡片") {
+        FilterSection(title: "课程模块") {
             FlowLayout(items: model.moduleOptions) { option in
                 FilterChip(
                     title: "\(option.title) \(option.count)",
                     accent: option.accent,
                     isSelected: option.isSelected,
+                    accessibilityIdentifier: "review.filters.module.\(option.id)",
                     action: { onToggleModule(option.id) }
                 )
             }
@@ -209,33 +164,35 @@ private struct ReviewFiltersContent: View {
     }
 
     private var masterySection: some View {
-        FilterSection(title: "掌握状态", subtitle: "决定是否把熟悉卡片纳入这一轮") {
-            HStack(spacing: 10) {
-                ForEach(model.masteryOptions) { option in
-                    FilterChip(
-                        title: option.title,
-                        accent: .mint,
-                        isSelected: option.isSelected,
-                        expands: true,
-                        action: { onSelectMastery(option.filter) }
-                    )
-                }
+        FilterSection(title: "掌握状态") {
+            FlowLayout(items: model.masteryOptions.map(SelectionChipItem.init)) { item in
+                FilterChip(
+                    title: item.title,
+                    accent: .mint,
+                    isSelected: item.isSelected,
+                    accessibilityIdentifier: "review.filters.mastery.\(item.id)",
+                    action: {
+                        guard let filter = LearnNowReviewMasteryFilter(rawValue: item.id) else { return }
+                        onSelectMastery(filter)
+                    }
+                )
             }
         }
     }
 
     private var favoriteSection: some View {
-        FilterSection(title: "收藏状态", subtitle: "只保留你想重点回看的卡片") {
-            HStack(spacing: 10) {
-                ForEach(model.favoriteOptions) { option in
-                    FilterChip(
-                        title: option.title,
-                        accent: .amber,
-                        isSelected: option.isSelected,
-                        expands: true,
-                        action: { onSelectFavorite(option.filter) }
-                    )
-                }
+        FilterSection(title: "收藏状态") {
+            FlowLayout(items: model.favoriteOptions.map(SelectionChipItem.init)) { item in
+                FilterChip(
+                    title: item.title,
+                    accent: .amber,
+                    isSelected: item.isSelected,
+                    accessibilityIdentifier: "review.filters.favorite.\(item.id)",
+                    action: {
+                        guard let filter = LearnNowReviewFavoriteFilter(rawValue: item.id) else { return }
+                        onSelectFavorite(filter)
+                    }
+                )
             }
         }
     }
@@ -245,119 +202,55 @@ private struct ReviewFiltersContent: View {
 
 private struct ReviewFiltersHeader: View {
     let title: String
-    let subtitle: String
     let canReset: Bool
     let onReset: () -> Void
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title)
-                    .font(.system(size: 28, weight: .black, design: .rounded))
-                    .foregroundStyle(LearnNowPalette.textPrimary)
+        HStack(alignment: .center, spacing: 12) {
+            Text(title)
+                .font(LearnNowTypography.sheetTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
 
-                Text(subtitle)
-                    .font(LearnNowTypography.screenSubtitle)
-                    .foregroundStyle(LearnNowPalette.textMuted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            Spacer(minLength: 0)
 
-            Spacer()
-
-            Button("重置", action: onReset)
-                .font(.system(size: 14, weight: .heavy, design: .rounded))
-                .foregroundStyle(canReset ? LearnNowPalette.color(for: .amber) : LearnNowPalette.textMuted)
-                .buttonStyle(.plain)
-                .disabled(!canReset)
-        }
-    }
-}
-
-private struct ReviewFiltersSummaryCard: View {
-    let stagedResultSummary: String
-    let activeFilterCount: Int
-    let summaryMessage: String
-    let activeFilterLabels: [String]
-
-    var body: some View {
-        SoftCard(contentPadding: 18) {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("当前范围")
-                            .font(.system(size: 12, weight: .black, design: .rounded))
-                            .foregroundStyle(LearnNowPalette.textMuted)
-
-                        Text(stagedResultSummary)
-                            .font(LearnNowTypography.cardHeadline)
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    Spacer()
-
-                    if activeFilterCount > 0 {
-                        MetadataChip(
-                            text: "\(activeFilterCount) 个条件",
-                            accent: .blue
-                        )
-                    }
-                }
-
-                FlowLayout(items: activeFilterLabels) { label in
-                    SummaryFilterChip(text: label)
-                }
-
-                Text(summaryMessage)
-                    .font(LearnNowTypography.body)
-                    .foregroundStyle(LearnNowPalette.textMuted)
-                    .lineSpacing(4)
+            if canReset {
+                Button("重置", action: onReset)
+                    .font(LearnNowTypography.label)
+                    .foregroundStyle(LearnNowPalette.color(for: .amber))
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("review.filters.reset")
             }
         }
     }
 }
 
 private struct ReviewFiltersResultsSection: View {
-    let title: String
-    let countText: String
-    let emptyTitle: String
-    let emptyMessage: String
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    let resultCount: Int
+    let emptyState: ReviewFiltersSheetModel.EmptyState?
     let resultCards: [ReviewFiltersSheetModel.ResultCard]
+    let onReset: () -> Void
     let onToggleFavorite: (String) -> Void
     let onToggleMastered: (String) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(LearnNowTypography.sectionTitle)
-                        .foregroundStyle(LearnNowPalette.textPrimary)
+            Text("共 \(resultCount) 张卡片")
+                .font(LearnNowTypography.sectionTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
+                .accessibilityIdentifier("review.filters.result-count")
 
-                    Text("按当前条件实时刷新，默认按到期时间排序。")
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textMuted)
-                }
-
-                Spacer(minLength: 0)
-
-                SummaryFilterChip(text: countText)
-            }
-
-            if resultCards.isEmpty {
-                InsetCard(contentPadding: 18) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(emptyTitle)
-                            .font(LearnNowTypography.cardTitle)
-                            .foregroundStyle(LearnNowPalette.textPrimary)
-
-                        Text(emptyMessage)
-                            .font(LearnNowTypography.body)
-                            .foregroundStyle(LearnNowPalette.textMuted)
-                    }
-                }
+            if let emptyState {
+                ReviewFiltersEmptyState(
+                    state: emptyState,
+                    onReset: onReset
+                )
             } else {
-                LazyVStack(spacing: 12) {
+                LazyVGrid(columns: columns, spacing: 14) {
                     ForEach(resultCards) { card in
                         ReviewCardPoolRow(
                             card: card,
@@ -369,46 +262,77 @@ private struct ReviewFiltersResultsSection: View {
             }
         }
     }
+
+    private var columns: [GridItem] {
+        if horizontalSizeClass == .regular, !dynamicTypeSize.isAccessibilitySize {
+            return [
+                GridItem(
+                    .adaptive(minimum: 320),
+                    spacing: 14,
+                    alignment: .top
+                ),
+            ]
+        }
+
+        return [GridItem(.flexible(), alignment: .top)]
+    }
+}
+
+private struct ReviewFiltersEmptyState: View {
+    let state: ReviewFiltersSheetModel.EmptyState
+    let onReset: () -> Void
+
+    var body: some View {
+        SoftCard(contentPadding: 18) {
+            VStack(alignment: .leading, spacing: 14) {
+                Label(title, systemImage: systemImage)
+                    .font(LearnNowTypography.cardTitle)
+                    .foregroundStyle(LearnNowPalette.textPrimary)
+
+                if state == .noMatches {
+                    Button("清除筛选", action: onReset)
+                        .font(LearnNowTypography.label)
+                        .foregroundStyle(LearnNowPalette.color(for: .amber))
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("review.filters.empty.reset")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var title: String {
+        switch state {
+        case .noMatches:
+            "没有符合条件的卡片"
+        case .noCards:
+            "卡池暂无卡片"
+        }
+    }
+
+    private var systemImage: String {
+        switch state {
+        case .noMatches:
+            "line.3.horizontal.decrease.circle"
+        case .noCards:
+            "rectangle.stack"
+        }
+    }
 }
 
 private struct ReviewFiltersFooter: View {
-    let countText: String
-    let summary: String
-    let applyButtonTitle: String
-    let canApply: Bool
     let onApply: () -> Void
 
     var body: some View {
-        VStack(spacing: 12) {
-            Divider()
-                .background(LearnNowPalette.shadowDark.opacity(0.3))
-
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(countText)
-                        .font(.system(size: 16, weight: .heavy, design: .rounded))
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-
-                    Text(summary)
-                        .font(LearnNowTypography.screenSubtitle)
-                        .foregroundStyle(LearnNowPalette.textMuted)
-                }
-
-                FullWidthButton(
-                    title: applyButtonTitle,
-                    accent: canApply ? .blue : nil,
-                    systemImage: canApply ? "play.fill" : nil,
-                    action: onApply
-                )
-                .accessibilityIdentifier("review.filters.apply")
-                .disabled(!canApply)
-                .opacity(canApply ? 1 : 0.7)
-            }
-            .padding(.horizontal, LearnNowSpacing.screenHorizontal)
-            .padding(.top, 8)
-            .padding(.bottom, 8)
-        }
-        .background(.ultraThinMaterial)
+        FullWidthButton(
+            title: "开始复习",
+            accent: .blue,
+            systemImage: "play.fill",
+            action: onApply
+        )
+        .accessibilityIdentifier("review.filters.apply")
     }
 }
 
@@ -416,20 +340,13 @@ private struct ReviewFiltersFooter: View {
 
 private struct FilterSection<Content: View>: View {
     let title: String
-    let subtitle: String
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 18, weight: .heavy, design: .rounded))
-                    .foregroundStyle(LearnNowPalette.textPrimary)
-
-                Text(subtitle)
-                    .font(LearnNowTypography.body)
-                    .foregroundStyle(LearnNowPalette.textMuted)
-            }
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(LearnNowTypography.cardTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
 
             content
         }
@@ -440,7 +357,7 @@ private struct FilterChip: View {
     let title: String
     let accent: LearnNowAccent
     let isSelected: Bool
-    var expands = false
+    let accessibilityIdentifier: String
     let action: () -> Void
 
     var body: some View {
@@ -448,9 +365,33 @@ private struct FilterChip: View {
             title: title,
             accent: accent,
             isSelected: isSelected,
-            isExpanded: expands,
             action: action
         )
+        .accessibilityIdentifier(accessibilityIdentifier)
+    }
+}
+
+private struct SelectionChipItem: Hashable {
+    let id: String
+    let title: String
+    let isSelected: Bool
+
+    nonisolated init(_ option: ReviewFiltersSheetModel.TimeOption) {
+        id = option.filter.rawValue
+        title = option.title
+        isSelected = option.isSelected
+    }
+
+    nonisolated init(_ option: ReviewFiltersSheetModel.MasteryOption) {
+        id = option.filter.rawValue
+        title = option.title
+        isSelected = option.isSelected
+    }
+
+    nonisolated init(_ option: ReviewFiltersSheetModel.FavoriteOption) {
+        id = option.filter.rawValue
+        title = option.title
+        isSelected = option.isSelected
     }
 }
 
@@ -463,32 +404,32 @@ private struct AdvancedFiltersToggleControl: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 13, weight: .bold))
 
-                Text(isExpanded ? "收起高级" : "高级筛选")
-                    .font(.system(size: 13, weight: .heavy, design: .rounded))
+                Text(isExpanded ? "收起筛选" : "更多筛选")
 
                 if activeCount > 0 {
                     Text("\(activeCount)")
-                        .font(.system(size: 11, weight: .black, design: .rounded))
+                        .font(LearnNowTypography.metadata)
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
                         .background(
                             Capsule(style: .continuous)
                                 .fill(LearnNowPalette.color(for: .blue).opacity(0.14))
                         )
+                        .accessibilityLabel("\(activeCount) 个高级筛选条件")
                 }
 
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.caption.weight(.bold))
             }
+            .font(LearnNowTypography.label)
             .foregroundStyle(
                 activeCount > 0 || isExpanded
                     ? LearnNowPalette.color(for: .blue)
                     : LearnNowPalette.textMuted
             )
             .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .frame(minHeight: 44)
             .background(
                 Group {
                     if activeCount > 0 || isExpanded {
@@ -504,85 +445,118 @@ private struct AdvancedFiltersToggleControl: View {
             )
         }
         .buttonStyle(.plain)
-    }
-}
-
-private struct SummaryFilterChip: View {
-    let text: String
-
-    var body: some View {
-        MetadataChip(
-            text: text,
-            accent: .blue,
-            prominence: .subtle
-        )
+        .accessibilityIdentifier("review.filters.more")
+        .accessibilityValue(isExpanded ? "已展开" : "已折叠")
     }
 }
 
 private struct ReviewCardPoolRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let card: ReviewFiltersSheetModel.ResultCard
     let onToggleFavorite: () -> Void
     let onToggleMastered: () -> Void
 
     var body: some View {
-        SoftCard(contentPadding: 18) {
-            VStack(alignment: .leading, spacing: 14) {
+        SoftCard(contentPadding: 16) {
+            VStack(alignment: .leading, spacing: 12) {
                 Text(card.frontTitle)
-                    .font(.system(size: 20, weight: .heavy, design: .rounded))
+                    .font(LearnNowTypography.cardTitle)
                     .foregroundStyle(LearnNowPalette.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                HStack(alignment: .top, spacing: 10) {
-                    Text(card.moduleTitle)
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textMuted)
-                        .fixedSize(horizontal: false, vertical: true)
+                Text(card.answerPreview)
+                    .font(LearnNowTypography.body)
+                    .foregroundStyle(LearnNowPalette.textSecondary)
+                    .lineLimit(2)
 
-                    Spacer(minLength: 0)
+                metadata
 
-                    Label(card.dueLabel, systemImage: "clock")
-                        .font(LearnNowTypography.screenSubtitle)
-                        .foregroundStyle(LearnNowPalette.color(for: card.topicAccent))
-                }
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(spacing: 10) {
+                        favoriteButton
+                        masteredButton
+                    }
+                } else {
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 10) {
+                            favoriteButton
+                            masteredButton
+                        }
 
-                HStack(spacing: 8) {
-                    MetadataChip(text: card.topic, accent: card.topicAccent)
-                    MetadataChip(
-                        text: card.bucketTitle,
-                        accent: card.bucketAccent,
-                        prominence: .subtle
-                    )
-                }
-
-                InsetCard(contentPadding: 14) {
-                    Text(card.highlight)
-                        .font(LearnNowTypography.body)
-                        .foregroundStyle(LearnNowPalette.textSecondary)
-                        .lineSpacing(3)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                HStack(spacing: 10) {
-                    ReviewStatusButton(
-                        title: card.isFavorited ? "已收藏" : "收藏",
-                        systemImage: card.isFavorited ? "bookmark.fill" : "bookmark",
-                        accent: .amber,
-                        isSelected: card.isFavorited,
-                        action: onToggleFavorite
-                    )
-                    .accessibilityIdentifier("review.pool.favorite.\(card.id)")
-
-                    ReviewStatusButton(
-                        title: card.isMastered ? "已掌握" : "标记掌握",
-                        systemImage: card.isMastered ? "checkmark.seal.fill" : "checkmark.seal",
-                        accent: .mint,
-                        isSelected: card.isMastered,
-                        action: onToggleMastered
-                    )
-                    .accessibilityIdentifier("review.pool.mastered.\(card.id)")
+                        VStack(spacing: 10) {
+                            favoriteButton
+                            masteredButton
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private var metadata: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                topicLabel
+                moduleLabel
+                Spacer(minLength: 0)
+                dueLabel
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 12) {
+                    topicLabel
+                    Spacer(minLength: 0)
+                    dueLabel
+                }
+
+                moduleLabel
+            }
+        }
+        .font(LearnNowTypography.metadata)
+    }
+
+    private var topicLabel: some View {
+        Label(card.topic, systemImage: "tag")
+            .foregroundStyle(LearnNowPalette.color(for: card.topicAccent))
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+            .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
+    }
+
+    private var moduleLabel: some View {
+        Label(card.moduleTitle, systemImage: "book.closed")
+            .foregroundStyle(LearnNowPalette.textMuted)
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+            .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
+    }
+
+    private var dueLabel: some View {
+        Label(card.dueLabel, systemImage: "clock")
+            .foregroundStyle(LearnNowPalette.textMuted)
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+            .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
+    }
+
+    private var favoriteButton: some View {
+        ReviewStatusButton(
+            title: card.isFavorited ? "已收藏" : "收藏",
+            systemImage: card.isFavorited ? "bookmark.fill" : "bookmark",
+            accent: .amber,
+            isSelected: card.isFavorited,
+            action: onToggleFavorite
+        )
+        .accessibilityIdentifier("review.pool.favorite.\(card.id)")
+    }
+
+    private var masteredButton: some View {
+        ReviewStatusButton(
+            title: card.isMastered ? "已掌握" : "标记掌握",
+            systemImage: card.isMastered ? "checkmark.seal.fill" : "checkmark.seal",
+            accent: .mint,
+            isSelected: card.isMastered,
+            action: onToggleMastered
+        )
+        .accessibilityIdentifier("review.pool.mastered.\(card.id)")
     }
 }
 
@@ -597,10 +571,13 @@ private struct ReviewStatusButton: View {
         Button(action: action) {
             Label(title, systemImage: systemImage)
                 .font(LearnNowTypography.label)
-                .foregroundStyle(isSelected ? LearnNowPalette.color(for: accent) : LearnNowPalette.textMuted)
-                .frame(maxWidth: .infinity)
+                .foregroundStyle(
+                    isSelected
+                        ? LearnNowPalette.color(for: accent)
+                        : LearnNowPalette.textMuted
+                )
+                .frame(maxWidth: .infinity, minHeight: 44)
                 .padding(.horizontal, 12)
-                .padding(.vertical, 14)
                 .background(
                     Group {
                         if isSelected {
@@ -616,65 +593,23 @@ private struct ReviewStatusButton: View {
                 )
         }
         .buttonStyle(.plain)
-        .frame(minHeight: 48)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
 private extension ReviewFiltersSheetModel {
     var selectedTopicCount: Int {
-        topicOptions.filter { $0.isSelected }.count
+        topicOptions.filter(\.isSelected).count
     }
 
     var selectedModuleCount: Int {
-        moduleOptions.filter { $0.isSelected }.count
-    }
-
-    var selectedTimeTitle: String? {
-        timeOptions.first { $0.isSelected && $0.filter != .all }?.title
-    }
-
-    var selectedMasteryTitle: String? {
-        masteryOptions.first { $0.isSelected && $0.filter != .all }?.title
-    }
-
-    var selectedFavoriteTitle: String? {
-        favoriteOptions.first { $0.isSelected && $0.filter != .all }?.title
+        moduleOptions.filter(\.isSelected).count
     }
 
     var advancedFilterCount: Int {
         selectedTopicCount +
         selectedModuleCount +
-        (selectedMasteryTitle == nil ? 0 : 1) +
-        (selectedFavoriteTitle == nil ? 0 : 1)
-    }
-
-    var hasAdvancedSelections: Bool {
-        advancedFilterCount > 0
-    }
-
-    var activeFilterLabels: [String] {
-        var labels: [String] = []
-
-        if let selectedTimeTitle {
-            labels.append(selectedTimeTitle)
-        }
-
-        if selectedTopicCount > 0 {
-            labels.append("\(selectedTopicCount) 个主题")
-        }
-
-        if selectedModuleCount > 0 {
-            labels.append("\(selectedModuleCount) 个模块")
-        }
-
-        if let selectedMasteryTitle {
-            labels.append(selectedMasteryTitle)
-        }
-
-        if let selectedFavoriteTitle {
-            labels.append(selectedFavoriteTitle)
-        }
-
-        return labels.isEmpty ? ["全部卡池"] : labels
+        (masteryOptions.contains { $0.isSelected && $0.filter != .all } ? 1 : 0) +
+        (favoriteOptions.contains { $0.isSelected && $0.filter != .all } ? 1 : 0)
     }
 }

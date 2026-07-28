@@ -753,21 +753,6 @@ struct LearnNowFlowState: Equatable {
         )
     }
 
-    var stagedResultSummary: String {
-        if stagedReviewCards.isEmpty {
-            return "当前筛选下暂无卡片"
-        }
-
-        if draftReviewFilters.isDefault {
-            return "全部卡池 · \(stagedReviewCards.count) 张卡片"
-        }
-
-        return "筛选结果 · \(stagedReviewCards.count) 张卡片"
-    }
-
-    var applyFiltersCTA: String {
-        stagedReviewCards.isEmpty ? "当前范围暂无可复习卡片" : "按当前筛选开始复习"
-    }
 }
 
 private extension LearnNowFlowState {

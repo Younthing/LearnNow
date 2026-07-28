@@ -165,6 +165,11 @@ struct ReviewBoardModel: Equatable {
 }
 
 struct ReviewFiltersSheetModel: Equatable {
+    enum EmptyState: Equatable {
+        case noMatches
+        case noCards
+    }
+
     struct TimeOption: Identifiable, Equatable {
         let filter: LearnNowReviewTimeFilter
         let title: String
@@ -201,35 +206,25 @@ struct ReviewFiltersSheetModel: Equatable {
         let id: String
         let topic: String
         let topicAccent: LearnNowAccent
-        let bucketTitle: String
-        let bucketAccent: LearnNowAccent
         let frontTitle: String
         let moduleTitle: String
         let dueLabel: String
-        let highlight: String
+        let answerPreview: String
         let isFavorited: Bool
         let isMastered: Bool
     }
 
     let title: String
-    let subtitle: String
-    let stagedResultSummary: String
     let activeFilterCount: Int
-    let summaryMessage: String
     let canReset: Bool
     let timeOptions: [TimeOption]
     let topicOptions: [FacetOption]
     let moduleOptions: [FacetOption]
     let masteryOptions: [MasteryOption]
     let favoriteOptions: [FavoriteOption]
-    let resultsTitle: String
-    let emptyResultsTitle: String
-    let emptyResultsMessage: String
+    let resultCount: Int
+    let emptyState: EmptyState?
     let resultCards: [ResultCard]
-    let footerCountText: String
-    let footerSummary: String
-    let applyButtonTitle: String
-    let canApply: Bool
 }
 
 extension LearnNowFlowState {
@@ -473,14 +468,11 @@ extension LearnNowFlowState {
     }
 
     var reviewFiltersSheetModel: ReviewFiltersSheetModel {
-        ReviewFiltersSheetModel(
+        let stagedCards = stagedReviewCards
+
+        return ReviewFiltersSheetModel(
             title: "卡池浏览",
-            subtitle: "先浏览这一轮卡池，再按需收窄范围。",
-            stagedResultSummary: stagedResultSummary,
             activeFilterCount: stagedFilterBadgeCount,
-            summaryMessage: draftReviewFilters.isDefault
-                ? "你现在看到的是全部卡池，可以直接浏览，或先用时间范围快速收窄。"
-                : "结果会即时刷新；只有点击底部主按钮后，才会真正替换当前复习队列。",
             canReset: stagedFilterBadgeCount > 0,
             timeOptions: LearnNowReviewTimeFilter.allCases.map {
                 .init(filter: $0, title: $0.title, isSelected: draftReviewFilters.time == $0)
@@ -509,28 +501,23 @@ extension LearnNowFlowState {
             favoriteOptions: LearnNowReviewFavoriteFilter.allCases.map {
                 .init(filter: $0, title: $0.title, isSelected: draftReviewFilters.favorite == $0)
             },
-            resultsTitle: "卡片浏览",
-            emptyResultsTitle: "当前筛选下暂无卡片",
-            emptyResultsMessage: "可以放宽时间窗口，或展开高级筛选取消主题 / 模块限制。",
-            resultCards: stagedReviewCards.map {
+            resultCount: stagedCards.count,
+            emptyState: stagedCards.isEmpty
+                ? (reviewCards.isEmpty ? .noCards : .noMatches)
+                : nil,
+            resultCards: stagedCards.map {
                 .init(
                     id: $0.id,
                     topic: $0.topic,
                     topicAccent: $0.accent,
-                    bucketTitle: $0.bucket.title,
-                    bucketAccent: $0.bucket.accent,
                     frontTitle: $0.frontTitle,
                     moduleTitle: $0.moduleTitle,
                     dueLabel: Self.dueLabel(for: $0.dueAt),
-                    highlight: $0.backHighlight,
+                    answerPreview: $0.backHighlight,
                     isFavorited: $0.isFavorited,
                     isMastered: $0.isMastered
                 )
-            },
-            footerCountText: stagedReviewCards.isEmpty ? "暂无结果" : "\(stagedReviewCards.count) 张卡片",
-            footerSummary: draftReviewFilters.isDefault ? "将按当前卡池开始" : "仅应用到本轮复习",
-            applyButtonTitle: applyFiltersCTA,
-            canApply: !stagedReviewCards.isEmpty
+            }
         )
     }
 
