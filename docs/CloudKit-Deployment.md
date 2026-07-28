@@ -8,7 +8,7 @@ LearnNow 使用 Private CloudKit 数据库 `iCloud.fanxi.LearnNow`。课程内�
 
 生效规则：`activeCloudSync = preference && isSubscribed`。偏好默认关闭；未订阅时设置页显示「升级以开启云同步」，已订阅后才显示真实开关。关闭偏好、订阅过期或撤销后，下次启动不再挂接 CloudKit；本机与 iCloud 中已有记录都不会被删除。课程学习、Anki 复习与路径本身保持免费，不设付费墙。
 
-本地调试可使用 `LearnNow/Configuration/LearnNow.storekit`（已挂到 LearnNow scheme 的 StoreKit Configuration）。真机请用 Sandbox 账号验收购买、恢复与过期。
+本地调试可使用 `Configuration/LearnNow.storekit`（已挂到 LearnNow scheme 的 StoreKit Configuration）。真机请用 Sandbox 账号验收购买、恢复与过期。
 
 ## Development schema 初始化
 

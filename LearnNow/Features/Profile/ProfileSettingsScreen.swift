@@ -10,8 +10,13 @@ struct ProfileSettingsScreen: View {
     let onSetCloudSyncEnabled: (Bool) -> Void
     let onUpgradeCloudSync: () -> Void
 
+    #if os(macOS)
+    @Environment(\.openURL) private var openURL
+    #endif
     @State private var cloudConfirmation: CloudSyncConfirmation?
+    #if os(iOS)
     @State private var showingManageSubscriptions = false
+    #endif
 
     var body: some View {
         Form {
@@ -70,7 +75,13 @@ struct ProfileSettingsScreen: View {
                     .accessibilityIdentifier("settings.cloud.toggle")
 
                     Button {
+                        #if os(iOS)
                         showingManageSubscriptions = true
+                        #else
+                        if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
+                            openURL(url)
+                        }
+                        #endif
                     } label: {
                         Label("管理订阅", systemImage: "creditcard")
                     }
@@ -132,7 +143,9 @@ struct ProfileSettingsScreen: View {
                 secondaryButton: .cancel()
             )
         }
+        #if os(iOS)
         .manageSubscriptionsSheet(isPresented: $showingManageSubscriptions)
+        #endif
         .accessibilityIdentifier("screen.profile.settings")
     }
 }
