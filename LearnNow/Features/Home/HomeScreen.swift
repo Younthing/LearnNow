@@ -357,39 +357,65 @@ private struct ContinueLearningCard: View {
     let action: () -> Void
 
     var body: some View {
-        SoftCard(contentPadding: 20) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .center) {
-                    Text(sectionTitle)
-                        .font(LearnNowTypography.cardTitle)
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-
-                    Spacer()
-
-                    MetadataChip(text: progressText, accent: accent)
-                }
-
-                HStack(alignment: .center, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        MetadataChip(text: badge, accent: accent)
-
-                        Text(title)
-                            .font(LearnNowTypography.cardHeadline)
+        Button(action: action) {
+            SoftCard(contentPadding: 20) {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(alignment: .center) {
+                        Text(sectionTitle)
+                            .font(LearnNowTypography.cardTitle)
                             .foregroundStyle(LearnNowPalette.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
+
+                        Spacer()
+
+                        MetadataChip(text: progressText, accent: accent)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    CircleIconButton(systemImage: "play.fill", accent: accent, action: action)
-                        .accessibilityLabel("继续学习")
+                    HStack(alignment: .center, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            MetadataChip(text: badge, accent: accent)
+
+                            Text(title)
+                                .font(LearnNowTypography.cardHeadline)
+                                .foregroundStyle(LearnNowPalette.textPrimary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        ContinueLearningPlayIcon(accent: accent)
+                    }
+
+                    Spacer(minLength: HomeLayout.progressBottomSpacing)
+
+                    ProgressTrack(progress: progress, accent: accent, height: 12)
                 }
-
-                Spacer(minLength: HomeLayout.progressBottomSpacing)
-
-                ProgressTrack(progress: progress, accent: accent, height: 12)
+                .frame(minHeight: contentHeight, alignment: .top)
             }
-            .frame(minHeight: contentHeight, alignment: .top)
+            .contentShape(RoundedRectangle(cornerRadius: HomeLayout.cardCornerRadius, style: .continuous))
         }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("继续学习")
+        .accessibilityValue("\(badge)，\(title)，\(progressText)")
+        .accessibilityHint("打开当前课程")
+        .accessibilityIdentifier("home.continue")
+    }
+}
+
+private struct ContinueLearningPlayIcon: View {
+    let accent: LearnNowAccent
+
+    var body: some View {
+        Circle()
+            .fill(LearnNowPalette.base)
+            .frame(width: 44, height: 44)
+            .modifier(OuterSurface(cornerRadius: 22))
+            .overlay {
+                Image(systemName: "play.fill")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(LearnNowPalette.color(for: accent))
+            }
+            .accessibilityHidden(true)
+            .allowsHitTesting(false)
     }
 }
 

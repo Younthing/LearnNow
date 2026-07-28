@@ -53,6 +53,14 @@ final class LearnNowUITests: XCTestCase {
     }
 
     @MainActor
+    func testHomeContinueLearningCardOpensCurrentLesson() throws {
+        tapWhenHittable(element(matchingIdentifier: "home.continue"))
+
+        assertExists(element(matchingIdentifier: "screen.lesson"))
+        assertExists(app.staticTexts["描述统计与数据探索"])
+    }
+
+    @MainActor
     func testCompletionPrimaryCTAContinuesIntoNextLesson() throws {
         navigateToCompletion()
 

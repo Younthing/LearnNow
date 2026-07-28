@@ -58,6 +58,27 @@ struct LearnNowFlowStateTests {
     }
 
     @Test
+    func homeContinueLearningReopensLastVisitedLessonWhenAllModulesAreComplete() {
+        let catalog = LearnNowFlowFixtures.catalog
+        var snapshot = LearningSnapshot.empty
+        snapshot.completedLessonIDs = Set(catalog.modules.map(\.id))
+        snapshot.lastVisitedLessonID = "regression"
+
+        var sut = LearnNowFlowState(catalog: catalog, snapshot: snapshot)
+
+        #expect(sut.nextAvailableModuleIndex == sut.modules.count)
+        #expect(sut.modules[sut.loadedLessonModuleIndex].id == "regression")
+
+        sut.openLesson()
+
+        #expect(sut.selectedTab == .routes)
+        #expect(sut.currentScreen == .routes)
+        #expect(sut.routesDestination == .lesson)
+        #expect(sut.modules[sut.loadedLessonModuleIndex].id == "regression")
+        #expect(sut.currentLessonTitle == "线性回归模型")
+    }
+
+    @Test
     func selectingRouteTrackFiltersVisiblePathNodes() {
         var sut = LearnNowFlowState.homePreview
         sut.openPath()

@@ -65,10 +65,17 @@ extension LearnNowFlowState {
     }
 
     mutating func openLesson() {
-        guard nextAvailableModuleIndex < modules.count else { return }
+        let targetModuleIndex: Int
+        if isLessonAvailable(for: nextAvailableModuleIndex) {
+            targetModuleIndex = nextAvailableModuleIndex
+        } else if isLessonAvailable(for: loadedLessonModuleIndex) {
+            targetModuleIndex = loadedLessonModuleIndex
+        } else {
+            return
+        }
 
-        if loadedLessonModuleIndex != nextAvailableModuleIndex {
-            loadLesson(for: nextAvailableModuleIndex)
+        if loadedLessonModuleIndex != targetModuleIndex {
+            loadLesson(for: targetModuleIndex)
         }
 
         selectedTab = .routes
