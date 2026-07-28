@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 
 struct ProfileSettingsScreen: View {
@@ -6,21 +7,26 @@ struct ProfileSettingsScreen: View {
     @Binding var remindersEnabled: Bool
     @Binding var isNightModeEnabled: Bool
     let onSetCloudSyncEnabled: (Bool) -> Void
+    let onUpgradeCloudSync: () -> Void
 
     @State private var cloudConfirmation: CloudSyncConfirmation?
+    @State private var showingManageSubscriptions = false
 
     var body: some View {
         Form {
             Section {
-                Toggle("每日学习提醒", isOn: $remindersEnabled)
-                    .accessibilityIdentifier("settings.reminders.toggle")
+                Toggle(isOn: $remindersEnabled) {
+                    Label("每日学习提醒", systemImage: "bell.fill")
+                }
+                .accessibilityIdentifier("settings.reminders.toggle")
 
                 if remindersEnabled {
                     DatePicker(
-                        "提醒时间",
                         selection: $reminderTime,
                         displayedComponents: .hourAndMinute
-                    )
+                    ) {
+                        Label("提醒时间", systemImage: "clock")
+                    }
                     .accessibilityIdentifier("settings.reminders.time")
                 }
             } header: {
@@ -40,14 +46,33 @@ struct ProfileSettingsScreen: View {
             }
 
             Section {
-                Toggle(
-                    "云同步",
-                    isOn: Binding(
-                        get: { model.desiredCloudSyncEnabled },
-                        set: { cloudConfirmation = CloudSyncConfirmation(enabled: $0) }
-                    )
-                )
-                .accessibilityIdentifier("settings.cloud.toggle")
+                if model.showsCloudSyncToggle {
+                    Toggle(
+                        isOn: Binding(
+                            get: { model.desiredCloudSyncEnabled },
+                            set: { cloudConfirmation = CloudSyncConfirmation(enabled: $0) }
+                        )
+                    ) {
+                        Label("云同步", systemImage: "icloud")
+                    }
+                    .accessibilityIdentifier("settings.cloud.toggle")
+
+                    Button {
+                        showingManageSubscriptions = true
+                    } label: {
+                        Label("管理订阅", systemImage: "creditcard")
+                    }
+                    .foregroundStyle(LearnNowPalette.textPrimary)
+                    .accessibilityIdentifier("settings.cloud.manage")
+                } else {
+                    Button {
+                        onUpgradeCloudSync()
+                    } label: {
+                        Label("升级以开启云同步", systemImage: "icloud")
+                    }
+                    .foregroundStyle(LearnNowPalette.textPrimary)
+                    .accessibilityIdentifier("settings.cloud.upgrade")
+                }
 
                 LabeledContent("状态") {
                     Text(model.syncStatusText)
@@ -91,6 +116,7 @@ struct ProfileSettingsScreen: View {
                 secondaryButton: .cancel()
             )
         }
+        .manageSubscriptionsSheet(isPresented: $showingManageSubscriptions)
         .accessibilityIdentifier("screen.profile.settings")
     }
 }
@@ -101,6 +127,27 @@ private struct CloudSyncConfirmation: Identifiable {
     var id: Bool { enabled }
 }
 
+#Preview("Settings · Upgrade entry") {
+    NavigationStack {
+        ProfileSettingsScreen(
+            model: SettingsScreenModel(
+                title: "设置",
+                syncStatusText: "需要订阅",
+                syncDetailText: "云同步需要订阅。本机学习、复习与路径不受影响。",
+                desiredCloudSyncEnabled: false,
+                requiresRestart: false,
+                isCloudSyncEntitled: false,
+                showsCloudSyncToggle: false
+            ),
+            reminderTime: .constant(Date()),
+            remindersEnabled: .constant(true),
+            isNightModeEnabled: .constant(false),
+            onSetCloudSyncEnabled: { _ in },
+            onUpgradeCloudSync: {}
+        )
+    }
+}
+
 #Preview("Settings · Sync on") {
     NavigationStack {
         ProfileSettingsScreen(
@@ -109,30 +156,15 @@ private struct CloudSyncConfirmation: Identifiable {
                 syncStatusText: "iCloud 同步",
                 syncDetailText: "学习进度、复习记录和个人资料正在通过 iCloud 同步。",
                 desiredCloudSyncEnabled: true,
-                requiresRestart: false
+                requiresRestart: false,
+                isCloudSyncEntitled: true,
+                showsCloudSyncToggle: true
             ),
             reminderTime: .constant(Date()),
             remindersEnabled: .constant(true),
             isNightModeEnabled: .constant(false),
-            onSetCloudSyncEnabled: { _ in }
-        )
-    }
-}
-
-#Preview("Settings · Sync off") {
-    NavigationStack {
-        ProfileSettingsScreen(
-            model: SettingsScreenModel(
-                title: "设置",
-                syncStatusText: "同步已关闭",
-                syncDetailText: "所有数据仅保存在本机；重新开启后可恢复合并。",
-                desiredCloudSyncEnabled: false,
-                requiresRestart: false
-            ),
-            reminderTime: .constant(Date()),
-            remindersEnabled: .constant(false),
-            isNightModeEnabled: .constant(true),
-            onSetCloudSyncEnabled: { _ in }
+            onSetCloudSyncEnabled: { _ in },
+            onUpgradeCloudSync: {}
         )
     }
 }
@@ -145,12 +177,15 @@ private struct CloudSyncConfirmation: Identifiable {
                 syncStatusText: "等待关闭",
                 syncDetailText: "下次启动后停止同步，本机和云端已有记录都不会被删除。",
                 desiredCloudSyncEnabled: false,
-                requiresRestart: true
+                requiresRestart: true,
+                isCloudSyncEntitled: true,
+                showsCloudSyncToggle: true
             ),
             reminderTime: .constant(Date()),
             remindersEnabled: .constant(true),
             isNightModeEnabled: .constant(false),
-            onSetCloudSyncEnabled: { _ in }
+            onSetCloudSyncEnabled: { _ in },
+            onUpgradeCloudSync: {}
         )
     }
 }

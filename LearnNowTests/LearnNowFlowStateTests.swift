@@ -541,10 +541,12 @@ struct LearnNowFlowStateTests {
     @Test
     func settingsModelSeparatesActiveAndNextLaunchCloudSyncChoices() {
         var sut = LearnNowFlowState.homePreview
+        sut.isCloudSyncEntitled = true
         sut.activeCloudSyncEnabled = true
         sut.desiredCloudSyncEnabled = false
         sut.syncAvailability = .available
 
+        #expect(sut.settingsScreenModel.showsCloudSyncToggle)
         #expect(sut.settingsScreenModel.requiresRestart)
         #expect(sut.settingsScreenModel.syncStatusText == "等待关闭")
         #expect(
@@ -559,6 +561,25 @@ struct LearnNowFlowStateTests {
         #expect(!sut.settingsScreenModel.requiresRestart)
         #expect(sut.settingsScreenModel.syncStatusText == "同步已关闭")
         #expect(sut.settingsScreenModel.syncDetailText.contains("重新开启后可恢复合并"))
+    }
+
+    @Test
+    func settingsModelShowsUpgradeEntryWhenNotEntitled() {
+        var sut = LearnNowFlowState.homePreview
+        sut.isCloudSyncEntitled = false
+        sut.activeCloudSyncEnabled = false
+        sut.desiredCloudSyncEnabled = false
+        sut.syncAvailability = .disabled
+
+        #expect(!sut.settingsScreenModel.showsCloudSyncToggle)
+        #expect(!sut.settingsScreenModel.requiresRestart)
+        #expect(sut.settingsScreenModel.syncStatusText == "需要订阅")
+        #expect(sut.settingsScreenModel.syncDetailText.contains("本机学习"))
+        #expect(
+            sut.profileScreenModel.shortcuts
+                .first(where: { $0.kind == .settings })?
+                .subtitle == "需要订阅"
+        )
     }
 
     private func catalogByReversingPages(in moduleID: String) throws -> CourseCatalog {

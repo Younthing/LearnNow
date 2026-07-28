@@ -44,7 +44,13 @@ struct ContentView: View {
         }
         .tint(LearnNowSemanticRole.brand.foreground)
         .preferredColorScheme(store.flow.isNightModeEnabled ? .dark : .light)
-        .task { await store.load(context: modelContext) }
+        .task {
+            await store.load(context: modelContext)
+            await store.startSubscriptions()
+        }
+        .onChange(of: store.subscriptionStore.isCloudSyncEntitled) { _, _ in
+            store.syncSubscriptionEntitlement()
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 store.refreshMemoryTrend()

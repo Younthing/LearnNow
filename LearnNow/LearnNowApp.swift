@@ -20,8 +20,19 @@ struct LearnNowApp: App {
         let usesEphemeralStore = isUITesting || isUnitTesting
         let simulatesActiveCloudSync = isUITesting &&
             processInfo.arguments.contains("-UITestingActiveCloudSyncEnabled")
+
+        let preference = LearnNowCloudSyncPreference.isEnabled()
+        let entitled = SubscriptionEntitlement.isEntitled(processInfo: processInfo)
+        // Avoid a “waiting to enable” state when preference is on but entitlement is missing.
+        if preference, !entitled, !usesEphemeralStore {
+            LearnNowCloudSyncPreference.setEnabled(false)
+        }
+        let gatedCloudSync = LearnNowCloudSyncPreference.effectiveEnabled(
+            preference: LearnNowCloudSyncPreference.isEnabled(),
+            entitled: entitled
+        )
         let activeCloudSyncEnabled = simulatesActiveCloudSync ||
-            (!usesEphemeralStore && LearnNowCloudSyncPreference.isEnabled())
+            (!usesEphemeralStore && gatedCloudSync)
 
         self.activeCloudSyncEnabled = activeCloudSyncEnabled
         self.sharedModelContainer = Result {

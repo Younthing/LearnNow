@@ -36,6 +36,10 @@ struct ProfileContainer: View {
                 )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+            case .subscription:
+                SubscriptionPaywallSheet(store: store)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
         }
         .onChange(of: resetRequest) {
@@ -72,7 +76,8 @@ struct ProfileContainer: View {
                     get: { store.flow.isNightModeEnabled },
                     set: { store.setNightModeEnabled($0) }
                 ),
-                onSetCloudSyncEnabled: { store.setCloudSyncEnabled($0) }
+                onSetCloudSyncEnabled: { store.setCloudSyncEnabled($0) },
+                onUpgradeCloudSync: { presentedSheet = .subscription }
             )
         }
     }

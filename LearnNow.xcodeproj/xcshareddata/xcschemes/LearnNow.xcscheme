@@ -80,6 +80,9 @@
             ReferencedContainer = "container:LearnNow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../../../LearnNow/Configuration/LearnNow.storekit">
+      </StoreKitConfigurationFileReference>
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-InitializeCloudKitSchema"

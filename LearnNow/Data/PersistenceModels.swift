@@ -315,12 +315,17 @@ enum LearnNowCloudSyncPreference {
     static let userDefaultsKey = "learnnow.settings.cloudSyncEnabled"
 
     static func isEnabled(in defaults: UserDefaults = .standard) -> Bool {
-        guard defaults.object(forKey: userDefaultsKey) != nil else { return true }
+        guard defaults.object(forKey: userDefaultsKey) != nil else { return false }
         return defaults.bool(forKey: userDefaultsKey)
     }
 
     static func setEnabled(_ enabled: Bool, in defaults: UserDefaults = .standard) {
         defaults.set(enabled, forKey: userDefaultsKey)
+    }
+
+    /// CloudKit container is only active when the user both prefers sync and holds entitlement.
+    static func effectiveEnabled(preference: Bool, entitled: Bool) -> Bool {
+        preference && entitled
     }
 }
 

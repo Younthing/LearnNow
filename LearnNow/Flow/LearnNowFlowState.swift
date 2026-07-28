@@ -431,6 +431,7 @@ struct LearnNowFlowState: Equatable {
     var syncAvailability: LearnNowSyncAvailability
     var activeCloudSyncEnabled: Bool
     var desiredCloudSyncEnabled: Bool
+    var isCloudSyncEntitled: Bool
     var reviewIntervalTextByRating: [LearnNowReviewRating: String]
     var selectedTab: LearnNowTab = .home
     var currentScreen: LearnNowScreen = .home
@@ -463,7 +464,8 @@ struct LearnNowFlowState: Equatable {
         snapshot: LearningSnapshot = .empty,
         now: Date = Date(),
         activeCloudSyncEnabled: Bool = true,
-        desiredCloudSyncEnabled: Bool? = nil
+        desiredCloudSyncEnabled: Bool? = nil,
+        isCloudSyncEntitled: Bool? = nil
     ) {
         let completedIDs = snapshot.completedLessonIDs
         let firstAvailableIndex = catalog.modules.firstIndex { module in
@@ -506,6 +508,8 @@ struct LearnNowFlowState: Equatable {
         self.activeCloudSyncEnabled = activeCloudSyncEnabled
         self.desiredCloudSyncEnabled = desiredCloudSyncEnabled
             ?? LearnNowCloudSyncPreference.isEnabled()
+        self.isCloudSyncEntitled = isCloudSyncEntitled
+            ?? SubscriptionEntitlement.isEntitled()
         self.reviewIntervalTextByRating = Dictionary(
             uniqueKeysWithValues: LearnNowReviewRating.allCases.map { ($0, $0.interval) }
         )

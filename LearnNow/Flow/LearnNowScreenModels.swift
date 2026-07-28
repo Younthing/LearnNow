@@ -639,20 +639,21 @@ extension LearnNowFlowState {
     }
 
     var settingsScreenModel: SettingsScreenModel {
-        let requiresRestart = activeCloudSyncEnabled != desiredCloudSyncEnabled
+        let showsToggle = isCloudSyncEntitled
+        let requiresRestart = showsToggle && activeCloudSyncEnabled != desiredCloudSyncEnabled
         let statusText: String
-        if requiresRestart {
-            statusText = desiredCloudSyncEnabled ? "等待开启" : "等待关闭"
-        } else {
-            statusText = syncAvailability.displayText
-        }
-
         let detailText: String
-        if requiresRestart {
+
+        if !showsToggle {
+            statusText = "需要订阅"
+            detailText = "云同步需要订阅。本机学习、复习与路径不受影响；本地和 iCloud 中已有记录都不会被删除。"
+        } else if requiresRestart {
+            statusText = desiredCloudSyncEnabled ? "等待开启" : "等待关闭"
             detailText = desiredCloudSyncEnabled
                 ? "下次启动时连接 iCloud，并与本机学习记录合并。"
                 : "下次启动后停止同步，本机和云端已有记录都不会被删除。"
         } else {
+            statusText = syncAvailability.displayText
             switch syncAvailability {
             case .available:
                 detailText = "学习进度、复习记录和个人资料正在通过 iCloud 同步。"
@@ -672,7 +673,9 @@ extension LearnNowFlowState {
             syncStatusText: statusText,
             syncDetailText: detailText,
             desiredCloudSyncEnabled: desiredCloudSyncEnabled,
-            requiresRestart: requiresRestart
+            requiresRestart: requiresRestart,
+            isCloudSyncEntitled: isCloudSyncEntitled,
+            showsCloudSyncToggle: showsToggle
         )
     }
 

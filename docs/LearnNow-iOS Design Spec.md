@@ -1677,9 +1677,10 @@ Lesson 过程状态：
   `CatalogV2.json`；App 优先加载已验证的 last-known-good，缺失时使用 Bundle 基线。
 - 内容更新使用签名 manifest、完整文件 SHA-256 校验和原子切换；远程内容只能组合 App
   已发布的白名单 capability，不能下发脚本或新组件代码。
-- 个人进度、XP 事件、复习日志和卡片偏好由 SwiftData 保存，并同步到 Private CloudKit。
+- 个人进度、XP 事件、复习日志和卡片偏好由 SwiftData 保存；在有效云同步订阅且用户打开偏好后，同步到 Private CloudKit（`activeCloudSync = preference && isSubscribed`）。未订阅时设置页仅显示升级入口；课程 / 复习 / 路径本身保持免费。
 - `ReviewScheduleCacheRecord` 仅是本地派生缓存；`ReviewLogRecord` 是复习调度的真相源。
 - 主题和提醒偏好保存在设备 `UserDefaults` / `AppStorage` 边界，不参与 CloudKit 同步。
+- 云同步偏好默认关闭；关闭或订阅过期后下次启动不再挂接 CloudKit，不删除本机与云端已有记录。
 - 启动状态明确区分 `loading`、`ready`、`catalogError` 和 `persistenceError`；iCloud 不可用时进入“仅本机”，不阻塞学习。
 - CloudKit 实体不使用唯一约束或持久化对象关系，重复记录在读取快照时按业务规则确定性合并。
 

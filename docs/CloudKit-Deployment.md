@@ -2,6 +2,14 @@
 
 LearnNow 使用 Private CloudKit 数据库 `iCloud.fanxi.LearnNow`。课程内容不上传 CloudKit；个人进度、XP 事件、复习日志、卡片偏好与个人资料偏好由 SwiftData 自动同步，FSRS 当前状态缓存只保存在设备本地。
 
+## 订阅要求
+
+云同步是订阅权益：需要有效的月订或年订（`fanxi.LearnNow.cloudsync.monthly` / `fanxi.LearnNow.cloudsync.yearly`）且用户在设置中打开云同步偏好后，启动时才会挂接 CloudKit。
+
+生效规则：`activeCloudSync = preference && isSubscribed`。偏好默认关闭；未订阅时设置页显示「升级以开启云同步」，已订阅后才显示真实开关。关闭偏好、订阅过期或撤销后，下次启动不再挂接 CloudKit；本机与 iCloud 中已有记录都不会被删除。课程学习、Anki 复习与路径本身保持免费，不设付费墙。
+
+本地调试可使用 `LearnNow/Configuration/LearnNow.storekit`（已挂到 LearnNow scheme 的 StoreKit Configuration）。真机请用 Sandbox 账号验收购买、恢复与过期。
+
 ## Development schema 初始化
 
 1. 使用带 iCloud entitlement 的 Debug 签名在真机或已登录 iCloud 的模拟器运行。

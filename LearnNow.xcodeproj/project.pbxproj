@@ -666,6 +666,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		F60000022FB0000000000002 /* XCLocalSwiftPackageReference "Packages/LearnNowContentKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LearnNowContentKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		F50000022FA0000000000002 /* XCRemoteSwiftPackageReference "swift-fsrs" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -676,13 +683,6 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		F60000022FB0000000000002 /* XCLocalSwiftPackageReference "Packages/LearnNowContentKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/LearnNowContentKit;
-		};
-/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		F50000032FA0000000000003 /* FSRS */ = {

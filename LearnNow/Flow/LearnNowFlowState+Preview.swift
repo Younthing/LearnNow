@@ -86,7 +86,8 @@ extension LearnNowFlowState {
             catalog: LearnNowFlowFixtures.catalog,
             snapshot: .empty,
             activeCloudSyncEnabled: false,
-            desiredCloudSyncEnabled: false
+            desiredCloudSyncEnabled: false,
+            isCloudSyncEntitled: false
         )
         flow.selectTab(.profile)
         return flow
@@ -97,7 +98,8 @@ extension LearnNowFlowState {
             catalog: LearnNowFlowFixtures.catalog,
             snapshot: LearnNowFlowFixtures.learningSnapshot,
             activeCloudSyncEnabled: false,
-            desiredCloudSyncEnabled: false
+            desiredCloudSyncEnabled: false,
+            isCloudSyncEntitled: true
         )
     }
 }

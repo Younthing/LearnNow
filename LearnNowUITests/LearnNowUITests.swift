@@ -26,6 +26,7 @@ final class LearnNowUITests: XCTestCase {
         app.launchArguments += ["-UIAnimationsDisabled", "YES"]
         app.launchArguments += ["-UITestingResetData", "YES"]
         app.launchArguments += ["-UITestingActiveCloudSyncEnabled"]
+        app.launchArguments += ["-UITestingCloudSyncEntitled"]
         app.launchArguments += ["-learnnow.settings.cloudSyncEnabled", "YES"]
         app.launchArguments += ["-learnnow.settings.nightMode", "NO"]
 
@@ -310,6 +311,44 @@ final class LearnNowUITests: XCTestCase {
 
         tapWhenHittable(profileTab)
         assertExists(element(matchingIdentifier: "screen.profile"))
+    }
+
+    @MainActor
+    func testSettingsShowsUpgradeEntryWhenNotEntitled() throws {
+        // Relaunch without cloud-sync entitlement to assert upgrade UX.
+        app.terminate()
+        app = XCUIApplication()
+        app.launchArguments = [
+            "-UIAnimationsDisabled", "YES",
+            "-UITestingResetData", "YES",
+            "-learnnow.settings.cloudSyncEnabled", "NO",
+            "-learnnow.settings.nightMode", "NO",
+        ]
+        app.launch()
+
+        let home = element(matchingIdentifier: "screen.home")
+        XCTAssertTrue(
+            home.waitForExistence(timeout: defaultTimeout),
+            "App did not present screen.home within \(defaultTimeout)s after relaunch."
+        )
+
+        tapWhenHittable(element(matchingIdentifier: "tab.profile"))
+        tapWhenHittable(element(matchingIdentifier: "profile.shortcut.settings"))
+        assertExists(element(matchingIdentifier: "screen.profile.settings"))
+
+        let upgrade = element(matchingIdentifier: "settings.cloud.upgrade")
+        assertExists(upgrade)
+        XCTAssertFalse(
+            app.switches.matching(identifier: "settings.cloud.toggle").firstMatch.exists
+        )
+        assertExists(
+            app.staticTexts
+                .matching(NSPredicate(format: "label CONTAINS %@", "需要订阅"))
+                .firstMatch
+        )
+
+        tapWhenHittable(upgrade)
+        assertExists(element(matchingIdentifier: "sheet.subscription.paywall"))
     }
 
     @MainActor

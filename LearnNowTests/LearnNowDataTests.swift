@@ -486,18 +486,26 @@ struct LearnNowDataTests {
     }
 
     @Test
-    func cloudSyncPreferenceDefaultsOnAndPersistsExplicitChoice() throws {
+    func cloudSyncPreferenceDefaultsOffAndPersistsExplicitChoice() throws {
         let suiteName = "LearnNowDataTests.cloudSync.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
-        #expect(LearnNowCloudSyncPreference.isEnabled(in: defaults))
+        #expect(!LearnNowCloudSyncPreference.isEnabled(in: defaults))
 
         LearnNowCloudSyncPreference.setEnabled(false, in: defaults)
         #expect(!LearnNowCloudSyncPreference.isEnabled(in: defaults))
 
         LearnNowCloudSyncPreference.setEnabled(true, in: defaults)
         #expect(LearnNowCloudSyncPreference.isEnabled(in: defaults))
+    }
+
+    @Test
+    func cloudSyncEffectiveEnabledRequiresPreferenceAndEntitlement() {
+        #expect(!LearnNowCloudSyncPreference.effectiveEnabled(preference: false, entitled: false))
+        #expect(!LearnNowCloudSyncPreference.effectiveEnabled(preference: true, entitled: false))
+        #expect(!LearnNowCloudSyncPreference.effectiveEnabled(preference: false, entitled: true))
+        #expect(LearnNowCloudSyncPreference.effectiveEnabled(preference: true, entitled: true))
     }
 
     @Test

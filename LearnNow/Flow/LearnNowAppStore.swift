@@ -15,6 +15,7 @@ final class LearnNowAppStore {
     var loadState: LoadState = .loading
     var flow: LearnNowFlowState
     var lastActionError: String?
+    let subscriptionStore: SubscriptionStore
 
     private let catalogRepository: any CatalogRepository
     private let scheduler: any ReviewScheduler
@@ -29,16 +30,20 @@ final class LearnNowAppStore {
         catalogRepository: (any CatalogRepository)? = nil,
         scheduler: (any ReviewScheduler)? = nil,
         clock: (any LearnNowClock)? = nil,
-        activeCloudSyncEnabled: Bool = true
+        activeCloudSyncEnabled: Bool = true,
+        subscriptionStore: SubscriptionStore? = nil
     ) {
         let resolvedScheduler = scheduler ?? FSRSReviewScheduler()
         let resolvedClock = clock ?? SystemLearnNowClock()
+        let resolvedSubscriptionStore = subscriptionStore ?? SubscriptionStore()
+        self.subscriptionStore = resolvedSubscriptionStore
         self.flow = LearnNowFlowState(
             catalog: .empty,
             snapshot: .empty,
             now: resolvedClock.now,
             activeCloudSyncEnabled: activeCloudSyncEnabled,
-            desiredCloudSyncEnabled: LearnNowCloudSyncPreference.isEnabled()
+            desiredCloudSyncEnabled: LearnNowCloudSyncPreference.isEnabled(),
+            isCloudSyncEntitled: resolvedSubscriptionStore.isCloudSyncEntitled
         )
         self.catalogRepository = catalogRepository ?? ContentCatalogRepositoryFactory.make()
         self.scheduler = resolvedScheduler
@@ -73,7 +78,8 @@ final class LearnNowAppStore {
                 snapshot: snapshot,
                 now: clock.now,
                 activeCloudSyncEnabled: activeCloudSyncEnabled,
-                desiredCloudSyncEnabled: LearnNowCloudSyncPreference.isEnabled()
+                desiredCloudSyncEnabled: LearnNowCloudSyncPreference.isEnabled(),
+                isCloudSyncEntitled: subscriptionStore.isCloudSyncEntitled
             )
             refreshMemoryTrend()
             prepareReviewPreviews()
@@ -82,6 +88,43 @@ final class LearnNowAppStore {
         } catch {
             loadState = .persistenceError(error.localizedDescription)
         }
+    }
+
+    func startSubscriptions() async {
+        await subscriptionStore.start()
+        syncSubscriptionEntitlement()
+    }
+
+    func syncSubscriptionEntitlement() {
+        let entitled = subscriptionStore.isCloudSyncEntitled
+        flow.isCloudSyncEntitled = entitled
+        if !entitled, flow.desiredCloudSyncEnabled {
+            LearnNowCloudSyncPreference.setEnabled(false)
+            flow.desiredCloudSyncEnabled = false
+        }
+    }
+
+    func purchaseCloudSync(productID: String) async -> Bool {
+        do {
+            try await subscriptionStore.purchase(productID: productID)
+            syncSubscriptionEntitlement()
+            guard subscriptionStore.isCloudSyncEntitled else { return false }
+            setCloudSyncEnabled(true)
+            return true
+        } catch {
+            lastActionError = error.localizedDescription
+            return false
+        }
+    }
+
+    func restorePurchases() async -> Bool {
+        await subscriptionStore.restore()
+        syncSubscriptionEntitlement()
+        if subscriptionStore.isCloudSyncEntitled {
+            setCloudSyncEnabled(true)
+            return true
+        }
+        return false
     }
 
     func refreshContentInBackground() {
@@ -231,6 +274,9 @@ final class LearnNowAppStore {
     func setNightModeEnabled(_ enabled: Bool) { flow.setNightModeEnabled(enabled) }
 
     func setCloudSyncEnabled(_ enabled: Bool) {
+        if enabled, !subscriptionStore.isCloudSyncEntitled {
+            return
+        }
         LearnNowCloudSyncPreference.setEnabled(enabled)
         flow.desiredCloudSyncEnabled = enabled
     }

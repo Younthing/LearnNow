@@ -7,6 +7,7 @@ enum ProfileRoute: Hashable {
 
 enum ProfileSheet: String, Identifiable {
     case editProfile
+    case subscription
 
     var id: String { rawValue }
 }
@@ -128,4 +129,6 @@ struct SettingsScreenModel: Equatable {
     let syncDetailText: String
     let desiredCloudSyncEnabled: Bool
     let requiresRestart: Bool
+    let isCloudSyncEntitled: Bool
+    let showsCloudSyncToggle: Bool
 }
