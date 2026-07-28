@@ -365,6 +365,7 @@ struct LearningSnapshot: Equatable, Sendable {
     var lastVisitedLessonID: String?
     var lastVisitedPageID: String?
     var highestPageOrderByLessonID: [String: Int] = [:]
+    var visitedPageIDsByLessonID: [String: Set<String>] = [:]
     var activityByLocalDay: [String: Int] = [:]
     var reviewMemoryByCardID: [String: ReviewMemorySnapshot] = [:]
     var profilePreference: ProfilePreference = ProfilePreference()

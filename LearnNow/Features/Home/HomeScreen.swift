@@ -472,7 +472,7 @@ private struct TipCopy: View {
                 .foregroundStyle(LearnNowPalette.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(tip.body)
+            InlineContentText(content: tip.body)
                 .font(LearnNowTypography.screenSubtitle)
                 .foregroundStyle(LearnNowPalette.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)

@@ -35,8 +35,7 @@ struct ProfileEditSheet: View {
 
                         TextField("学习者", text: $displayName)
                             .focused($isNameFocused)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
+                            .learnNowPlainTextInputBehavior()
                             .font(LearnNowTypography.body)
                             .padding(14)
                             .background(
@@ -104,7 +103,7 @@ struct ProfileEditSheet: View {
             }
             .background(LearnNowPalette.canvas.ignoresSafeArea())
             .navigationTitle("编辑资料")
-            .navigationBarTitleDisplayMode(.inline)
+            .learnNowInlineNavigationTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") { dismiss() }

@@ -44,8 +44,8 @@ struct FavoritesScreen: View {
         }
         .background(LearnNowPalette.canvas.ignoresSafeArea())
         .navigationTitle(model.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
+        .learnNowInlineNavigationTitle()
+        .learnNowNavigationBarVisible()
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if model.canStartReview {
                 FullWidthButton(

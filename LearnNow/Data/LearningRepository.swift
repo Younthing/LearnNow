@@ -54,6 +54,11 @@ final class SwiftDataLearningRepository: LearningRepository {
             mergedProgress.values.compactMap { $0.completedAt == nil ? nil : $0.lessonID }
         )
         let knownLessonIDs = Set(catalog.modules.map(\.id))
+        let lessonIDByPageID = Dictionary(
+            uniqueKeysWithValues: catalog.modules.flatMap { module in
+                module.lessonPages.map { ($0.id, module.id) }
+            }
+        )
         let knownCardIDs = Set(catalog.reviewCards.map(\.id))
         let latestKnownProgress = mergedProgress.values
             .filter { knownLessonIDs.contains($0.lessonID) }
@@ -69,6 +74,50 @@ final class SwiftDataLearningRepository: LearningRepository {
                 .filter { completedLessonIDs.contains($0.id) }
                 .flatMap(\.reviewCardIDs)
         )
+
+        let pageVisitEvents = uniqueEvents.filter { $0.kindRawValue == "pageVisit" }
+        let lessonIDsWithPageVisitEvents = Set(catalog.modules.compactMap { module in
+            let eventKeyPrefix = "page-visit:\(module.id):"
+            return pageVisitEvents.contains { $0.eventKey.hasPrefix(eventKeyPrefix) }
+                ? module.id
+                : nil
+        })
+        var visitedPageIDsByLessonID: [String: Set<String>] = [:]
+        for event in pageVisitEvents {
+            guard let lessonID = lessonIDByPageID[event.contentID] else { continue }
+            visitedPageIDsByLessonID[lessonID, default: []].insert(event.contentID)
+        }
+
+        // V1 stored only an order and the last page. Convert that legacy prefix once
+        // into stable page IDs. Once any pageVisit event exists, future insertions or
+        // reordering never reinterpret the old numeric order.
+        for module in catalog.modules {
+            guard !lessonIDsWithPageVisitEvents.contains(module.id),
+                  let progress = mergedProgress[module.id],
+                  !module.lessonPages.isEmpty
+            else {
+                continue
+            }
+
+            let upperBound = min(max(progress.highestPageOrder, 0), module.lessonPages.count - 1)
+            let migratedPageIDs = Set(module.lessonPages[0 ... upperBound].map(\.id))
+                .union(progress.lastPageID.flatMap { lessonIDByPageID[$0] == module.id ? [$0] : nil } ?? [])
+            visitedPageIDsByLessonID[module.id] = migratedPageIDs
+
+            for pageID in migratedPageIDs {
+                context.insert(
+                    LearningEventRecord(
+                        eventKey: pageVisitEventKey(lessonID: module.id, pageID: pageID),
+                        kindRawValue: "pageVisit",
+                        contentID: pageID,
+                        occurredAt: progress.updatedAt,
+                        localDay: "",
+                        timeZoneID: clock.timeZone.identifier,
+                        xpDelta: 0
+                    )
+                )
+            }
+        }
 
         let logsByCard = Dictionary(
             grouping: logRecords.filter { knownCardIDs.contains($0.cardID) },
@@ -142,6 +191,7 @@ final class SwiftDataLearningRepository: LearningRepository {
             highestPageOrderByLessonID: mergedProgress
                 .filter { knownLessonIDs.contains($0.key) }
                 .mapValues(\.highestPageOrder),
+            visitedPageIDsByLessonID: visitedPageIDsByLessonID,
             activityByLocalDay: activityByDay,
             reviewMemoryByCardID: reviewMemoryByCardID,
             profilePreference: profilePreferenceRecord.map {
@@ -167,6 +217,24 @@ final class SwiftDataLearningRepository: LearningRepository {
         record.lastPageID = pageID
         record.highestPageOrder = max(record.highestPageOrder, pageOrder)
         record.updatedAt = clock.now
+
+        let eventKey = pageVisitEventKey(lessonID: lessonID, pageID: pageID)
+        let existingKeys = Set(
+            try context.fetch(FetchDescriptor<LearningEventRecord>()).map(\.eventKey)
+        )
+        if !existingKeys.contains(eventKey) {
+            context.insert(
+                LearningEventRecord(
+                    eventKey: eventKey,
+                    kindRawValue: "pageVisit",
+                    contentID: pageID,
+                    occurredAt: clock.now,
+                    localDay: localDay(for: clock.now),
+                    timeZoneID: clock.timeZone.identifier,
+                    xpDelta: 0
+                )
+            )
+        }
         try context.save()
     }
 
@@ -297,10 +365,13 @@ final class SwiftDataLearningRepository: LearningRepository {
                 return $0.highestPageOrder < $1.highestPageOrder
             }
             latest.highestPageOrder = furthest?.highestPageOrder ?? latest.highestPageOrder
-            latest.lastPageID = furthest?.lastPageID ?? latest.lastPageID
             latest.completedAt = candidates.compactMap(\.completedAt).min()
             return latest
         }
+    }
+
+    private func pageVisitEventKey(lessonID: String, pageID: String) -> String {
+        "page-visit:\(lessonID):\(pageID)"
     }
 
     private func mergeEvents(_ records: [LearningEventRecord]) -> [LearningEventRecord] {

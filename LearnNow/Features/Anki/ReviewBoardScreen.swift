@@ -190,7 +190,7 @@ private struct ReviewFlashcardView: View {
 
                 if isFlipped {
                     VStack(spacing: 18) {
-                        Text(card.backBody)
+                        InlineContentText(content: card.backBody)
                             .font(LearnNowTypography.body)
                             .foregroundStyle(LearnNowPalette.textPrimary)
                             .multilineTextAlignment(.center)
@@ -198,7 +198,7 @@ private struct ReviewFlashcardView: View {
                             .fixedSize(horizontal: false, vertical: true)
 
                         InsetCard(contentPadding: 16) {
-                            Text(card.backHighlight)
+                            InlineContentText(content: card.backHighlight)
                                 .font(LearnNowTypography.cardTitle)
                                 .foregroundStyle(LearnNowPalette.color(for: .pink))
                                 .multilineTextAlignment(.center)

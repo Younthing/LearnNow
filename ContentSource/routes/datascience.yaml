@@ -1,0 +1,17 @@
+order: 10
+id: datascience
+title: 数据科学与人工智能
+subtitle: 统计 · 机器学习 · 深度学习
+systemImage: cpu
+accent: blue
+cta: 继续学习
+interactive: true
+trackIDs:
+  - statistics
+  - machineLearning
+  - deepLearning
+moduleIDs:
+  - stats
+  - probability
+  - hypothesis
+  - regression

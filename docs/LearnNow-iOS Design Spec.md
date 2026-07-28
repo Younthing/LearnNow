@@ -1673,7 +1673,10 @@ Lesson 过程状态：
 
 ### 5.0 数据边界与启动状态
 
-- 课程内容由随 App 发布、带 `schemaVersion` 的 `CatalogV1.json` 提供，使用稳定内容 ID 关联。
+- 课程作者源为受限 Markdown/YAML，经 `learnnow-content` 编译为强类型
+  `CatalogV2.json`；App 优先加载已验证的 last-known-good，缺失时使用 Bundle 基线。
+- 内容更新使用签名 manifest、完整文件 SHA-256 校验和原子切换；远程内容只能组合 App
+  已发布的白名单 capability，不能下发脚本或新组件代码。
 - 个人进度、XP 事件、复习日志和卡片偏好由 SwiftData 保存，并同步到 Private CloudKit。
 - `ReviewScheduleCacheRecord` 仅是本地派生缓存；`ReviewLogRecord` 是复习调度的真相源。
 - 主题和提醒偏好保存在设备 `UserDefaults` / `AppStorage` 边界，不参与 CloudKit 同步。
@@ -2352,7 +2355,7 @@ Home 的月度学习记录遵循以下规则：
 - Dashboard 时间范围切换
 - Heatmap 单日详情 drill-down
 - Routes 状态筛选
-- CloudKit Public Database、CMS、远程课程下发和 FSRS 参数训练器
+- CloudKit Public Database、CMS 直连和 FSRS 参数训练器
 
 ### 8.3 已确定规则
 

@@ -11,16 +11,16 @@ struct LearnNowRouter {
         flow.showRoutes()
     }
 
-    func openPath(flow: inout LearnNowFlowState) {
-        flow.openPath()
+    func openPath(routeID: String? = nil, flow: inout LearnNowFlowState) {
+        flow.openPath(routeID: routeID)
     }
 
     func openPathForLoadedLesson(flow: inout LearnNowFlowState) {
         flow.openPathForLoadedLesson()
     }
 
-    func selectRouteTrack(_ track: LearnNowRouteTrack, flow: inout LearnNowFlowState) {
-        flow.selectRouteTrack(track)
+    func selectRouteTrack(_ trackID: String, flow: inout LearnNowFlowState) {
+        flow.selectRouteTrack(trackID)
     }
 
     func openLesson(flow: inout LearnNowFlowState) {

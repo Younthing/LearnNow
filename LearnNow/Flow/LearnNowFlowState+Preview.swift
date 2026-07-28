@@ -2,29 +2,29 @@ import Foundation
 
 extension LearnNowFlowState {
     static var homePreview: Self {
-        Self()
+        previewState()
     }
 
     static var routesPreview: Self {
-        var flow = Self()
+        var flow = previewState()
         flow.showRoutes()
         return flow
     }
 
     static var pathPreview: Self {
-        var flow = Self()
+        var flow = previewState()
         flow.openPath()
         return flow
     }
 
     static var lessonPreview: Self {
-        var flow = Self()
+        var flow = previewState()
         flow.openLesson()
         return flow
     }
 
     static var completionPreview: Self {
-        var flow = Self()
+        var flow = previewState()
         flow.openLesson()
         flow.answerCurrentLesson(with: "t-test-robust")
         flow.advanceLesson()
@@ -34,13 +34,13 @@ extension LearnNowFlowState {
     }
 
     static var reviewBoardPreview: Self {
-        var flow = Self()
+        var flow = previewState()
         flow.selectTab(.anki)
         return flow
     }
 
     static var reviewBoardEmptyPreview: Self {
-        var flow = Self()
+        var flow = previewState()
         flow.appliedReviewFilters = LearnNowReviewFilters(
             topics: ["描述统计"],
             moduleIDs: ["regression"]
@@ -51,7 +51,7 @@ extension LearnNowFlowState {
     }
 
     static var reviewBoardFilteredPreview: Self {
-        var flow = Self()
+        var flow = previewState()
         flow.appliedReviewFilters.favorite = .favoritedOnly
         flow.draftReviewFilters = flow.appliedReviewFilters
         flow.selectTab(.anki)
@@ -59,7 +59,7 @@ extension LearnNowFlowState {
     }
 
     static var profilePreview: Self {
-        var flow = Self()
+        var flow = previewState()
         flow.selectTab(.profile)
         return flow
     }
@@ -81,11 +81,21 @@ extension LearnNowFlowState {
 
     static var profileEmptyPreview: Self {
         var flow = Self(
+            catalog: LearnNowFlowFixtures.catalog,
             snapshot: .empty,
             activeCloudSyncEnabled: false,
             desiredCloudSyncEnabled: false
         )
         flow.selectTab(.profile)
         return flow
+    }
+
+    private static func previewState() -> Self {
+        Self(
+            catalog: LearnNowFlowFixtures.catalog,
+            snapshot: LearnNowFlowFixtures.learningSnapshot,
+            activeCloudSyncEnabled: false,
+            desiredCloudSyncEnabled: false
+        )
     }
 }

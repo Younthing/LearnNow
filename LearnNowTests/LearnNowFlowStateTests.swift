@@ -14,7 +14,7 @@ struct LearnNowFlowStateTests {
 
     @Test
     func selectingTopLevelTabsUpdatesSelectedTabAndScreen() {
-        var sut = LearnNowFlowState()
+        var sut = LearnNowFlowState.homePreview
 
         sut.selectTab(.routes)
         #expect(sut.selectedTab == .routes)
@@ -35,7 +35,7 @@ struct LearnNowFlowStateTests {
 
     @Test
     func homePresentationKeepsTypedStreakValue() {
-        var sut = LearnNowFlowState()
+        var sut = LearnNowFlowState.homePreview
         sut.streakDays = 14
 
         #expect(sut.homeScreenModel.streakDays == 14)
@@ -44,7 +44,7 @@ struct LearnNowFlowStateTests {
 
     @Test
     func nestedLearningFlowKeepsRoutesTabSelected() {
-        var sut = LearnNowFlowState()
+        var sut = LearnNowFlowState.homePreview
 
         sut.openPath()
         #expect(sut.currentScreen == .routes)
@@ -59,19 +59,19 @@ struct LearnNowFlowStateTests {
 
     @Test
     func selectingRouteTrackFiltersVisiblePathNodes() {
-        var sut = LearnNowFlowState()
+        var sut = LearnNowFlowState.homePreview
         sut.openPath()
 
-        #expect(sut.selectedRouteTrack == .statistics)
+        #expect(sut.selectedRouteTrackID == "statistics")
         #expect(
             sut.visiblePathNodes.map(\.id) ==
-            ["stats", "probability", "hypothesis", "confidence-intervals", "anova", "experiment-design", "modeling-hypothesis"]
+            ["stats", "probability", "hypothesis"]
         )
 
-        sut.selectRouteTrack(.machineLearning)
+        sut.selectRouteTrack("machineLearning")
         #expect(sut.visiblePathNodes.map(\.id) == ["regression"])
 
-        sut.selectRouteTrack(.deepLearning)
+        sut.selectRouteTrack("deepLearning")
         #expect(sut.visiblePathNodes.isEmpty)
     }
 
@@ -82,24 +82,34 @@ struct LearnNowFlowStateTests {
         sut.finishLearning()
         #expect(sut.currentScreen == .routes)
         #expect(sut.routesDestination == .path)
-        #expect(sut.selectedRouteTrack == .statistics)
+        #expect(sut.selectedRouteTrackID == "statistics")
 
         sut.openLesson(moduleID: "hypothesis")
         #expect(sut.currentScreen == .routes)
         #expect(sut.routesDestination == .lesson)
         #expect(sut.currentLessonTitle == "假设检验")
-        #expect(sut.currentLessonPageIndex == 0)
+        #expect(sut.currentLessonPageIndex == 1)
+        #expect(sut.currentLessonPage.id == "hypothesis-page-2")
     }
 
     @Test
     func incorrectLessonAnswerCanBeRetried() {
-        var sut = LearnNowFlowState()
+        var sut = LearnNowFlowState.homePreview
         sut.openLesson()
 
         sut.answerCurrentLesson(with: "strict-normality")
 
         #expect(sut.currentLessonPage.answerState == .incorrect(optionID: "strict-normality"))
         #expect(sut.currentLessonPage.callToAction == .retry)
+        #expect(
+            sut.lessonScreenModel.pages[0]
+                .exercisesByID["hypothesis-page-1.quiz"]?
+                .feedback?
+                .body
+                .map(\.plainText)
+                .joined() ==
+                "正态性是常用假设，但轻微偏离并不等于方法绝对不可用。"
+        )
 
         sut.retryCurrentLessonQuestion()
 
@@ -109,7 +119,7 @@ struct LearnNowFlowStateTests {
 
     @Test
     func completingLessonAwardsXPAndShowsCompletionScreen() {
-        var sut = LearnNowFlowState()
+        var sut = LearnNowFlowState.homePreview
         sut.openLesson()
 
         sut.answerCurrentLesson(with: "t-test-robust")
@@ -128,11 +138,84 @@ struct LearnNowFlowStateTests {
         #expect(sut.currentScreen == .routes)
         #expect(sut.routesDestination == .completion)
         #expect(sut.totalXP == 1_255)
-        #expect(sut.generatedReviewTags == ["t 检验", "P值定义", "数据稳健性"])
+        #expect(sut.generatedReviewTags == ["P值", "第一类错误"])
         #expect(sut.hasNextLesson)
         #expect(sut.nextLessonTitle == "线性回归模型")
         #expect(sut.pathNodes[2].status == .done)
         #expect(sut.pathNodes[3].status == .current)
+    }
+
+    @Test
+    func tipRotationIsStableAndOnlyIncludesUnlockedModules() {
+        var locked = LearnNowFlowState(
+            catalog: LearnNowFlowFixtures.catalog,
+            snapshot: .empty,
+            now: Date(timeIntervalSince1970: 1_752_787_800)
+        )
+        locked.tipRotationDayOrdinal = 1
+        #expect(locked.homeScreenModel.knowledgeTip.title == "偏态分布别只看均值")
+
+        var unlocked = LearnNowFlowState.homePreview
+        unlocked.tipRotationDayOrdinal = 0
+        let firstTitle = unlocked.homeScreenModel.knowledgeTip.title
+        #expect(firstTitle == "偏态分布别只看均值")
+        #expect(unlocked.homeScreenModel.knowledgeTip.title == firstTitle)
+
+        unlocked.tipRotationDayOrdinal = 1
+        #expect(unlocked.homeScreenModel.knowledgeTip.title == "p 值不是「原假设为真的概率」")
+    }
+
+    @Test
+    func completedModuleWithAnUnvisitedStablePageIsMarkedAsNewContent() {
+        var snapshot = LearnNowFlowFixtures.learningSnapshot
+        snapshot.completedLessonIDs.insert("hypothesis")
+        snapshot.visitedPageIDsByLessonID["hypothesis"] = ["hypothesis-page-1"]
+
+        let sut = LearnNowFlowState(
+            catalog: LearnNowFlowFixtures.catalog,
+            snapshot: snapshot
+        )
+        let hypothesis = sut.pathNodes.first(where: { $0.id == "hypothesis" })
+
+        #expect(hypothesis?.status == .done)
+        #expect(hypothesis?.hasNewContent == true)
+        #expect(hypothesis?.subtitle.contains("有新内容") == true)
+    }
+
+    @Test
+    func reopeningCompletedModuleWithNewContentStartsAtFirstUnvisitedPage() {
+        var snapshot = LearnNowFlowFixtures.learningSnapshot
+        snapshot.completedLessonIDs.insert("hypothesis")
+        snapshot.visitedPageIDsByLessonID["hypothesis"] = ["hypothesis-page-1"]
+        var sut = LearnNowFlowState(
+            catalog: LearnNowFlowFixtures.catalog,
+            snapshot: snapshot
+        )
+
+        sut.openLesson(moduleID: "hypothesis")
+
+        #expect(sut.completedLessonIDs.contains("hypothesis"))
+        #expect(sut.currentLessonPage.id == "hypothesis-page-2")
+        #expect(sut.pathNodes.first(where: { $0.id == "hypothesis" })?.status == .done)
+    }
+
+    @Test
+    func stablePageIDRestoresAfterPageReorderAndStillMarksUnvisitedContent() throws {
+        let catalog = try catalogByReversingPages(in: "hypothesis")
+        var snapshot = LearnNowFlowFixtures.learningSnapshot
+        snapshot.completedLessonIDs.insert("hypothesis")
+        snapshot.lastVisitedLessonID = "hypothesis"
+        snapshot.lastVisitedPageID = "hypothesis-page-2"
+        snapshot.highestPageOrderByLessonID["hypothesis"] = 1
+        snapshot.visitedPageIDsByLessonID["hypothesis"] = ["hypothesis-page-2"]
+
+        let sut = LearnNowFlowState(catalog: catalog, snapshot: snapshot)
+        let hypothesis = sut.pathNodes.first(where: { $0.id == "hypothesis" })
+
+        #expect(sut.currentLessonPage.id == "hypothesis-page-2")
+        #expect(sut.currentLessonPageIndex == 0)
+        #expect(hypothesis?.status == .done)
+        #expect(hypothesis?.hasNewContent == true)
     }
 
     @Test
@@ -162,7 +245,7 @@ struct LearnNowFlowStateTests {
 
     @Test
     func reviewFiltersDefaultModelContainsEveryCardAndNoEmptyState() {
-        let sut = LearnNowFlowState()
+        let sut = LearnNowFlowState.homePreview
         let model = sut.reviewFiltersSheetModel
 
         #expect(model.resultCount == 7)
@@ -174,7 +257,7 @@ struct LearnNowFlowStateTests {
 
     @Test
     func incompatibleReviewFacetsShowNoMatchesAndResetRestoresDefaultResults() {
-        var sut = LearnNowFlowState()
+        var sut = LearnNowFlowState.homePreview
 
         sut.toggleDraftTopic("描述统计")
         sut.toggleDraftModule("regression")
@@ -193,7 +276,7 @@ struct LearnNowFlowStateTests {
 
     @Test
     func reviewFiltersDistinguishAnEmptyCardPoolFromNoMatches() {
-        let sut = LearnNowFlowState(snapshot: .empty)
+        let sut = LearnNowFlowState(catalog: LearnNowFlowFixtures.catalog, snapshot: .empty)
         let model = sut.reviewFiltersSheetModel
 
         #expect(sut.reviewCards.isEmpty)
@@ -205,7 +288,7 @@ struct LearnNowFlowStateTests {
 
     @Test
     func draftReviewFiltersDoNotChangeActiveCardsUntilApplied() {
-        var sut = LearnNowFlowState()
+        var sut = LearnNowFlowState.homePreview
         let initialActiveIDs = sut.activeReviewCards.map(\.id)
 
         sut.toggleDraftTopic("描述统计")
@@ -276,10 +359,9 @@ struct LearnNowFlowStateTests {
 
     @Test
     func settingsModelSeparatesActiveAndNextLaunchCloudSyncChoices() {
-        var sut = LearnNowFlowState(
-            activeCloudSyncEnabled: true,
-            desiredCloudSyncEnabled: false
-        )
+        var sut = LearnNowFlowState.homePreview
+        sut.activeCloudSyncEnabled = true
+        sut.desiredCloudSyncEnabled = false
         sut.syncAvailability = .available
 
         #expect(sut.settingsScreenModel.requiresRestart)
@@ -296,5 +378,39 @@ struct LearnNowFlowStateTests {
         #expect(!sut.settingsScreenModel.requiresRestart)
         #expect(sut.settingsScreenModel.syncStatusText == "同步已关闭")
         #expect(sut.settingsScreenModel.syncDetailText.contains("重新开启后可恢复合并"))
+    }
+
+    private func catalogByReversingPages(in moduleID: String) throws -> CourseCatalog {
+        let catalog = LearnNowFlowFixtures.catalog
+        var modules = catalog.modules
+        let moduleIndex = try #require(modules.firstIndex(where: { $0.id == moduleID }))
+        let module = modules[moduleIndex]
+        modules[moduleIndex] = LearnNowModuleDefinition(
+            id: module.id,
+            trackID: module.trackID,
+            title: module.title,
+            subtitle: module.subtitle,
+            lessonTitle: module.lessonTitle,
+            lessonPages: Array(module.lessonPages.reversed()),
+            reviewTags: module.reviewTags,
+            reviewMessage: module.reviewMessage,
+            prerequisiteModuleIDs: module.prerequisiteModuleIDs,
+            completionXP: module.completionXP,
+            reviewCardIDs: module.reviewCardIDs
+        )
+        return CourseCatalog(
+            schemaVersion: catalog.schemaVersion,
+            releaseVersion: catalog.releaseVersion,
+            locale: catalog.locale,
+            contentRootURL: catalog.contentRootURL,
+            primaryRouteID: catalog.primaryRouteID,
+            tracks: catalog.tracks,
+            routes: catalog.routes,
+            moduleIDsByRouteID: catalog.moduleIDsByRouteID,
+            modules: modules,
+            reviewCards: catalog.reviewCards,
+            dailyTips: catalog.dailyTips,
+            retiredIDs: catalog.retiredIDs
+        )
     }
 }

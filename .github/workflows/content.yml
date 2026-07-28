@@ -1,0 +1,151 @@
+name: Content
+
+on:
+  pull_request:
+    paths:
+      - "ContentSource/**"
+      - "Packages/LearnNowContentKit/**"
+      - "LearnNow/Resources/CatalogV2.json"
+      - "LearnNow/Resources/ContentManifest.json"
+      - "LearnNow/Resources/assets/**"
+      - ".github/workflows/content.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ContentSource/**"
+      - "Packages/LearnNowContentKit/**"
+      - "LearnNow/Resources/CatalogV2.json"
+      - "LearnNow/Resources/ContentManifest.json"
+      - "LearnNow/Resources/assets/**"
+      - ".github/workflows/content.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: content-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Test content compiler
+        run: swift test --package-path Packages/LearnNowContentKit
+
+      - name: Lint author sources
+        run: >-
+          swift run --package-path Packages/LearnNowContentKit
+          learnnow-content lint
+          --source ContentSource
+
+      - name: Resolve immutable diff baseline
+        id: content_baseline
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          baseline_catalog="$RUNNER_TEMP/content-base-CatalogV2.json"
+          baseline_manifest="$RUNNER_TEMP/content-base-ContentManifest.json"
+          catalog_path="LearnNow/Resources/CatalogV2.json"
+          manifest_path="LearnNow/Resources/ContentManifest.json"
+          baseline_ref=""
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            test -n "$PR_BASE_SHA"
+            baseline_ref="$PR_BASE_SHA"
+          elif [ "$EVENT_NAME" = "push" ] &&
+               [ -n "$PUSH_BEFORE_SHA" ] &&
+               [ "$PUSH_BEFORE_SHA" != "0000000000000000000000000000000000000000" ] &&
+               git cat-file -e "$PUSH_BEFORE_SHA:$catalog_path" 2>/dev/null; then
+            baseline_ref="$PUSH_BEFORE_SHA"
+          elif git rev-parse --verify HEAD^ >/dev/null 2>&1 &&
+               git cat-file -e "HEAD^:$catalog_path" 2>/dev/null; then
+            baseline_ref="HEAD^"
+          fi
+
+          if [ -n "$baseline_ref" ] &&
+             git cat-file -e "$baseline_ref:$catalog_path" 2>/dev/null; then
+            git show "$baseline_ref:$catalog_path" > "$baseline_catalog"
+          else
+            echo "Baseline has no CatalogV2.json; using the checked-in migration baseline."
+            cp "$catalog_path" "$baseline_catalog"
+            baseline_ref=""
+          fi
+
+          if [ -n "$baseline_ref" ] &&
+             git cat-file -e "$baseline_ref:$manifest_path" 2>/dev/null; then
+            git show "$baseline_ref:$manifest_path" > "$baseline_manifest"
+            echo "has_manifest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Baseline has no ContentManifest.json; using Catalog-only migration checks."
+            echo "has_manifest=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate strict semantic diff
+        env:
+          HAS_BASELINE_MANIFEST: ${{ steps.content_baseline.outputs.has_manifest }}
+        run: |
+          manifest_args=()
+          if [ "$HAS_BASELINE_MANIFEST" = "true" ]; then
+            manifest_args=(
+              --old-manifest
+              "$RUNNER_TEMP/content-base-ContentManifest.json"
+            )
+          fi
+          swift run --package-path Packages/LearnNowContentKit \
+            learnnow-content diff \
+            --old "$RUNNER_TEMP/content-base-CatalogV2.json" \
+            "${manifest_args[@]}" \
+            --source ContentSource \
+            --strict \
+            > "$RUNNER_TEMP/content-semantic-diff.json"
+
+      - name: Build deterministic content package
+        run: >-
+          swift run --package-path Packages/LearnNowContentKit
+          learnnow-content build
+          --source ContentSource
+          --output "$RUNNER_TEMP/learnnow-content"
+
+      - name: Require regenerated Bundle baseline
+        run: |
+          cmp \
+            "$RUNNER_TEMP/learnnow-content/CatalogV2.json" \
+            LearnNow/Resources/CatalogV2.json
+          cmp \
+            "$RUNNER_TEMP/learnnow-content/ContentManifest.json" \
+            LearnNow/Resources/ContentManifest.json
+          generated_assets="$RUNNER_TEMP/learnnow-content/assets"
+          bundle_assets="LearnNow/Resources/assets"
+          mkdir -p "$generated_assets"
+          if [ -e "$bundle_assets" ] && [ ! -d "$bundle_assets" ]; then
+            echo "$bundle_assets must be a directory" >&2
+            exit 1
+          elif [ -d "$bundle_assets" ]; then
+            diff -qr "$generated_assets" "$bundle_assets"
+          else
+            test -z "$(find "$generated_assets" -type f -print -quit)"
+          fi
+
+      - name: Upload review artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-review-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/content-semantic-diff.json
+            ${{ runner.temp }}/learnnow-content/ContentManifest.json
+            ${{ runner.temp }}/learnnow-content/CatalogV2.json
+            ${{ runner.temp }}/learnnow-content/CatalogV2.schema.json
+            ${{ runner.temp }}/learnnow-content/assets
+          if-no-files-found: warn

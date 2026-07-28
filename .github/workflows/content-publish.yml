@@ -1,0 +1,122 @@
+name: Publish Content
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Protected GitHub environment and target channel
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: content-publish-${{ inputs.channel }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: macos-15
+    timeout-minutes: 20
+    environment: ${{ inputs.channel }}
+
+    env:
+      CONTENT_PRIVATE_KEY: ${{ secrets.CONTENT_PRIVATE_KEY }}
+      CONTENT_KEY_ID: ${{ secrets.CONTENT_KEY_ID }}
+      CONTENT_PUBLISH_BASE_URL: ${{ secrets.CONTENT_PUBLISH_BASE_URL }}
+      CONTENT_PUBLISH_TOKEN: ${{ secrets.CONTENT_PUBLISH_TOKEN }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require protected publishing secrets
+        run: |
+          test -n "$CONTENT_PRIVATE_KEY"
+          test -n "$CONTENT_KEY_ID"
+          test -n "$CONTENT_PUBLISH_BASE_URL"
+          test -n "$CONTENT_PUBLISH_TOKEN"
+          case "$CONTENT_PUBLISH_BASE_URL" in
+            https://*) ;;
+            *)
+              echo "CONTENT_PUBLISH_BASE_URL must use HTTPS." >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Test and lint
+        run: |
+          swift test --package-path Packages/LearnNowContentKit
+          swift run --package-path Packages/LearnNowContentKit \
+            learnnow-content lint \
+            --source ContentSource
+
+      - name: Generate signed package
+        run: |
+          printf '%s' "$CONTENT_PRIVATE_KEY" > "$RUNNER_TEMP/content-private-key"
+          swift run --package-path Packages/LearnNowContentKit \
+            learnnow-content publish \
+            --source ContentSource \
+            --output "$RUNNER_TEMP/learnnow-content-publish" \
+            --private-key "$RUNNER_TEMP/content-private-key" \
+            --key-id "$CONTENT_KEY_ID"
+
+      - name: Verify Bundle baseline is current
+        run: |
+          swift run --package-path Packages/LearnNowContentKit \
+            learnnow-content build \
+            --source ContentSource \
+            --output "$RUNNER_TEMP/learnnow-content-bundle-check"
+          cmp \
+            "$RUNNER_TEMP/learnnow-content-publish/CatalogV2.json" \
+            LearnNow/Resources/CatalogV2.json
+          cmp \
+            "$RUNNER_TEMP/learnnow-content-bundle-check/ContentManifest.json" \
+            LearnNow/Resources/ContentManifest.json
+          generated_assets="$RUNNER_TEMP/learnnow-content-publish/assets"
+          bundle_assets="LearnNow/Resources/assets"
+          mkdir -p "$generated_assets"
+          if [ -e "$bundle_assets" ] && [ ! -d "$bundle_assets" ]; then
+            echo "$bundle_assets must be a directory" >&2
+            exit 1
+          elif [ -d "$bundle_assets" ]; then
+            diff -qr "$generated_assets" "$bundle_assets"
+          else
+            test -z "$(find "$generated_assets" -type f -print -quit)"
+          fi
+
+      - name: Upload files and activate manifest last
+        run: |
+          package_root="$RUNNER_TEMP/learnnow-content-publish"
+          base_url="${CONTENT_PUBLISH_BASE_URL%/}"
+          find "$package_root" -type f \
+            ! -name ContentManifest.json \
+            -print0 |
+          while IFS= read -r -d '' file; do
+            relative_path="${file#"$package_root"/}"
+            curl --fail --silent --show-error --retry 3 --proto '=https' \
+              --request PUT \
+              --header "Authorization: Bearer $CONTENT_PUBLISH_TOKEN" \
+              --upload-file "$file" \
+              "$base_url/$relative_path"
+          done
+          curl --fail --silent --show-error --retry 3 --proto '=https' \
+            --request PUT \
+            --header "Authorization: Bearer $CONTENT_PUBLISH_TOKEN" \
+            --header "Content-Type: application/json" \
+            --upload-file "$package_root/ContentManifest.json" \
+            "$base_url/ContentManifest.json"
+
+      - name: Retain signed release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: learnnow-content-${{ inputs.channel }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/learnnow-content-publish
+          if-no-files-found: error
+          retention-days: 30

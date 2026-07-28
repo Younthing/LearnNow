@@ -1,10 +1,19 @@
+import Foundation
+import LearnNowContentKit
 import SwiftUI
+
+#if canImport(AppKit)
+import AppKit
+#elseif canImport(UIKit)
+import UIKit
+#endif
 
 struct LessonScreen: View {
     let model: LessonScreenModel
     let onBack: () -> Void
     let onSelectPage: (Int) -> Void
-    let onAnswer: (String) -> Void
+    let onAnswer: (String, String) -> Void
+    let onRetryExercise: (String) -> Void
     let onCallToAction: (LearnNowLessonCallToAction) -> Void
 
     private var selectionBinding: Binding<Int> {
@@ -36,6 +45,7 @@ struct LessonScreen: View {
                             page: page,
                             horizontalPadding: horizontalPadding,
                             onAnswer: onAnswer,
+                            onRetryExercise: onRetryExercise,
                             onCallToAction: onCallToAction
                         )
                         .tag(index)
@@ -67,19 +77,14 @@ private struct LessonTopBar: View {
     var body: some View {
         HStack {
             CircleIconButton(systemImage: "arrow.left", accent: .blue, action: onBack)
-
             Spacer()
-
             Text(title)
                 .font(LearnNowTypography.cardTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
                 .multilineTextAlignment(.center)
                 .accessibilityIdentifier("lesson.title")
-
             Spacer()
-
-            Color.clear
-                .frame(width: 44, height: 44)
+            Color.clear.frame(width: 44, height: 44)
         }
         .padding(.horizontal, horizontalPadding)
         .padding(.top, LearnNowSpacing.screenTop)
@@ -119,19 +124,31 @@ private struct LessonSegments: View {
 private struct LessonPageView: View {
     let page: LessonScreenModel.Page
     let horizontalPadding: CGFloat
-    let onAnswer: (String) -> Void
+    let onAnswer: (String, String) -> Void
+    let onRetryExercise: (String) -> Void
     let onCallToAction: (LearnNowLessonCallToAction) -> Void
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 22) {
                 LessonHeroSection(page: page)
-                LessonExplanationSection(page: page)
-                LessonPracticeSection(
-                    page: page,
+
+                LessonBlockList(
+                    blocks: page.blocks,
+                    exercisesByID: page.exercisesByID,
+                    contentRootURL: page.contentRootURL,
                     onAnswer: onAnswer,
-                    onCallToAction: onCallToAction
+                    onRetryExercise: onRetryExercise
                 )
+
+                if let action = page.callToAction {
+                    FullWidthButton(
+                        title: action.title,
+                        accent: action.accent,
+                        action: { onCallToAction(action.kind) }
+                    )
+                    .accessibilityIdentifier("lesson.cta")
+                }
             }
             .padding(.horizontal, horizontalPadding)
             .padding(.top, 12)
@@ -148,7 +165,6 @@ private struct LessonHeroSection: View {
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
             MetadataChip(text: page.badge, accent: page.accent)
-
             Text(page.title)
                 .font(LearnNowTypography.sheetTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
@@ -158,29 +174,114 @@ private struct LessonHeroSection: View {
     }
 }
 
-private struct LessonExplanationSection: View {
-    let page: LessonScreenModel.Page
+private struct LessonBlockList: View {
+    let blocks: [LessonContentBlock]
+    let exercisesByID: [String: LessonScreenModel.Exercise]
+    let contentRootURL: URL?
+    let onAnswer: (String, String) -> Void
+    let onRetryExercise: (String) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(page.summary)
-                .font(LearnNowTypography.body)
-                .foregroundStyle(LearnNowPalette.textSecondary)
-                .lineSpacing(6)
-
-            CalloutCard(callout: page.callout)
-
-            if let codeSample = page.codeSample {
-                CodeSampleCard(code: codeSample)
+            ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+                LessonContentBlockView(
+                    block: block,
+                    exercisesByID: exercisesByID,
+                    contentRootURL: contentRootURL,
+                    onAnswer: onAnswer,
+                    onRetryExercise: onRetryExercise
+                )
             }
         }
     }
 }
 
-private struct LessonPracticeSection: View {
-    let page: LessonScreenModel.Page
+private struct LessonContentBlockView: View {
+    let block: LessonContentBlock
+    let exercisesByID: [String: LessonScreenModel.Exercise]
+    let contentRootURL: URL?
+    let onAnswer: (String, String) -> Void
+    let onRetryExercise: (String) -> Void
+
+    @ViewBuilder
+    var body: some View {
+        switch block {
+        case let .paragraph(content):
+            InlineContentText(content: content)
+                .font(LearnNowTypography.body)
+                .foregroundStyle(LearnNowPalette.textSecondary)
+                .lineSpacing(6)
+
+        case let .heading(level, content):
+            InlineContentText(content: content)
+                .font(headingFont(level: level))
+                .foregroundStyle(LearnNowPalette.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+
+        case let .list(ordered, items):
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(ordered ? "\(index + 1)." : "•")
+                            .font(LearnNowTypography.label)
+                            .foregroundStyle(LearnNowPalette.color(for: .blue))
+                        InlineContentText(content: item.content)
+                            .font(LearnNowTypography.body)
+                            .foregroundStyle(LearnNowPalette.textSecondary)
+                    }
+                }
+            }
+
+        case let .callout(title, tone, accent, body):
+            ContentCalloutCard(
+                title: title,
+                tone: tone,
+                accent: LearnNowAccent(accent)
+            ) {
+                LessonBlockList(
+                    blocks: body,
+                    exercisesByID: exercisesByID,
+                    contentRootURL: contentRootURL,
+                    onAnswer: onAnswer,
+                    onRetryExercise: onRetryExercise
+                )
+            }
+
+        case let .code(language, code):
+            CodeSampleCard(language: language, code: code)
+
+        case let .image(path, alt, caption):
+            ContentImageCard(
+                path: path,
+                alt: alt,
+                caption: caption,
+                contentRootURL: contentRootURL
+            )
+
+        case let .singleChoice(exerciseID):
+            if let exercise = exercisesByID[exerciseID] {
+                LessonExerciseView(
+                    exercise: exercise,
+                    onAnswer: { optionID in onAnswer(exerciseID, optionID) },
+                    onRetry: { onRetryExercise(exerciseID) }
+                )
+            }
+        }
+    }
+
+    private func headingFont(level: Int) -> Font {
+        switch level {
+        case ...1: LearnNowTypography.sheetTitle
+        case 2: LearnNowTypography.sectionTitle
+        default: LearnNowTypography.cardTitle
+        }
+    }
+}
+
+private struct LessonExerciseView: View {
+    let exercise: LessonScreenModel.Exercise
     let onAnswer: (String) -> Void
-    let onCallToAction: (LearnNowLessonCallToAction) -> Void
+    let onRetry: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -188,29 +289,25 @@ private struct LessonPracticeSection: View {
                 .font(LearnNowTypography.sectionTitle)
                 .foregroundStyle(LearnNowPalette.textPrimary)
 
-            Text(page.questionPrompt)
+            InlineContentText(content: exercise.prompt)
                 .font(LearnNowTypography.cardTitle)
                 .foregroundStyle(LearnNowPalette.textSecondary)
                 .lineSpacing(4)
 
-            ForEach(page.options) { option in
+            ForEach(exercise.options) { option in
                 LessonOptionButton(option: option) {
                     onAnswer(option.id)
                 }
                 .accessibilityIdentifier("lesson.option.\(option.id)")
             }
 
-            if let feedback = page.feedback {
+            if let feedback = exercise.feedback {
                 FeedbackCard(feedback: feedback)
             }
 
-            if let action = page.callToAction {
-                FullWidthButton(
-                    title: action.title,
-                    accent: action.accent,
-                    action: { onCallToAction(action.kind) }
-                )
-                .accessibilityIdentifier("lesson.cta")
+            if exercise.showsRetry {
+                FullWidthButton(title: "重新思考", accent: nil, action: onRetry)
+                    .accessibilityIdentifier("lesson.retry.\(exercise.id)")
             }
         }
         .padding(.top, 10)
@@ -232,7 +329,7 @@ private struct LessonOptionButton: View {
                         .foregroundStyle(LearnNowPalette.textMuted)
                 }
 
-                Text(option.title)
+                InlineContentText(content: option.content)
                     .font(LearnNowTypography.label)
                     .foregroundStyle(labelColor)
                     .multilineTextAlignment(.leading)
@@ -258,32 +355,21 @@ private struct LessonOptionButton: View {
 
     private var borderColor: Color {
         switch option.presentation {
-        case .correct:
-            LearnNowPalette.color(for: .mint)
-        case .incorrect:
-            LearnNowPalette.color(for: .pink)
-        case .normal:
-            .clear
+        case .correct: LearnNowPalette.color(for: .mint)
+        case .incorrect: LearnNowPalette.color(for: .pink)
+        case .normal: .clear
         }
     }
 
     private var borderWidth: CGFloat {
-        switch option.presentation {
-        case .correct, .incorrect:
-            2
-        case .normal:
-            0
-        }
+        option.presentation == .normal ? 0 : 2
     }
 
     private var labelColor: Color {
         switch option.presentation {
-        case .correct:
-            LearnNowPalette.color(for: .mint)
-        case .incorrect:
-            LearnNowPalette.color(for: .pink)
-        case .normal:
-            LearnNowPalette.textSecondary
+        case .correct: LearnNowPalette.color(for: .mint)
+        case .incorrect: LearnNowPalette.color(for: .pink)
+        case .normal: LearnNowPalette.textSecondary
         }
     }
 }
@@ -297,8 +383,7 @@ private struct FeedbackCard: View {
                 Text(feedback.title)
                     .font(LearnNowTypography.cardTitle)
                     .foregroundStyle(LearnNowPalette.color(for: feedback.accent))
-
-                Text(feedback.body)
+                InlineContentText(content: feedback.body)
                     .font(LearnNowTypography.body)
                     .foregroundStyle(LearnNowPalette.textSecondary)
                     .lineSpacing(4)
@@ -307,39 +392,154 @@ private struct FeedbackCard: View {
     }
 }
 
-private struct CalloutCard: View {
-    let callout: LessonScreenModel.Callout
+private struct ContentCalloutCard<Content: View>: View {
+    let title: String
+    let tone: ContentTone
+    let accent: LearnNowAccent
+    @ViewBuilder let content: Content
+
+    init(
+        title: String,
+        tone: ContentTone,
+        accent: LearnNowAccent,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.title = title
+        self.tone = tone
+        self.accent = accent
+        self.content = content()
+    }
 
     var body: some View {
         InsetCard(contentPadding: 18) {
             VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    Image(systemName: callout.accent == .amber ? "exclamationmark.triangle.fill" : "lightbulb.fill")
-
-                    Text(callout.title)
-                        .font(LearnNowTypography.label)
-                }
-                .foregroundStyle(LearnNowPalette.color(for: callout.accent))
-
-                Text(callout.message)
-                    .font(LearnNowTypography.body)
-                    .foregroundStyle(LearnNowPalette.textSecondary)
-                    .lineSpacing(4)
+                Label(title, systemImage: systemImage)
+                    .font(LearnNowTypography.label)
+                    .foregroundStyle(LearnNowPalette.color(for: accent))
+                content
             }
+        }
+    }
+
+    private var systemImage: String {
+        switch tone {
+        case .information: "lightbulb.fill"
+        case .success: "checkmark.seal.fill"
+        case .warning: "exclamationmark.triangle.fill"
         }
     }
 }
 
 private struct CodeSampleCard: View {
+    let language: String?
     let code: String
 
     var body: some View {
         InsetCard(contentPadding: 18) {
-            Text(code)
-                .font(LearnNowTypography.body.monospaced())
-                .foregroundStyle(LearnNowPalette.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 10) {
+                if let language, !language.isEmpty {
+                    MetadataChip(text: language, accent: .purple)
+                }
+                Text(code)
+                    .font(LearnNowTypography.body.monospaced())
+                    .foregroundStyle(LearnNowPalette.textPrimary)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
+    }
+}
+
+private struct ContentImageCard: View {
+    let path: String
+    let alt: String
+    let caption: [InlineContent]?
+    let contentRootURL: URL?
+
+    var body: some View {
+        InsetCard(contentPadding: 12) {
+            VStack(alignment: .leading, spacing: 10) {
+                LocalContentImage(path: path, alt: alt, contentRootURL: contentRootURL)
+                if let caption {
+                    InlineContentText(content: caption)
+                        .font(LearnNowTypography.screenSubtitle)
+                        .foregroundStyle(LearnNowPalette.textMuted)
+                }
+            }
+        }
+    }
+}
+
+private struct LocalContentImage: View {
+    let path: String
+    let alt: String
+    let contentRootURL: URL?
+
+    var body: some View {
+        Group {
+#if canImport(AppKit)
+            if let url = resourceURL, let image = NSImage(contentsOf: url) {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                placeholder
+            }
+#elseif canImport(UIKit)
+            if let url = resourceURL, let image = UIImage(contentsOfFile: url.path) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                placeholder
+            }
+#else
+            placeholder
+#endif
+        }
+        .accessibilityLabel(alt)
+    }
+
+    private var resourceURL: URL? {
+        if let contentRootURL, let candidate = safeContentURL(root: contentRootURL) {
+            return candidate
+        }
+        if let exact = Bundle.main.url(forResource: path, withExtension: nil) {
+            return exact
+        }
+        let value = path as NSString
+        let directory = value.deletingLastPathComponent
+        let file = value.lastPathComponent as NSString
+        return Bundle.main.url(
+            forResource: file.deletingPathExtension,
+            withExtension: file.pathExtension.isEmpty ? nil : file.pathExtension,
+            subdirectory: directory.isEmpty ? nil : directory
+        )
+    }
+
+    private func safeContentURL(root: URL) -> URL? {
+        guard !path.hasPrefix("/"),
+              !path.split(separator: "/").contains("..")
+        else { return nil }
+        let standardizedRoot = root.standardizedFileURL
+        let candidate = standardizedRoot.appendingPathComponent(path).standardizedFileURL
+        let rootPrefix = standardizedRoot.path.hasSuffix("/")
+            ? standardizedRoot.path
+            : standardizedRoot.path + "/"
+        guard candidate.path.hasPrefix(rootPrefix) else { return nil }
+        return FileManager.default.fileExists(atPath: candidate.path) ? candidate : nil
+    }
+
+    private var placeholder: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "photo")
+                .font(.largeTitle)
+            Text(alt)
+                .font(LearnNowTypography.screenSubtitle)
+                .multilineTextAlignment(.center)
+        }
+        .foregroundStyle(LearnNowPalette.textMuted)
+        .frame(maxWidth: .infinity, minHeight: 140)
     }
 }
 
@@ -350,7 +550,8 @@ private struct CodeSampleCard: View {
             model: LearnNowFlowState.lessonPreview.lessonScreenModel,
             onBack: {},
             onSelectPage: { _ in },
-            onAnswer: { _ in },
+            onAnswer: { _, _ in },
+            onRetryExercise: { _ in },
             onCallToAction: { _ in }
         )
     }

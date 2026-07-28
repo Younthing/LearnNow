@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import LearnNowContentKit
 
 enum LearnNowTab: String, CaseIterable, Equatable, Identifiable {
     case home
@@ -52,22 +53,6 @@ enum LearnNowReviewSheet: String, Equatable, Identifiable {
     case cardPool
 
     var id: String { rawValue }
-}
-
-enum LearnNowRouteTrack: String, CaseIterable, Codable, Equatable, Identifiable, Sendable {
-    case statistics
-    case machineLearning
-    case deepLearning
-
-    var id: Self { self }
-
-    var title: String {
-        switch self {
-        case .statistics: "统计基础"
-        case .machineLearning: "机器学习"
-        case .deepLearning: "深度学习"
-        }
-    }
 }
 
 enum LearnNowAccent: String, Codable, Equatable, Sendable {
@@ -228,10 +213,12 @@ struct LearnNowRoute: Identifiable, Equatable, Sendable {
     let id: String
     let title: String
     let subtitle: String
+    let systemImage: String
     let progress: Double
     let accent: LearnNowAccent
     let cta: String
     let interactive: Bool
+    let trackIDs: [String]
 }
 
 struct LearnNowPathNode: Identifiable, Equatable {
@@ -242,11 +229,12 @@ struct LearnNowPathNode: Identifiable, Equatable {
     }
 
     let id: String
-    let track: LearnNowRouteTrack
+    let trackID: String
     let title: String
     let subtitle: String
     let status: Status
     let isInteractive: Bool
+    let hasNewContent: Bool
 }
 
 struct LearnNowHeatCell: Identifiable, Equatable {
@@ -254,47 +242,68 @@ struct LearnNowHeatCell: Identifiable, Equatable {
     let level: Int?
 }
 
-struct LearnNowLessonOption: Identifiable, Equatable, Sendable {
-    let id: String
-    let badge: String
-    let title: String
-}
-
-struct LearnNowLessonQuestion: Equatable, Sendable {
-    let prompt: String
-    let options: [LearnNowLessonOption]
-    let correctOptionID: String
-}
-
 struct LearnNowLessonPage: Identifiable, Equatable, Sendable {
     let id: String
-    let badge: String
     let accent: LearnNowAccent
     let title: String
-    let summary: String
-    let calloutTitle: String
-    let calloutBody: String
-    let calloutAccent: LearnNowAccent
-    let codeSample: String?
-    let question: LearnNowLessonQuestion
+    let blocks: [LessonContentBlock]
+    let exercises: [ExerciseDefinition]
     let successAction: LearnNowLessonCallToAction
-    var answerState: LearnNowLessonAnswerState = .unanswered
+    var answerStateByExerciseID: [String: LearnNowLessonAnswerState] = [:]
+
+    var exerciseIDs: [String] {
+        blocks.flatMap(\.referencedExerciseIDs)
+    }
+
+    var answerState: LearnNowLessonAnswerState {
+        guard let firstID = exerciseIDs.first else { return .unanswered }
+        return answerState(for: firstID)
+    }
+
+    func exercise(id: String) -> ExerciseDefinition? {
+        exercises.first(where: { $0.id == id })
+    }
+
+    func answerState(for exerciseID: String) -> LearnNowLessonAnswerState {
+        answerStateByExerciseID[exerciseID] ?? .unanswered
+    }
+
+    var hasIncorrectAnswer: Bool {
+        exerciseIDs.contains {
+            if case .incorrect = answerState(for: $0) { return true }
+            return false
+        }
+    }
+
+    var isReadyToAdvance: Bool {
+        exerciseIDs.allSatisfy {
+            if case .correct = answerState(for: $0) { return true }
+            return false
+        }
+    }
 
     var callToAction: LearnNowLessonCallToAction? {
-        switch answerState {
-        case .unanswered:
-            nil
-        case .correct:
-            successAction
-        case .incorrect:
-            .retry
+        if hasIncorrectAnswer { return .retry }
+        return isReadyToAdvance ? successAction : nil
+    }
+}
+
+private extension LessonContentBlock {
+    var referencedExerciseIDs: [String] {
+        switch self {
+        case let .singleChoice(exerciseID):
+            [exerciseID]
+        case let .callout(_, _, _, body):
+            body.flatMap(\.referencedExerciseIDs)
+        case .paragraph, .heading, .list, .code, .image:
+            []
         }
     }
 }
 
 struct LearnNowLessonFeedback: Equatable {
     let title: String
-    let body: String
+    let body: [InlineContent]
     let accent: LearnNowAccent
 }
 
@@ -341,8 +350,8 @@ struct LearnNowReviewCard: Identifiable, Equatable, Sendable {
     let frontTitle: String
     let frontSubtitle: String?
     let backTitle: String
-    let backBody: String
-    let backHighlight: String
+    let backBody: [InlineContent]
+    let backHighlight: [InlineContent]
     var dueAt: Date
     var retrievability: Double = 0
     var isMastered: Bool
@@ -365,7 +374,7 @@ struct LearnNowProfileFavoriteHighlight: Identifiable, Equatable {
 
 struct LearnNowModuleDefinition: Identifiable, Equatable, Sendable {
     let id: String
-    let track: LearnNowRouteTrack
+    let trackID: String
     let title: String
     let subtitle: String
     let lessonTitle: String
@@ -378,7 +387,7 @@ struct LearnNowModuleDefinition: Identifiable, Equatable, Sendable {
 
     init(
         id: String,
-        track: LearnNowRouteTrack,
+        trackID: String,
         title: String,
         subtitle: String,
         lessonTitle: String,
@@ -390,7 +399,7 @@ struct LearnNowModuleDefinition: Identifiable, Equatable, Sendable {
         reviewCardIDs: [String] = []
     ) {
         self.id = id
-        self.track = track
+        self.trackID = trackID
         self.title = title
         self.subtitle = subtitle
         self.lessonTitle = lessonTitle
@@ -414,6 +423,7 @@ struct LearnNowFlowState: Equatable {
     var catalog: CourseCatalog
     var modules: [LearnNowModuleDefinition]
     var completedLessonIDs: Set<String>
+    var visitedPageIDsByLessonID: [String: Set<String>]
     var activityByLocalDay: [String: Int]
     var reviewMemoryByCardID: [String: ReviewMemorySnapshot]
     var profilePreference: ProfilePreference
@@ -428,7 +438,9 @@ struct LearnNowFlowState: Equatable {
     var totalXP: Int
     var streakDays: Int
     var todayLabel: String
-    var selectedRouteTrack: LearnNowRouteTrack = .statistics
+    var tipRotationDayOrdinal: Int
+    var selectedRouteID: String
+    var selectedRouteTrackID: String
     var nextAvailableModuleIndex: Int
     var loadedLessonModuleIndex: Int
     var currentLessonPageIndex: Int = 0
@@ -446,20 +458,18 @@ struct LearnNowFlowState: Equatable {
     var isNightModeEnabled: Bool
 
     init(
-        catalog: CourseCatalog = LearnNowFlowFixtures.catalog,
-        snapshot: LearningSnapshot? = nil,
+        catalog: CourseCatalog = .empty,
+        snapshot: LearningSnapshot = .empty,
         now: Date = Date(),
         activeCloudSyncEnabled: Bool = true,
         desiredCloudSyncEnabled: Bool? = nil
     ) {
-        let isPreviewFixture = snapshot == nil
-        let resolvedSnapshot = snapshot ?? LearnNowFlowFixtures.learningSnapshot
-        let completedIDs = resolvedSnapshot.completedLessonIDs
+        let completedIDs = snapshot.completedLessonIDs
         let firstAvailableIndex = catalog.modules.firstIndex { module in
             !completedIDs.contains(module.id) &&
             Set(module.prerequisiteModuleIDs).isSubset(of: completedIDs)
         } ?? catalog.modules.count
-        let restoredIndex = resolvedSnapshot.lastVisitedLessonID.flatMap { lessonID in
+        let restoredIndex = snapshot.lastVisitedLessonID.flatMap { lessonID in
             catalog.modules.firstIndex(where: { $0.id == lessonID })
         }
         let initialIndex = min(
@@ -468,35 +478,47 @@ struct LearnNowFlowState: Equatable {
         )
         let initialModule = catalog.modules.indices.contains(initialIndex) ? catalog.modules[initialIndex] : nil
         let restoredPageIndex = initialModule.flatMap { module in
-            resolvedSnapshot.lastVisitedPageID.flatMap { pageID in
+            let stablePageIndex = snapshot.lastVisitedPageID.flatMap { pageID in
                 module.lessonPages.firstIndex(where: { $0.id == pageID })
             }
+            if let stablePageIndex { return stablePageIndex }
+            guard !module.lessonPages.isEmpty else { return 0 }
+            let legacyOrder = snapshot.highestPageOrderByLessonID[module.id] ?? 0
+            return min(max(legacyOrder, 0), module.lessonPages.count - 1)
         } ?? 0
+        let initialRoute = initialModule.flatMap { catalog.route(containingModuleID: $0.id) }
+            ?? catalog.primaryRoute
+        let initialTrackID = initialModule?.trackID
+            ?? initialRoute?.trackIDs.first
+            ?? catalog.tracks.first?.id
+            ?? ""
 
         self.catalog = catalog
         self.modules = catalog.modules
         self.completedLessonIDs = completedIDs
-        self.activityByLocalDay = resolvedSnapshot.activityByLocalDay
-        self.reviewMemoryByCardID = resolvedSnapshot.reviewMemoryByCardID
-        self.profilePreference = resolvedSnapshot.profilePreference
+        self.visitedPageIDsByLessonID = snapshot.visitedPageIDsByLessonID
+        self.activityByLocalDay = snapshot.activityByLocalDay
+        self.reviewMemoryByCardID = snapshot.reviewMemoryByCardID
+        self.profilePreference = snapshot.profilePreference
         self.memoryTrend = .empty
-        self.syncAvailability = resolvedSnapshot.syncAvailability
+        self.syncAvailability = snapshot.syncAvailability
         self.activeCloudSyncEnabled = activeCloudSyncEnabled
         self.desiredCloudSyncEnabled = desiredCloudSyncEnabled
             ?? LearnNowCloudSyncPreference.isEnabled()
         self.reviewIntervalTextByRating = Dictionary(
             uniqueKeysWithValues: LearnNowReviewRating.allCases.map { ($0, $0.interval) }
         )
-        self.totalXP = resolvedSnapshot.totalXP
-        self.streakDays = resolvedSnapshot.streakDays
+        self.totalXP = snapshot.totalXP
+        self.streakDays = snapshot.streakDays
         self.todayLabel = Self.todayFormatter.string(from: now)
+        self.tipRotationDayOrdinal = Calendar.current.ordinality(of: .day, in: .era, for: now) ?? 0
+        self.selectedRouteID = initialRoute?.id ?? ""
+        self.selectedRouteTrackID = initialTrackID
         self.nextAvailableModuleIndex = firstAvailableIndex
         self.loadedLessonModuleIndex = initialIndex
         self.currentLessonPageIndex = restoredPageIndex
         self.lessonPages = initialModule?.lessonPages ?? []
-        self.reviewCards = isPreviewFixture
-            ? LearnNowFlowFixtures.makeReviewCards()
-            : Self.makeReviewCards(catalog: catalog, snapshot: resolvedSnapshot, now: now)
+        self.reviewCards = Self.makeReviewCards(catalog: catalog, snapshot: snapshot, now: now)
         self.reminderTime = UserDefaults.standard.object(forKey: Self.reminderTimeKey) as? Date
             ?? Self.defaultReminderTime()
         self.remindersEnabled = UserDefaults.standard.object(forKey: Self.remindersEnabledKey) == nil
@@ -506,7 +528,16 @@ struct LearnNowFlowState: Equatable {
     }
 
     var routeCategoryTitle: String {
-        catalog.primaryRoute?.title ?? "学习路线"
+        selectedRoute?.title ?? catalog.primaryRoute?.title ?? "学习路线"
+    }
+
+    var selectedRoute: LearnNowRoute? {
+        catalog.route(id: selectedRouteID) ?? catalog.primaryRoute
+    }
+
+    var selectedRouteModuleIDs: [String] {
+        guard let selectedRoute else { return [] }
+        return catalog.moduleIDsByRouteID[selectedRoute.id, default: []]
     }
 
     var mastery: Double {
@@ -523,21 +554,30 @@ struct LearnNowFlowState: Equatable {
                 id: route.id,
                 title: route.title,
                 subtitle: route.subtitle,
+                systemImage: route.systemImage,
                 progress: progress,
                 accent: route.accent,
                 cta: route.cta,
-                interactive: route.interactive
+                interactive: route.interactive,
+                trackIDs: route.trackIDs
             )
         }
     }
 
-    var routeTracks: [LearnNowRouteTrack] {
-        LearnNowRouteTrack.allCases
+    var routeTracks: [CourseCatalog.Track] {
+        let trackIDs = selectedRoute?.trackIDs ?? []
+        return trackIDs.compactMap { catalog.track(id: $0) }
     }
 
     var pathNodes: [LearnNowPathNode] {
-        modules.enumerated().map { index, module in
+        selectedRouteModuleIDs.compactMap { moduleID in
+            guard let index = modules.firstIndex(where: { $0.id == moduleID }) else { return nil }
+            let module = modules[index]
             let status: LearnNowPathNode.Status
+            let pageIDs = Set(module.lessonPages.map(\.id))
+            let visitedPageIDs = visitedPageIDsByLessonID[module.id, default: []]
+            let hasNewContent = completedLessonIDs.contains(module.id) &&
+                !pageIDs.isSubset(of: visitedPageIDs)
 
             if completedLessonIDs.contains(module.id) {
                 status = .done
@@ -549,21 +589,27 @@ struct LearnNowFlowState: Equatable {
 
             return LearnNowPathNode(
                 id: module.id,
-                track: module.track,
+                trackID: module.trackID,
                 title: module.title,
-                subtitle: pathNodeSubtitle(for: index, baseSubtitle: module.subtitle, status: status),
+                subtitle: pathNodeSubtitle(
+                    for: index,
+                    baseSubtitle: module.subtitle,
+                    status: status,
+                    hasNewContent: hasNewContent
+                ),
                 status: status,
-                isInteractive: isLessonAvailable(for: index)
+                isInteractive: isLessonAvailable(for: index),
+                hasNewContent: hasNewContent
             )
         }
     }
 
     var visiblePathNodes: [LearnNowPathNode] {
-        pathNodes.filter { $0.track == selectedRouteTrack }
+        pathNodes.filter { $0.trackID == selectedRouteTrackID }
     }
 
     var selectedRouteTrackTitle: String {
-        selectedRouteTrack.title
+        catalog.track(id: selectedRouteTrackID)?.title ?? selectedRouteTrackID
     }
 
     var heatmap: [LearnNowHeatCell] {

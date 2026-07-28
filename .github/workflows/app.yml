@@ -1,0 +1,121 @@
+name: App
+
+on:
+  pull_request:
+    paths:
+      - "LearnNow/**"
+      - "LearnNowTests/**"
+      - "LearnNowUITests/**"
+      - "LearnNow.xcodeproj/**"
+      - "Packages/LearnNowContentKit/**"
+      - ".github/workflows/app.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "LearnNow/**"
+      - "LearnNowTests/**"
+      - "LearnNowUITests/**"
+      - "LearnNow.xcodeproj/**"
+      - "Packages/LearnNowContentKit/**"
+      - ".github/workflows/app.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Resolve packages
+        run: >-
+          xcodebuild
+          -project LearnNow.xcodeproj
+          -scheme LearnNow
+          -resolvePackageDependencies
+
+      - name: Build macOS app
+        run: >-
+          xcodebuild
+          -project LearnNow.xcodeproj
+          -scheme LearnNow
+          -configuration Debug
+          -destination "platform=macOS"
+          -derivedDataPath "$RUNNER_TEMP/DerivedData-macOS"
+          CODE_SIGNING_ALLOWED=NO
+          build
+
+      - name: Select newest available iPhone simulator
+        run: |
+          simulator_id="$(
+            xcrun simctl list devices available -j |
+            ruby -rjson -e '
+              devices = JSON.parse(STDIN.read).fetch("devices")
+              runtime = devices.keys
+                .sort_by { |key| key.scan(/\d+/).map(&:to_i) }
+                .reverse
+                .find do |key|
+                devices.fetch(key).any? do |device|
+                  device["isAvailable"] && device.fetch("name", "").start_with?("iPhone")
+                end
+              end
+              abort("No available iPhone simulator") unless runtime
+              candidates = devices.fetch(runtime).select do |candidate|
+                candidate["isAvailable"] &&
+                  candidate.fetch("name", "").start_with?("iPhone")
+              end
+              device = candidates.find { |candidate| candidate["name"].include?("Pro Max") } ||
+                candidates.find { |candidate| !candidate["name"].include?("SE") } ||
+                candidates.first
+              puts device.fetch("udid")
+            '
+          )"
+          test -n "$simulator_id"
+          echo "SIMULATOR_ID=$simulator_id" >> "$GITHUB_ENV"
+
+      - name: Run App unit and integration tests
+        run: >-
+          xcodebuild
+          -project LearnNow.xcodeproj
+          -scheme LearnNow
+          -configuration Debug
+          -destination "platform=iOS Simulator,id=$SIMULATOR_ID"
+          -derivedDataPath "$RUNNER_TEMP/DerivedData-iOS"
+          -resultBundlePath "$RUNNER_TEMP/LearnNowTests.xcresult"
+          CODE_SIGNING_ALLOWED=NO
+          test
+          -only-testing:LearnNowTests
+
+      - name: Run UI tests
+        run: >-
+          xcodebuild
+          -project LearnNow.xcodeproj
+          -scheme LearnNow
+          -configuration Debug
+          -destination "platform=iOS Simulator,id=$SIMULATOR_ID"
+          -derivedDataPath "$RUNNER_TEMP/DerivedData-iOS"
+          -resultBundlePath "$RUNNER_TEMP/LearnNowUITests.xcresult"
+          CODE_SIGNING_ALLOWED=NO
+          test
+          -parallel-testing-enabled NO
+          -only-testing:LearnNowUITests
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-test-results-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/LearnNowTests.xcresult
+            ${{ runner.temp }}/LearnNowUITests.xcresult
+          if-no-files-found: warn

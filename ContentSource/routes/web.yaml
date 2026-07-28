@@ -1,0 +1,10 @@
+order: 30
+id: web
+title: 全栈 Web 开发
+subtitle: React · Node.js · 数据库架构
+systemImage: chevron.left.forwardslash.chevron.right
+accent: mint
+cta: 即将开放
+interactive: false
+trackIDs: []
+moduleIDs: []

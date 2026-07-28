@@ -13,7 +13,7 @@ struct RoutesScreen: View {
                     RouteCard(route: route) {
                         onOpenRoute(route.id)
                     }
-                    .accessibilityIdentifier(route.id == "datascience" ? "route.datascience" : "")
+                    .accessibilityIdentifier("route.\(route.id)")
                 }
             }
         }
@@ -30,7 +30,7 @@ private struct RouteCard: View {
             SoftCard(contentPadding: 20) {
                 HStack(alignment: .top, spacing: 16) {
                     InsetCircle(size: 52) {
-                        Image(systemName: iconName)
+                        Image(systemName: route.systemImage)
                             .font(.title2.weight(.bold))
                             .foregroundStyle(LearnNowPalette.color(for: route.accent))
                     }
@@ -80,17 +80,6 @@ private struct RouteCard: View {
     private var callToActionText: some View {
         Text(route.cta)
             .foregroundStyle(LearnNowPalette.color(for: route.accent))
-    }
-
-    private var iconName: String {
-        switch route.id {
-        case "datascience":
-            "cpu"
-        case "design":
-            "paintpalette"
-        default:
-            "chevron.left.forwardslash.chevron.right"
-        }
     }
 }
 

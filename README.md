@@ -59,6 +59,23 @@ xcrun simctl launch booted com.fanxi.learnnow
 xcrun simctl list devices available
 ```
 
+## 课程内容
+
+课程正文、随堂练习、复习卡片和 Tips 的作者源位于 `ContentSource/`。日常更新编辑
+Markdown/YAML，再由本地 SwiftPM 工具生成 App 使用的强类型 `CatalogV2.json`：
+
+```bash
+swift run --package-path Packages/LearnNowContentKit learnnow-content lint \
+  --source ContentSource
+
+swift run --package-path Packages/LearnNowContentKit learnnow-content build \
+  --source ContentSource \
+  --output .build/content
+```
+
+不要手改 `LearnNow/Resources/CatalogV2.json`。语法、稳定 ID、预览、语义 diff、
+签名发布和远程更新配置见 [内容编写与发布](docs/ContentAuthoring.md)。
+
 ## 运行测试
 
 运行全部单元测试和 UI 测试：
@@ -92,5 +109,3 @@ xcodebuild \
   -only-testing:LearnNowUITests \
   test
 ```
-
-本次验证环境为 iPhone 17 Pro（iOS 26.2）：项目构建、安装和启动成功，全部 21 项测试通过。

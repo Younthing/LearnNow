@@ -19,7 +19,7 @@ struct ProfileContainer: View {
                 onOpenFavorites: { path.append(.favorites) },
                 onOpenSettings: { path.append(.settings) }
             )
-            .toolbar(.hidden, for: .navigationBar)
+            .learnNowNavigationBarHidden()
             .navigationDestination(for: ProfileRoute.self) { route in
                 destination(for: route)
             }

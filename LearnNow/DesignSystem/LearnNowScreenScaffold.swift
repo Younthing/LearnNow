@@ -154,3 +154,42 @@ struct InsightCard<Accessory: View, Content: View>: View {
         }
     }
 }
+
+extension View {
+    @ViewBuilder
+    func learnNowPlainTextInputBehavior() -> some View {
+#if os(macOS)
+        self
+#else
+        textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+#endif
+    }
+
+    @ViewBuilder
+    func learnNowInlineNavigationTitle() -> some View {
+#if os(macOS)
+        self
+#else
+        navigationBarTitleDisplayMode(.inline)
+#endif
+    }
+
+    @ViewBuilder
+    func learnNowNavigationBarHidden() -> some View {
+#if os(macOS)
+        self
+#else
+        toolbar(.hidden, for: .navigationBar)
+#endif
+    }
+
+    @ViewBuilder
+    func learnNowNavigationBarVisible() -> some View {
+#if os(macOS)
+        self
+#else
+        toolbar(.visible, for: .navigationBar)
+#endif
+    }
+}

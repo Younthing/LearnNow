@@ -8,7 +8,7 @@ struct BundleCatalogRepository: CatalogRepository, @unchecked Sendable {
     let bundle: Bundle
     let resourceName: String
 
-    init(bundle: Bundle = .main, resourceName: String = "CatalogV1") {
+    init(bundle: Bundle = .main, resourceName: String = "CatalogV2") {
         self.bundle = bundle
         self.resourceName = resourceName
     }
@@ -19,7 +19,10 @@ struct BundleCatalogRepository: CatalogRepository, @unchecked Sendable {
                 NSFilePathErrorKey: "\(resourceName).json"
             ])
         }
-        return try CatalogDecoder.decode(data: Data(contentsOf: url))
+        return try CatalogDecoder.decode(
+            data: Data(contentsOf: url),
+            contentRootURL: bundle.resourceURL
+        )
     }
 }
 

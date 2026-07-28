@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		F50000012FA0000000000001 /* FSRS in Frameworks */ = {isa = PBXBuildFile; productRef = F50000032FA0000000000003 /* FSRS */; };
+		F60000012FB0000000000001 /* LearnNowContentKit in Frameworks */ = {isa = PBXBuildFile; productRef = F60000032FB0000000000003 /* LearnNowContentKit */; };
+		F60000052FB0000000000005 /* LearnNowContentKit in Frameworks */ = {isa = PBXBuildFile; productRef = F60000042FB0000000000004 /* LearnNowContentKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +72,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F50000012FA0000000000001 /* FSRS in Frameworks */,
+				F60000012FB0000000000001 /* LearnNowContentKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F60000052FB0000000000005 /* LearnNowContentKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,6 +135,7 @@
 			name = LearnNow;
 			packageProductDependencies = (
 				F50000032FA0000000000003 /* FSRS */,
+				F60000032FB0000000000003 /* LearnNowContentKit */,
 			);
 			productName = LearnNow;
 			productReference = 06A9D2772F7BE94000348AB9 /* LearnNow.app */;
@@ -154,6 +159,7 @@
 			);
 			name = LearnNowTests;
 			packageProductDependencies = (
+				F60000042FB0000000000004 /* LearnNowContentKit */,
 			);
 			productName = LearnNowTests;
 			productReference = 06A9D2882F7BE94100348AB9 /* LearnNowTests.xctest */;
@@ -227,6 +233,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F50000022FA0000000000002 /* XCRemoteSwiftPackageReference "swift-fsrs" */,
+				F60000022FB0000000000002 /* XCLocalSwiftPackageReference "Packages/LearnNowContentKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 06A9D2782F7BE94000348AB9 /* Products */;
@@ -309,6 +316,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LearnNow/LearnNow.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "LearnNow/LearnNow-macOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = PHRZM3P94S;
@@ -357,6 +365,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LearnNow/LearnNow.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "LearnNow/LearnNow-macOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = PHRZM3P94S;
@@ -668,11 +677,28 @@
 		};
 /* End XCRemoteSwiftPackageReference section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		F60000022FB0000000000002 /* XCLocalSwiftPackageReference "Packages/LearnNowContentKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LearnNowContentKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		F50000032FA0000000000003 /* FSRS */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F50000022FA0000000000002 /* XCRemoteSwiftPackageReference "swift-fsrs" */;
 			productName = FSRS;
+		};
+		F60000032FB0000000000003 /* LearnNowContentKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F60000022FB0000000000002 /* XCLocalSwiftPackageReference "Packages/LearnNowContentKit" */;
+			productName = LearnNowContentKit;
+		};
+		F60000042FB0000000000004 /* LearnNowContentKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F60000022FB0000000000002 /* XCLocalSwiftPackageReference "Packages/LearnNowContentKit" */;
+			productName = LearnNowContentKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

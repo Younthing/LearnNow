@@ -1,0 +1,9 @@
+id: hypothesis
+trackID: statistics
+title: 假设检验
+subtitle: 2 个小节
+lessonTitle: 假设检验
+prerequisiteModuleIDs:
+  - probability
+completionXP: 15
+reviewMessage: t 检验与 P 值考点已经加入复习池。

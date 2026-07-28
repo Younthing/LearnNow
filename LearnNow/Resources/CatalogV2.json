@@ -1,0 +1,1034 @@
+{
+  "exercises" : [
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "极端值参与总和，因此均值会向这个极端值的方向移动。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "mean-rises",
+      "id" : "stats-page-1.quiz",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "检查这个极端值是否被计入总和，以及分母是否同步改变。",
+            "type" : "text"
+          }
+        ],
+        "title" : "再看一次公式",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "stats-page-1",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "向极端值方向移动",
+              "type" : "text"
+            }
+          ],
+          "id" : "mean-rises"
+        },
+        {
+          "content" : [
+            {
+              "text" : "保持完全不变",
+              "type" : "text"
+            }
+          ],
+          "id" : "mean-fixed"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "一组数据中加入一个非常大的极端值后，均值通常会怎样？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "第二组观测值离均值更远，平方偏差更大，因此方差也更大。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "variance-second",
+      "id" : "stats-page-2.quiz",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "均值相同不代表离散程度相同；比较每组数据与均值之间的偏差。",
+            "type" : "text"
+          }
+        ],
+        "title" : "关注离均值的距离",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "stats-page-2",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "第二组",
+              "type" : "text"
+            }
+          ],
+          "id" : "variance-second"
+        },
+        {
+          "content" : [
+            {
+              "text" : "一定相同",
+              "type" : "text"
+            }
+          ],
+          "id" : "variance-same"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "两组数据均值相同，但第二组的数值更分散，哪组方差更大？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "贝叶斯公式把先验和新证据结合起来，形成更新后的后验概率。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "bayes-update",
+      "id" : "probability-page-1.quiz",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "新证据会改变判断，但不会神奇地消除所有不确定性。",
+            "type" : "text"
+          }
+        ],
+        "title" : "保留不确定性",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "probability-page-1",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "根据新证据更新概率",
+              "type" : "text"
+            }
+          ],
+          "id" : "bayes-update"
+        },
+        {
+          "content" : [
+            {
+              "text" : "把所有不确定性变成确定性",
+              "type" : "text"
+            }
+          ],
+          "id" : "bayes-certainty"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "贝叶斯公式最核心的用途是什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "轻微偏态通常不会让 t 检验立即失效，但仍应检查异常值和样本条件。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "t-test-robust",
+      "id" : "hypothesis-page-1.quiz",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "正态性是常用假设，但轻微偏离并不等于方法绝对不可用。",
+            "type" : "text"
+          }
+        ],
+        "title" : "区分理想条件与稳健性",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "hypothesis-page-1",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "绝对不行，必须严格正态",
+              "type" : "text"
+            }
+          ],
+          "id" : "strict-normality"
+        },
+        {
+          "content" : [
+            {
+              "text" : "可以，t检验通常具备稳健性",
+              "type" : "text"
+            }
+          ],
+          "id" : "t-test-robust"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "只有 25 个样本且总体方差未知，数据轻微左偏，可以尝试 t检验吗？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "P 值以原假设成立为前提，描述当前或更极端数据出现的概率。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "p-value-meaning",
+      "id" : "hypothesis-page-2.quiz",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "P 值不是原假设为真的概率；先把“原假设成立”放在条件一侧。",
+            "type" : "text"
+          }
+        ],
+        "title" : "注意条件方向",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "hypothesis-page-2",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "原假设有 1% 的概率正确",
+              "type" : "text"
+            }
+          ],
+          "id" : "null-hypothesis-probability"
+        },
+        {
+          "content" : [
+            {
+              "text" : "若原假设成立，当前或更极端结果的概率为 1%",
+              "type" : "text"
+            }
+          ],
+          "id" : "p-value-meaning"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "得到 p = 0.01 时，最严谨的解释是什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "负号表示在其他条件不变时，特征增加与目标值下降相关。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "reg-negative-direction",
+      "id" : "regression-page-1.quiz",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "系数首先描述模型中的方向，单凭回归系数不能断定因果。",
+            "type" : "text"
+          }
+        ],
+        "title" : "相关不等于因果",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "regression-page-1",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "该特征增加时，目标值倾向下降",
+              "type" : "text"
+            }
+          ],
+          "id" : "reg-negative-direction"
+        },
+        {
+          "content" : [
+            {
+              "text" : "它一定会导致目标值下降",
+              "type" : "text"
+            }
+          ],
+          "id" : "reg-strong-causality"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "某特征的回归系数为 -2.1，首先可以确定什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "R² 描述样本中目标变量方差被模型解释的比例。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "r2-variance-explained",
+      "id" : "regression-page-2.quiz",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "R² 不是预测准确率；泛化表现还需要验证集和残差诊断。",
+            "type" : "text"
+          }
+        ],
+        "title" : "不要把指标混在一起",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "regression-page-2",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "模型解释了约 82% 的目标波动",
+              "type" : "text"
+            }
+          ],
+          "id" : "r2-variance-explained"
+        },
+        {
+          "content" : [
+            {
+              "text" : "新样本预测准确率一定为 82%",
+              "type" : "text"
+            }
+          ],
+          "id" : "r2-perfect-prediction"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "模型 R² = 0.82，最稳妥的理解是什么？",
+          "type" : "text"
+        }
+      ]
+    }
+  ],
+  "knowledgeTips" : [
+    {
+      "accent" : "amber",
+      "body" : [
+        {
+          "text" : "它表示：在原假设成立时，观察到当前结果或更极端结果的概率。",
+          "type" : "text"
+        }
+      ],
+      "id" : "p-value-tip",
+      "locale" : "zh-Hans",
+      "moduleID" : "hypothesis",
+      "revision" : 1,
+      "sourceLessonID" : "hypothesis-page-2",
+      "systemImage" : "lightbulb",
+      "title" : "p 值不是「原假设为真的概率」"
+    },
+    {
+      "accent" : "mint",
+      "body" : [
+        {
+          "text" : "极端值会拉动均值；同时查看中位数与分位数，通常更接近数据全貌。",
+          "type" : "text"
+        }
+      ],
+      "id" : "mean-tip",
+      "locale" : "zh-Hans",
+      "moduleID" : "stats",
+      "revision" : 1,
+      "sourceLessonID" : "stats-page-1",
+      "systemImage" : "chart.bar.xaxis",
+      "title" : "偏态分布别只看均值"
+    }
+  ],
+  "lessons" : [
+    {
+      "accent" : "mint",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "均值把一组观测值压缩成一个中心位置，是理解数据分布最常用的起点。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "amber",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "均值会被极端值明显拉动。面对偏态分布时，应同时观察中位数和分位数。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "核心认知",
+          "tone" : "warning",
+          "type" : "callout"
+        },
+        {
+          "code" : "values = [2, 3, 3, 4, 18]\nmean = sum(values) / len(values)\n",
+          "language" : "python",
+          "type" : "code"
+        },
+        {
+          "exerciseID" : "stats-page-1.quiz",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "stats-page-1",
+      "locale" : "zh-Hans",
+      "moduleID" : "stats",
+      "objectives" : [
+        "stats.mean.outlier-effect"
+      ],
+      "order" : 1,
+      "revision" : 1,
+      "title" : "均值描述数据中心"
+    },
+    {
+      "accent" : "blue",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "方差衡量每个观测值与均值之间的平方偏差，值越大通常表示数据越分散。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "mint",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "标准差是方差的平方根，与原数据保持相同量纲，通常更容易解释。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "理解方式",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "stats-page-2.quiz",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "stats-page-2",
+      "locale" : "zh-Hans",
+      "moduleID" : "stats",
+      "objectives" : [
+        "stats.variance.compare-spread"
+      ],
+      "order" : 2,
+      "revision" : 1,
+      "title" : "方差刻画波动"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "贝叶斯公式把先验认识与新证据结合起来，得到更新后的后验概率。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "blue",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "先验不是固定偏见；它是证据到来前的信息状态，并会随着新证据持续更新。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "应用视角",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "probability-page-1.quiz",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "probability-page-1",
+      "locale" : "zh-Hans",
+      "moduleID" : "probability",
+      "objectives" : [
+        "probability.bayes.update-belief"
+      ],
+      "order" : 1,
+      "revision" : 1,
+      "title" : "用证据更新判断"
+    },
+    {
+      "accent" : "blue",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "t检验是比较均值差异的核心工具，适合小样本且总体方差未知的场景。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "amber",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "数据只是轻微偏态时，t检验通常仍然具有不错的稳健性。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "核心认知",
+          "tone" : "warning",
+          "type" : "callout"
+        },
+        {
+          "code" : "from scipy import stats\nt, p = stats.ttest_ind(a, b, equal_var=False)\n",
+          "language" : "python",
+          "type" : "code"
+        },
+        {
+          "exerciseID" : "hypothesis-page-1.quiz",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "hypothesis-page-1",
+      "locale" : "zh-Hans",
+      "moduleID" : "hypothesis",
+      "objectives" : [
+        "hypothesis.t-test.robustness"
+      ],
+      "order" : 1,
+      "revision" : 1,
+      "title" : "t检验与小样本"
+    },
+    {
+      "accent" : "pink",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "P值经常被误解为原假设为真的概率，但它描述的是数据在假设下的极端程度。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "mint",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "如果原假设成立，P值衡量观察到当前结果或更极端结果的概率。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "避坑提示",
+          "tone" : "warning",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "hypothesis-page-2.quiz",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "hypothesis-page-2",
+      "locale" : "zh-Hans",
+      "moduleID" : "hypothesis",
+      "objectives" : [
+        "hypothesis.p-value.interpretation"
+      ],
+      "order" : 2,
+      "revision" : 1,
+      "title" : "P值的真正含义"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "在线性回归中，系数的正负首先说明变量变化的方向。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "blue",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "先看符号，再看大小，最后结合显著性和业务语境判断。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "阅读顺序",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "code" : "model.fit(X, y)\nprint(model.coef_)\n",
+          "language" : "python",
+          "type" : "code"
+        },
+        {
+          "exerciseID" : "regression-page-1.quiz",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "regression-page-1",
+      "locale" : "zh-Hans",
+      "moduleID" : "regression",
+      "objectives" : [
+        "regression.coefficient.direction"
+      ],
+      "order" : 1,
+      "revision" : 1,
+      "title" : "回归系数的方向"
+    },
+    {
+      "accent" : "amber",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "R² 衡量模型解释方差的能力，不等于预测准确率，更不是因果证明。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "pink",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "高 R² 仍可能过拟合，需要结合残差与验证集表现。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "常见误解",
+          "tone" : "warning",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "regression-page-2.quiz",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "regression-page-2",
+      "locale" : "zh-Hans",
+      "moduleID" : "regression",
+      "objectives" : [
+        "regression.r2.interpretation"
+      ],
+      "order" : 2,
+      "revision" : 1,
+      "title" : "R² 的边界"
+    }
+  ],
+  "locale" : "zh-Hans",
+  "modules" : [
+    {
+      "completionXP" : 15,
+      "id" : "stats",
+      "lessonTitle" : "描述统计与数据探索",
+      "prerequisiteModuleIDs" : [
+
+      ],
+      "reviewMessage" : "均值与方差已经加入复习池，FSRS 会根据你的记忆表现安排下一次复习。",
+      "subtitle" : "2 个小节",
+      "title" : "描述统计与数据探索",
+      "trackID" : "statistics"
+    },
+    {
+      "completionXP" : 15,
+      "id" : "probability",
+      "lessonTitle" : "概率论基础",
+      "prerequisiteModuleIDs" : [
+        "stats"
+      ],
+      "reviewMessage" : "条件概率与贝叶斯更新已经加入复习池。",
+      "subtitle" : "1 个小节",
+      "title" : "概率论基础",
+      "trackID" : "statistics"
+    },
+    {
+      "completionXP" : 15,
+      "id" : "hypothesis",
+      "lessonTitle" : "假设检验",
+      "prerequisiteModuleIDs" : [
+        "probability"
+      ],
+      "reviewMessage" : "t 检验与 P 值考点已经加入复习池。",
+      "subtitle" : "2 个小节",
+      "title" : "假设检验",
+      "trackID" : "statistics"
+    },
+    {
+      "completionXP" : 15,
+      "id" : "regression",
+      "lessonTitle" : "线性回归模型",
+      "prerequisiteModuleIDs" : [
+        "hypothesis"
+      ],
+      "reviewMessage" : "回归系数与 R² 已加入复习池。",
+      "subtitle" : "2 个小节",
+      "title" : "线性回归模型",
+      "trackID" : "machineLearning"
+    }
+  ],
+  "primaryRouteID" : "datascience",
+  "releaseVersion" : "2026.07.28.1",
+  "retiredIDs" : [
+
+  ],
+  "reviewCards" : [
+    {
+      "accent" : "mint",
+      "backBody" : [
+        {
+          "text" : "均值是所有样本值之和除以样本个数。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "极端值会显著拉动均值，偏态分布下应搭配中位数。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "核心定义",
+      "frontSubtitle" : "平均数的中心位置",
+      "frontTitle" : "均值",
+      "id" : "mean",
+      "locale" : "zh-Hans",
+      "moduleID" : "stats",
+      "revision" : 1,
+      "sourceLessonID" : "stats-page-1",
+      "topic" : "描述统计"
+    },
+    {
+      "accent" : "mint",
+      "backBody" : [
+        {
+          "text" : "方差衡量样本与均值的偏离程度。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "标准差是方差的平方根，与原始数据量纲相同。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "理解方式",
+      "frontSubtitle" : "波动程度的平方度量",
+      "frontTitle" : "方差",
+      "id" : "variance",
+      "locale" : "zh-Hans",
+      "moduleID" : "stats",
+      "revision" : 1,
+      "sourceLessonID" : "stats-page-2",
+      "topic" : "描述统计"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "贝叶斯公式用于在新证据出现后更新后验概率。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "先验是更新前的信息状态，而不是不可改变的偏见。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "应用视角",
+      "frontSubtitle" : "先验 × 似然 / 证据",
+      "frontTitle" : "贝叶斯公式",
+      "id" : "bayes",
+      "locale" : "zh-Hans",
+      "moduleID" : "probability",
+      "revision" : 1,
+      "sourceLessonID" : "probability-page-1",
+      "topic" : "条件概率"
+    },
+    {
+      "accent" : "blue",
+      "backBody" : [
+        {
+          "text" : "P值表示原假设成立时，观察到当前或更极端结果的概率。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "p < 0.05 不代表原假设只有 5% 的概率为真。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "解析",
+      "frontSubtitle" : "原假设下的极端性概率",
+      "frontTitle" : "P值",
+      "id" : "p-value",
+      "locale" : "zh-Hans",
+      "moduleID" : "hypothesis",
+      "revision" : 1,
+      "sourceLessonID" : "hypothesis-page-2",
+      "topic" : "假设检验"
+    },
+    {
+      "accent" : "pink",
+      "backBody" : [
+        {
+          "text" : "第一类错误是原假设为真时却错误地拒绝它。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "显著性水平 α 控制第一类错误的长期风险。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "解析",
+      "frontSubtitle" : "弃真错误",
+      "frontTitle" : "第一类错误",
+      "id" : "type-one-error",
+      "locale" : "zh-Hans",
+      "moduleID" : "hypothesis",
+      "revision" : 1,
+      "sourceLessonID" : "hypothesis-page-1",
+      "topic" : "统计推断"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "回归系数的正负决定变量与目标变化的方向。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "方向不等于因果，仍需结合显著性和业务语境。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "阅读顺序",
+      "frontSubtitle" : "先看方向，再看大小",
+      "frontTitle" : "回归系数",
+      "id" : "regression-coef",
+      "locale" : "zh-Hans",
+      "moduleID" : "regression",
+      "revision" : 1,
+      "sourceLessonID" : "regression-page-1",
+      "topic" : "线性回归"
+    },
+    {
+      "accent" : "amber",
+      "backBody" : [
+        {
+          "text" : "R² 衡量模型解释目标变量波动的能力。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "高 R² 也可能过拟合，仍需检查残差和验证集。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "常见误解",
+      "frontSubtitle" : "解释方差，不是预测准确率",
+      "frontTitle" : "R²",
+      "id" : "r2",
+      "locale" : "zh-Hans",
+      "moduleID" : "regression",
+      "revision" : 1,
+      "sourceLessonID" : "regression-page-2",
+      "topic" : "线性回归"
+    }
+  ],
+  "routes" : [
+    {
+      "accent" : "blue",
+      "cta" : "继续学习",
+      "id" : "datascience",
+      "interactive" : true,
+      "moduleIDs" : [
+        "stats",
+        "probability",
+        "hypothesis",
+        "regression"
+      ],
+      "subtitle" : "统计 · 机器学习 · 深度学习",
+      "systemImage" : "cpu",
+      "title" : "数据科学与人工智能",
+      "trackIDs" : [
+        "statistics",
+        "machineLearning",
+        "deepLearning"
+      ]
+    },
+    {
+      "accent" : "pink",
+      "cta" : "即将开放",
+      "id" : "design",
+      "interactive" : false,
+      "moduleIDs" : [
+
+      ],
+      "subtitle" : "色彩体系 · 组件化设计 · 交互",
+      "systemImage" : "paintpalette",
+      "title" : "UI/UX 设计进阶",
+      "trackIDs" : [
+
+      ]
+    },
+    {
+      "accent" : "mint",
+      "cta" : "即将开放",
+      "id" : "web",
+      "interactive" : false,
+      "moduleIDs" : [
+
+      ],
+      "subtitle" : "React · Node.js · 数据库架构",
+      "systemImage" : "chevron.left.forwardslash.chevron.right",
+      "title" : "全栈 Web 开发",
+      "trackIDs" : [
+
+      ]
+    }
+  ],
+  "schemaVersion" : 2,
+  "tracks" : [
+    {
+      "id" : "statistics",
+      "title" : "统计基础"
+    },
+    {
+      "id" : "machineLearning",
+      "title" : "机器学习"
+    },
+    {
+      "id" : "deepLearning",
+      "title" : "深度学习"
+    }
+  ]
+}

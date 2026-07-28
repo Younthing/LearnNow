@@ -173,25 +173,6 @@ extension LearnNowFlowState {
             }
     }
 
-    static func feedback(for page: LearnNowLessonPage) -> LearnNowLessonFeedback? {
-        switch page.answerState {
-        case .unanswered:
-            nil
-        case .correct:
-            LearnNowLessonFeedback(
-                title: "漂亮，概念抓得很准。",
-                body: "继续保持这个判断标准，下一页会把 P 值的真实含义彻底钉牢。",
-                accent: .mint
-            )
-        case .incorrect:
-            LearnNowLessonFeedback(
-                title: "思路有点绕进去了。",
-                body: "这是初学者最常见的坑，回看上方提示后再做一次会更稳。",
-                accent: .pink
-            )
-        }
-    }
-
     static func dueLabel(for date: Date) -> String {
         let calendar = Calendar.current
         let now = Date()

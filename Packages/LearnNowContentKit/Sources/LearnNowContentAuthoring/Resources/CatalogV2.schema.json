@@ -1,0 +1,320 @@
+{
+  "$defs": {
+    "accent": {
+      "enum": ["amber", "blue", "mint", "pink", "purple"],
+      "type": "string"
+    },
+    "feedback": {
+      "additionalProperties": false,
+      "properties": {
+        "accent": {"$ref": "#/$defs/accent"},
+        "body": {"items": {"$ref": "#/$defs/inline"}, "minItems": 1, "type": "array"},
+        "title": {"minLength": 1, "type": "string"},
+        "tone": {"enum": ["information", "success", "warning"], "type": "string"}
+      },
+      "required": ["accent", "body", "title", "tone"],
+      "type": "object"
+    },
+    "inline": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "text": {"type": "string"},
+            "type": {"const": "text"}
+          },
+          "required": ["text", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "children": {"items": {"$ref": "#/$defs/inline"}, "type": "array"},
+            "type": {"enum": ["emphasis", "strong"]}
+          },
+          "required": ["children", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "text": {"type": "string"},
+            "type": {"const": "code"}
+          },
+          "required": ["text", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {"type": {"const": "lineBreak"}},
+          "required": ["type"],
+          "type": "object"
+        }
+      ]
+    },
+    "block": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content": {"items": {"$ref": "#/$defs/inline"}, "type": "array"},
+            "type": {"const": "paragraph"}
+          },
+          "required": ["content", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content": {"items": {"$ref": "#/$defs/inline"}, "type": "array"},
+            "level": {"maximum": 6, "minimum": 1, "type": "integer"},
+            "type": {"const": "heading"}
+          },
+          "required": ["content", "level", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "items": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "content": {"items": {"$ref": "#/$defs/inline"}, "type": "array"}
+                },
+                "required": ["content"],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "ordered": {"type": "boolean"},
+            "type": {"const": "list"}
+          },
+          "required": ["items", "ordered", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "accent": {"$ref": "#/$defs/accent"},
+            "body": {"items": {"$ref": "#/$defs/block"}, "type": "array"},
+            "title": {"type": "string"},
+            "tone": {"enum": ["information", "success", "warning"]},
+            "type": {"const": "callout"}
+          },
+          "required": ["accent", "body", "title", "tone", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "code": {"type": "string"},
+            "language": {"type": "string"},
+            "type": {"const": "code"}
+          },
+          "required": ["code", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "alt": {"minLength": 1, "type": "string"},
+            "caption": {"items": {"$ref": "#/$defs/inline"}, "type": "array"},
+            "path": {"pattern": "^assets/[A-Za-z0-9][A-Za-z0-9._/-]*\\.(?:gif|jpeg|jpg|png|webp)$", "type": "string"},
+            "type": {"const": "image"}
+          },
+          "required": ["alt", "path", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "exerciseID": {"$ref": "#/$defs/id"},
+            "type": {"const": "singleChoice"}
+          },
+          "required": ["exerciseID", "type"],
+          "type": "object"
+        }
+      ]
+    },
+    "id": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "type": "string"
+    }
+  },
+  "$id": "https://learnnow.local/schemas/CatalogV2.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "exercises": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "correctFeedback": {"$ref": "#/$defs/feedback"},
+          "correctOptionID": {"$ref": "#/$defs/id"},
+          "id": {"$ref": "#/$defs/id"},
+          "incorrectFeedback": {"$ref": "#/$defs/feedback"},
+          "kind": {"const": "singleChoice"},
+          "lessonID": {"$ref": "#/$defs/id"},
+          "options": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "content": {"items": {"$ref": "#/$defs/inline"}, "type": "array"},
+                "feedback": {"$ref": "#/$defs/feedback"},
+                "id": {"$ref": "#/$defs/id"}
+              },
+              "required": ["content", "id"],
+              "type": "object"
+            },
+            "minItems": 2,
+            "type": "array"
+          },
+          "prompt": {"items": {"$ref": "#/$defs/inline"}, "minItems": 1, "type": "array"}
+        },
+        "required": [
+          "correctFeedback",
+          "correctOptionID",
+          "id",
+          "incorrectFeedback",
+          "kind",
+          "lessonID",
+          "options",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "knowledgeTips": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "accent": {"$ref": "#/$defs/accent"},
+          "body": {"items": {"$ref": "#/$defs/inline"}, "type": "array"},
+          "id": {"$ref": "#/$defs/id"},
+          "locale": {"type": "string"},
+          "moduleID": {"$ref": "#/$defs/id"},
+          "revision": {"minimum": 1, "type": "integer"},
+          "sourceLessonID": {"$ref": "#/$defs/id"},
+          "systemImage": {"type": "string"},
+          "title": {"type": "string"}
+        },
+        "required": ["accent", "body", "id", "locale", "revision", "systemImage", "title"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "lessons": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "accent": {"$ref": "#/$defs/accent"},
+          "blocks": {"items": {"$ref": "#/$defs/block"}, "minItems": 1, "type": "array"},
+          "id": {"$ref": "#/$defs/id"},
+          "locale": {"type": "string"},
+          "moduleID": {"$ref": "#/$defs/id"},
+          "objectives": {"items": {"$ref": "#/$defs/id"}, "minItems": 1, "type": "array"},
+          "order": {"minimum": 1, "type": "integer"},
+          "revision": {"minimum": 1, "type": "integer"},
+          "title": {"type": "string"}
+        },
+        "required": ["accent", "blocks", "id", "locale", "moduleID", "objectives", "order", "revision", "title"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "locale": {"type": "string"},
+    "modules": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "completionXP": {"minimum": 1, "type": "integer"},
+          "id": {"$ref": "#/$defs/id"},
+          "lessonTitle": {"type": "string"},
+          "prerequisiteModuleIDs": {"items": {"$ref": "#/$defs/id"}, "type": "array"},
+          "reviewMessage": {"type": "string"},
+          "subtitle": {"type": "string"},
+          "title": {"type": "string"},
+          "trackID": {"$ref": "#/$defs/id"}
+        },
+        "required": ["completionXP", "id", "lessonTitle", "prerequisiteModuleIDs", "reviewMessage", "subtitle", "title", "trackID"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "primaryRouteID": {"$ref": "#/$defs/id"},
+    "releaseVersion": {"pattern": "^[0-9]+(?:\\.[0-9]+)*$", "type": "string"},
+    "retiredIDs": {"items": {"$ref": "#/$defs/id"}, "type": "array"},
+    "reviewCards": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "accent": {"$ref": "#/$defs/accent"},
+          "backBody": {"items": {"$ref": "#/$defs/inline"}, "type": "array"},
+          "backHighlight": {"items": {"$ref": "#/$defs/inline"}, "type": "array"},
+          "backTitle": {"type": "string"},
+          "frontSubtitle": {"type": "string"},
+          "frontTitle": {"type": "string"},
+          "id": {"$ref": "#/$defs/id"},
+          "locale": {"type": "string"},
+          "moduleID": {"$ref": "#/$defs/id"},
+          "revision": {"minimum": 1, "type": "integer"},
+          "sourceLessonID": {"$ref": "#/$defs/id"},
+          "topic": {"type": "string"}
+        },
+        "required": ["accent", "backBody", "backHighlight", "backTitle", "frontTitle", "id", "locale", "moduleID", "revision", "topic"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "routes": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "accent": {"$ref": "#/$defs/accent"},
+          "cta": {"type": "string"},
+          "id": {"$ref": "#/$defs/id"},
+          "interactive": {"type": "boolean"},
+          "moduleIDs": {"items": {"$ref": "#/$defs/id"}, "type": "array"},
+          "subtitle": {"type": "string"},
+          "systemImage": {"type": "string"},
+          "title": {"type": "string"},
+          "trackIDs": {"items": {"$ref": "#/$defs/id"}, "type": "array"}
+        },
+        "required": ["accent", "cta", "id", "interactive", "moduleIDs", "subtitle", "systemImage", "title", "trackIDs"],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "schemaVersion": {"const": 2},
+    "tracks": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {"$ref": "#/$defs/id"},
+          "title": {"type": "string"}
+        },
+        "required": ["id", "title"],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "exercises",
+    "knowledgeTips",
+    "lessons",
+    "locale",
+    "modules",
+    "primaryRouteID",
+    "releaseVersion",
+    "retiredIDs",
+    "reviewCards",
+    "routes",
+    "schemaVersion",
+    "tracks"
+  ],
+  "title": "LearnNow Catalog V2",
+  "type": "object"
+}

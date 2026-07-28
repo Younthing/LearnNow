@@ -79,8 +79,8 @@ struct ProfileSettingsScreen: View {
         .scrollContentBackground(.hidden)
         .background(LearnNowPalette.canvas.ignoresSafeArea())
         .navigationTitle(model.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
+        .learnNowInlineNavigationTitle()
+        .learnNowNavigationBarVisible()
         .alert(item: $cloudConfirmation) { confirmation in
             Alert(
                 title: Text(confirmation.enabled ? "开启云同步？" : "关闭云同步？"),

@@ -3,7 +3,7 @@ import SwiftUI
 struct PathScreen: View {
     let model: PathScreenModel
     let onBack: () -> Void
-    let onSelectTrack: (LearnNowRouteTrack) -> Void
+    let onSelectTrack: (String) -> Void
     let onOpenLesson: (String) -> Void
 
     @State private var animateNodes = false
@@ -86,7 +86,7 @@ struct PathScreen: View {
 
 private struct RouteTrackTabs: View {
     let tabs: [PathScreenModel.TrackTab]
-    let onSelectTrack: (LearnNowRouteTrack) -> Void
+    let onSelectTrack: (String) -> Void
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
@@ -110,10 +110,10 @@ private struct RouteTrackTabs: View {
             accent: tab.isSelected ? .blue : .mint,
             isSelected: tab.isSelected,
             isExpanded: true,
-            action: { onSelectTrack(tab.track) }
+            action: { onSelectTrack(tab.id) }
         )
         .frame(maxWidth: .infinity)
-        .accessibilityIdentifier("path.track.\(tab.track.rawValue)")
+        .accessibilityIdentifier("path.track.\(tab.id)")
     }
 }
 
@@ -281,6 +281,11 @@ private struct PathNodeRow: View {
                     .font(LearnNowTypography.body)
                     .foregroundStyle(LearnNowPalette.textMuted.opacity(node.status == .locked ? 0.5 : 0.82))
                     .fixedSize(horizontal: false, vertical: true)
+
+                if node.hasNewContent {
+                    MetadataChip(text: "新内容", accent: .amber)
+                        .padding(.top, 2)
+                }
             }
 
             Spacer(minLength: 0)
@@ -412,7 +417,7 @@ private struct PathModuleSurface<Content: View>: View {
 #Preview("Path Empty Track") {
     let flow = {
         var value = LearnNowFlowState.pathPreview
-        value.selectRouteTrack(.deepLearning)
+        value.selectRouteTrack("deepLearning")
         return value
     }()
 

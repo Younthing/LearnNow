@@ -22,6 +22,8 @@ final class LearnNowAppStore {
     private let activeCloudSyncEnabled: Bool
     private let router = LearnNowRouter()
     private var learningRepository: (any LearningRepository)?
+    @ObservationIgnored
+    private var contentRefreshTask: Task<Void, Never>?
 
     init(
         catalogRepository: (any CatalogRepository)? = nil,
@@ -38,7 +40,7 @@ final class LearnNowAppStore {
             activeCloudSyncEnabled: activeCloudSyncEnabled,
             desiredCloudSyncEnabled: LearnNowCloudSyncPreference.isEnabled()
         )
-        self.catalogRepository = catalogRepository ?? BundleCatalogRepository()
+        self.catalogRepository = catalogRepository ?? ContentCatalogRepositoryFactory.make()
         self.scheduler = resolvedScheduler
         self.clock = resolvedClock
         self.activeCloudSyncEnabled = activeCloudSyncEnabled
@@ -76,8 +78,22 @@ final class LearnNowAppStore {
             refreshMemoryTrend()
             prepareReviewPreviews()
             loadState = .ready
+            refreshContentInBackground()
         } catch {
             loadState = .persistenceError(error.localizedDescription)
+        }
+    }
+
+    func refreshContentInBackground() {
+        guard contentRefreshTask == nil,
+              let repository = catalogRepository as? any RefreshableCatalogRepository
+        else {
+            return
+        }
+
+        contentRefreshTask = Task { [weak self] in
+            defer { self?.contentRefreshTask = nil }
+            _ = await repository.refresh()
         }
     }
 
@@ -90,9 +106,9 @@ final class LearnNowAppStore {
     }
 
     func showRoutes() { router.showRoutes(flow: &flow) }
-    func openPath() { router.openPath(flow: &flow) }
+    func openPath(routeID: String? = nil) { router.openPath(routeID: routeID, flow: &flow) }
     func openPathForLoadedLesson() { router.openPathForLoadedLesson(flow: &flow) }
-    func selectRouteTrack(_ track: LearnNowRouteTrack) { router.selectRouteTrack(track, flow: &flow) }
+    func selectRouteTrack(_ trackID: String) { router.selectRouteTrack(trackID, flow: &flow) }
 
     func openLesson() {
         router.openLesson(flow: &flow)
@@ -111,6 +127,14 @@ final class LearnNowAppStore {
 
     func answerCurrentLesson(with optionID: String) {
         flow.answerCurrentLesson(with: optionID)
+    }
+
+    func answerCurrentLesson(exerciseID: String, optionID: String) {
+        flow.answerCurrentLesson(exerciseID: exerciseID, optionID: optionID)
+    }
+
+    func retryCurrentLessonExercise(id: String) {
+        flow.retryCurrentLessonExercise(id: id)
     }
 
     func handleLessonCallToAction(_ action: LearnNowLessonCallToAction) {
@@ -246,12 +270,15 @@ final class LearnNowAppStore {
         guard let repository = learningRepository,
               flow.modules.indices.contains(flow.loadedLessonModuleIndex),
               flow.lessonPages.indices.contains(flow.currentLessonPageIndex) else { return }
+        let moduleID = flow.modules[flow.loadedLessonModuleIndex].id
+        let pageID = flow.lessonPages[flow.currentLessonPageIndex].id
         do {
             try repository.recordPageVisit(
-                lessonID: flow.modules[flow.loadedLessonModuleIndex].id,
-                pageID: flow.lessonPages[flow.currentLessonPageIndex].id,
+                lessonID: moduleID,
+                pageID: pageID,
                 pageOrder: flow.currentLessonPageIndex
             )
+            flow.visitedPageIDsByLessonID[moduleID, default: []].insert(pageID)
         } catch {
             lastActionError = error.localizedDescription
         }

@@ -1,9 +1,10 @@
 import Foundation
+import LearnNowContentKit
 
 struct HomeScreenModel: Equatable {
     struct KnowledgeTip: Equatable {
         let title: String
-        let body: String
+        let body: [InlineContent]
         let systemImage: String
         let accent: LearnNowAccent
     }
@@ -26,11 +27,9 @@ struct RoutesOverviewModel: Equatable {
 
 struct PathScreenModel: Equatable {
     struct TrackTab: Identifiable, Equatable {
-        let track: LearnNowRouteTrack
+        let id: String
         let title: String
         let isSelected: Bool
-
-        var id: LearnNowRouteTrack { track }
     }
 
     struct Node: Identifiable, Equatable {
@@ -40,6 +39,7 @@ struct PathScreenModel: Equatable {
         let status: LearnNowPathNode.Status
         let isInteractive: Bool
         let progress: Double?
+        let hasNewContent: Bool
     }
 
     let title: String
@@ -53,12 +53,6 @@ struct PathScreenModel: Equatable {
 }
 
 struct LessonScreenModel: Equatable {
-    struct Callout: Equatable {
-        let title: String
-        let message: String
-        let accent: LearnNowAccent
-    }
-
     struct Option: Identifiable, Equatable {
         enum Presentation: Equatable {
             case normal
@@ -68,9 +62,17 @@ struct LessonScreenModel: Equatable {
 
         let id: String
         let badge: String
-        let title: String
+        let content: [InlineContent]
         let presentation: Presentation
         let isEnabled: Bool
+    }
+
+    struct Exercise: Identifiable, Equatable {
+        let id: String
+        let prompt: [InlineContent]
+        let options: [Option]
+        let feedback: LearnNowLessonFeedback?
+        let showsRetry: Bool
     }
 
     struct CallToAction: Equatable {
@@ -84,12 +86,9 @@ struct LessonScreenModel: Equatable {
         let badge: String
         let accent: LearnNowAccent
         let title: String
-        let summary: String
-        let callout: Callout
-        let codeSample: String?
-        let questionPrompt: String
-        let options: [Option]
-        let feedback: LearnNowLessonFeedback?
+        let blocks: [LessonContentBlock]
+        let exercisesByID: [String: Exercise]
+        let contentRootURL: URL?
         let callToAction: CallToAction?
     }
 
@@ -132,8 +131,8 @@ struct ReviewBoardModel: Equatable {
         let frontTitle: String
         let frontSubtitle: String?
         let backTitle: String
-        let backBody: String
-        let backHighlight: String
+        let backBody: [InlineContent]
+        let backHighlight: [InlineContent]
     }
 
     struct CardStage: Equatable {
@@ -299,7 +298,7 @@ extension LearnNowFlowState {
 
     var homeScreenModel: HomeScreenModel {
         let learningSummary = currentLearningSummary
-        let tip = catalog.dailyTips.first
+        let tip = rotatingKnowledgeTip
 
         return HomeScreenModel(
             title: "今天快乐",
@@ -311,7 +310,9 @@ extension LearnNowFlowState {
             tipSectionTitle: "Tips",
             knowledgeTip: .init(
                 title: tip?.title ?? "开始今天的学习",
-                body: tip?.body ?? "完成一个课程模块后，相关知识卡片会自动进入复习池。",
+                body: tip?.body ?? [
+                    .text("完成一个课程模块后，相关知识卡片会自动进入复习池。"),
+                ],
                 systemImage: tip?.systemImage ?? "lightbulb",
                 accent: tip?.accent ?? .amber
             )
@@ -333,7 +334,7 @@ extension LearnNowFlowState {
             title: "\(routeCategoryTitle)路线",
             subtitle: "切换课程查看章节",
             trackTabs: routeTracks.map {
-                .init(track: $0, title: $0.title, isSelected: $0 == selectedRouteTrack)
+                .init(id: $0.id, title: $0.title, isSelected: $0.id == selectedRouteTrackID)
             },
             selectedTrackTitle: selectedRouteTrackTitle,
             selectedTrackSummary: visibleNodes.isEmpty
@@ -346,7 +347,8 @@ extension LearnNowFlowState {
                     subtitle: node.subtitle,
                     status: node.status,
                     isInteractive: node.isInteractive,
-                    progress: node.status == .current ? 0.40 : nil
+                    progress: node.status == .current ? 0.40 : nil,
+                    hasNewContent: node.hasNewContent
                 )
             },
             emptyStateTitle: visibleNodes.isEmpty ? "\(selectedRouteTrackTitle) 即将开放" : nil,
@@ -359,35 +361,49 @@ extension LearnNowFlowState {
             title: currentLessonTitle,
             currentPageIndex: currentLessonPageIndex,
             pageCount: lessonPages.count,
-            pages: lessonPages.map { page in
+            pages: lessonPages.enumerated().map { pageIndex, page in
                 LessonScreenModel.Page(
                     id: page.id,
-                    badge: page.badge,
+                    badge: "小节 \(pageIndex + 1) / \(lessonPages.count)",
                     accent: page.accent,
                     title: page.title,
-                    summary: page.summary,
-                    callout: .init(
-                        title: page.calloutTitle,
-                        message: page.calloutBody,
-                        accent: page.calloutAccent
+                    blocks: page.blocks,
+                    exercisesByID: Dictionary(
+                        uniqueKeysWithValues: page.exercises.map { exercise in
+                            let exerciseID = exercise.id
+                            let answerState = page.answerState(for: exerciseID)
+                            return (
+                                exerciseID,
+                                LessonScreenModel.Exercise(
+                                    id: exerciseID,
+                                    prompt: exercise.prompt,
+                                    options: exercise.options.enumerated().map { optionIndex, option in
+                                        LessonScreenModel.Option(
+                                            id: option.id,
+                                            badge: Self.optionBadge(for: optionIndex),
+                                            content: option.content,
+                                            presentation: optionPresentation(
+                                                for: option.id,
+                                                answerState: answerState
+                                            ),
+                                            isEnabled: isOptionEnabled(for: answerState)
+                                        )
+                                    },
+                                    feedback: feedback(for: exercise, answerState: answerState),
+                                    showsRetry: {
+                                        if case .incorrect = answerState { return true }
+                                        return false
+                                    }()
+                                )
+                            )
+                        }
                     ),
-                    codeSample: page.codeSample,
-                    questionPrompt: page.question.prompt,
-                    options: page.question.options.map { option in
-                        LessonScreenModel.Option(
-                            id: option.id,
-                            badge: option.badge,
-                            title: option.title,
-                            presentation: optionPresentation(for: option.id, answerState: page.answerState),
-                            isEnabled: isOptionEnabled(for: page.answerState)
-                        )
-                    },
-                    feedback: Self.feedback(for: page),
-                    callToAction: page.callToAction.map {
+                    contentRootURL: catalog.contentRootURL,
+                    callToAction: (page.isReadyToAdvance ? page.successAction : nil).map {
                         .init(
                             kind: $0,
                             title: $0.title,
-                            accent: $0 == .retry ? nil : .blue
+                            accent: .blue
                         )
                     }
                 )
@@ -513,7 +529,7 @@ extension LearnNowFlowState {
                     frontTitle: $0.frontTitle,
                     moduleTitle: $0.moduleTitle,
                     dueLabel: Self.dueLabel(for: $0.dueAt),
-                    answerPreview: $0.backHighlight,
+                    answerPreview: $0.backHighlight.map(\.plainText).joined(),
                     isFavorited: $0.isFavorited,
                     isMastered: $0.isMastered
                 )
@@ -679,5 +695,59 @@ extension LearnNowFlowState {
         } else {
             false
         }
+    }
+
+    private var rotatingKnowledgeTip: CourseCatalog.KnowledgeTip? {
+        let unlockedModuleIDs = Set(
+            modules
+                .filter {
+                    completedLessonIDs.contains($0.id) ||
+                        Set($0.prerequisiteModuleIDs).isSubset(of: completedLessonIDs)
+                }
+                .map(\.id)
+        )
+        let candidates = catalog.dailyTips
+            .filter { tip in
+                guard let moduleID = tip.moduleID else { return true }
+                return unlockedModuleIDs.contains(moduleID)
+            }
+            .sorted { $0.id < $1.id }
+        guard !candidates.isEmpty else { return nil }
+        return candidates[tipRotationDayOrdinal % candidates.count]
+    }
+
+    private func feedback(
+        for exercise: ExerciseDefinition,
+        answerState: LearnNowLessonAnswerState
+    ) -> LearnNowLessonFeedback? {
+        let definition: FeedbackDefinition?
+        switch answerState {
+        case .unanswered:
+            definition = nil
+        case let .correct(optionID):
+            definition = exercise.options.first(where: { $0.id == optionID })?.feedback
+                ?? exercise.correctFeedback
+        case let .incorrect(optionID):
+            definition = exercise.options.first(where: { $0.id == optionID })?.feedback
+                ?? exercise.incorrectFeedback
+        }
+        return definition.map {
+            LearnNowLessonFeedback(
+                title: $0.title,
+                body: $0.body,
+                accent: LearnNowAccent($0.accent)
+            )
+        }
+    }
+
+    private static func optionBadge(for index: Int) -> String {
+        var number = index
+        var badge = ""
+        repeat {
+            let scalar = UnicodeScalar(65 + (number % 26))!
+            badge.insert(Character(scalar), at: badge.startIndex)
+            number = (number / 26) - 1
+        } while number >= 0
+        return badge
     }
 }

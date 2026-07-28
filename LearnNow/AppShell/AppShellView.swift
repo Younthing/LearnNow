@@ -119,8 +119,8 @@ private struct RoutesJourneyContainer: View {
     var body: some View {
         ZStack {
             routesStage(destination: .overview) {
-                RoutesScreen(model: store.flow.routesOverviewModel) { _ in
-                    store.openPath()
+                RoutesScreen(model: store.flow.routesOverviewModel) { routeID in
+                    store.openPath(routeID: routeID)
                 }
             }
 
@@ -138,7 +138,10 @@ private struct RoutesJourneyContainer: View {
                     model: store.flow.lessonScreenModel,
                     onBack: { store.openPathForLoadedLesson() },
                     onSelectPage: { store.setCurrentLessonPageIndex($0) },
-                    onAnswer: { store.answerCurrentLesson(with: $0) },
+                    onAnswer: { exerciseID, optionID in
+                        store.answerCurrentLesson(exerciseID: exerciseID, optionID: optionID)
+                    },
+                    onRetryExercise: { store.retryCurrentLessonExercise(id: $0) },
                     onCallToAction: { store.handleLessonCallToAction($0) }
                 )
             }

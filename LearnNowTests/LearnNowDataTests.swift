@@ -1,4 +1,5 @@
 import Foundation
+import LearnNowContentKit
 import SwiftData
 import Testing
 @testable import LearnNow
@@ -9,10 +10,69 @@ struct LearnNowDataTests {
     func catalogDecodesValidDocument() throws {
         let catalog = try CatalogDecoder.decode(data: catalogData())
 
-        #expect(catalog.schemaVersion == 1)
+        #expect(catalog.schemaVersion == 2)
         #expect(catalog.modules.map(\.id) == ["first", "second"])
         #expect(catalog.modules[1].prerequisiteModuleIDs == ["first"])
-        #expect(catalog.modules[0].lessonPages[0].question.correctOptionID == "yes")
+        #expect(catalog.modules[0].lessonPages[0].exercises[0].correctOptionID == "yes")
+    }
+
+    @Test
+    func bundledV2PreservesPublishedStableIDsAndOrderedLessonBlocks() throws {
+        let v2URL = try #require(Bundle.main.url(forResource: "CatalogV2", withExtension: "json"))
+        let v2Data = try Data(contentsOf: v2URL)
+        let v2Document = try DeterministicJSON.decode(CatalogDocumentV2.self, from: v2Data)
+        let catalog = try CatalogDecoder.decode(data: v2Data)
+
+        #expect(Set(v2Document.routes.map(\.id)) == ["datascience", "design", "web"])
+        #expect(Set(v2Document.modules.map(\.id)) == ["stats", "probability", "hypothesis", "regression"])
+        #expect(
+            Set(v2Document.lessons.map(\.id)) == [
+                "stats-page-1",
+                "stats-page-2",
+                "probability-page-1",
+                "hypothesis-page-1",
+                "hypothesis-page-2",
+                "regression-page-1",
+                "regression-page-2",
+            ]
+        )
+        #expect(
+            Set(v2Document.reviewCards.map(\.id)) == [
+                "mean",
+                "variance",
+                "bayes",
+                "p-value",
+                "type-one-error",
+                "regression-coef",
+                "r2",
+            ]
+        )
+        #expect(Set(v2Document.knowledgeTips.map(\.id)) == ["mean-tip", "p-value-tip"])
+
+        let firstPage = try #require(catalog.module(id: "stats")?.lessonPages.first)
+        #expect(firstPage.id == "stats-page-1")
+        #expect(firstPage.exerciseIDs == ["stats-page-1.quiz"])
+        #expect(firstPage.blocks.count == 4)
+        if case .paragraph = firstPage.blocks[0] {
+            // Expected first block.
+        } else {
+            Issue.record("The first lesson block should remain a paragraph.")
+        }
+        if case .callout = firstPage.blocks[1] {
+            // Expected second block.
+        } else {
+            Issue.record("The second lesson block should remain a callout.")
+        }
+        if case .code = firstPage.blocks[2] {
+            // Expected third block.
+        } else {
+            Issue.record("The third lesson block should remain code.")
+        }
+        if case .singleChoice = firstPage.blocks[3] {
+            // Expected final block.
+        } else {
+            Issue.record("The exercise should remain at its authored block position.")
+        }
     }
 
     @Test(arguments: [
@@ -56,6 +116,89 @@ struct LearnNowDataTests {
         #expect(snapshot.reviewMemoryByCardID["card"] != nil)
         #expect(snapshot.reviewMemoryByCardID["card"]?.isFavorited == true)
         #expect(snapshot.reviewMemoryByCardID["card"]?.isMastered == true)
+    }
+
+    @Test
+    func legacyHighestPageOrderMigratesToStablePageIDsOnlyOnce() async throws {
+        let catalog = try bundledCatalog()
+        let stats = try #require(catalog.module(id: "stats"))
+        let expectedPageIDs = Set(stats.lessonPages.map(\.id))
+        let container = try LearnNowModelContainerFactory.make(
+            cloudSyncEnabled: false,
+            inMemory: true
+        )
+        let context = ModelContext(container)
+        context.insert(
+            LessonProgressRecord(
+                lessonID: stats.id,
+                lastPageID: stats.lessonPages.last?.id,
+                highestPageOrder: stats.lessonPages.count - 1,
+                updatedAt: fixedClock().now
+            )
+        )
+        try context.save()
+
+        let repository = SwiftDataLearningRepository(
+            context: context,
+            clock: fixedClock(),
+            syncAvailabilityOverride: .localOnly
+        )
+        let migrated = try await repository.loadSnapshot(catalog: catalog)
+        let migratedEvents = try context.fetch(FetchDescriptor<LearningEventRecord>())
+            .filter { $0.kindRawValue == "pageVisit" }
+
+        #expect(migrated.visitedPageIDsByLessonID[stats.id] == expectedPageIDs)
+        #expect(Set(migratedEvents.map(\.contentID)) == expectedPageIDs)
+
+        let reloaded = try await repository.loadSnapshot(catalog: catalog)
+        let reloadedEvents = try context.fetch(FetchDescriptor<LearningEventRecord>())
+            .filter { $0.kindRawValue == "pageVisit" }
+        #expect(reloaded.visitedPageIDsByLessonID[stats.id] == expectedPageIDs)
+        #expect(reloadedEvents.count == migratedEvents.count)
+    }
+
+    @Test
+    func removedStablePageVisitPreventsLegacyOrderFromBeingReinterpreted() async throws {
+        let catalog = try bundledCatalog()
+        let stats = try #require(catalog.module(id: "stats"))
+        let retiredPageID = "stats-page-retired"
+        let container = try LearnNowModelContainerFactory.make(
+            cloudSyncEnabled: false,
+            inMemory: true
+        )
+        let context = ModelContext(container)
+        context.insert(
+            LessonProgressRecord(
+                lessonID: stats.id,
+                lastPageID: retiredPageID,
+                highestPageOrder: stats.lessonPages.count - 1,
+                updatedAt: fixedClock().now
+            )
+        )
+        context.insert(
+            LearningEventRecord(
+                eventKey: "page-visit:\(stats.id):\(retiredPageID)",
+                kindRawValue: "pageVisit",
+                contentID: retiredPageID,
+                occurredAt: fixedClock().now,
+                localDay: "2026-07-18",
+                timeZoneID: "Asia/Shanghai",
+                xpDelta: 0
+            )
+        )
+        try context.save()
+
+        let repository = SwiftDataLearningRepository(
+            context: context,
+            clock: fixedClock(),
+            syncAvailabilityOverride: .localOnly
+        )
+        let snapshot = try await repository.loadSnapshot(catalog: catalog)
+        let pageVisitEvents = try context.fetch(FetchDescriptor<LearningEventRecord>())
+            .filter { $0.kindRawValue == "pageVisit" }
+
+        #expect(snapshot.visitedPageIDsByLessonID[stats.id, default: []].isEmpty)
+        #expect(pageVisitEvents.map(\.contentID) == [retiredPageID])
     }
 
     @Test
@@ -207,6 +350,63 @@ struct LearnNowDataTests {
         #expect(snapshot.reviewMemoryByCardID["removed-card"] == nil)
         #expect(try context.fetch(FetchDescriptor<LessonProgressRecord>()).count == 1)
         #expect(try context.fetch(FetchDescriptor<ReviewLogRecord>()).count == 1)
+    }
+
+    @Test
+    func replacementCardIDStartsFreshWhileRetiredFSRSHistoryRemainsStored() async throws {
+        let catalog = try CatalogDecoder.decode(
+            data: catalogData(reviewCardID: "card-v2", retiredIDs: ["card"])
+        )
+        let container = try LearnNowModelContainerFactory.make(
+            cloudSyncEnabled: false,
+            inMemory: true
+        )
+        let context = ModelContext(container)
+        let now = fixedClock().now
+        context.insert(
+            LessonProgressRecord(
+                lessonID: "first",
+                lastPageID: "first-page",
+                highestPageOrder: 0,
+                completedAt: now,
+                updatedAt: now
+            )
+        )
+        context.insert(
+            ReviewLogRecord(
+                cardID: "card",
+                ratingRawValue: "easy",
+                reviewedAt: now,
+                localDay: "2026-07-18",
+                timeZoneID: "Asia/Shanghai",
+                schedulerVersion: "FSRS-6",
+                parametersVersion: "default-v6",
+                elapsedDays: 14,
+                scheduledDays: 30,
+                dueAt: now.addingTimeInterval(30 * 86_400),
+                stability: 20,
+                difficulty: 2,
+                stateRawValue: 2,
+                learningSteps: 0,
+                reps: 8,
+                lapses: 1
+            )
+        )
+        try context.save()
+
+        let repository = SwiftDataLearningRepository(
+            context: context,
+            clock: fixedClock(),
+            syncAvailabilityOverride: .localOnly
+        )
+        let snapshot = try await repository.loadSnapshot(catalog: catalog)
+        let retainedLogs = try context.fetch(FetchDescriptor<ReviewLogRecord>())
+
+        #expect(snapshot.reviewMemoryByCardID["card"] == nil)
+        #expect(snapshot.reviewMemoryByCardID["card-v2"]?.reps == 0)
+        #expect(snapshot.reviewMemoryByCardID["card-v2"]?.stability == 0)
+        #expect(retainedLogs.count == 1)
+        #expect(retainedLogs.first?.cardID == "card")
     }
 
     @Test
@@ -542,13 +742,26 @@ struct LearnNowDataTests {
         }
     }
 
-    private func catalogData(mutation: CatalogMutation? = nil) -> Data {
-        var version = 1
+    private func bundledCatalog() throws -> CourseCatalog {
+        let url = try #require(Bundle.main.url(forResource: "CatalogV2", withExtension: "json"))
+        return try CatalogDecoder.decode(data: Data(contentsOf: url))
+    }
+
+    private func catalogData(
+        mutation: CatalogMutation? = nil,
+        reviewCardID: String = "card",
+        retiredIDs: [String] = []
+    ) -> Data {
+        var version = 2
         var firstID = "first"
         var secondPrerequisites = ["first"]
         var firstPrerequisites: [String] = []
         var correctOptionID = "yes"
-        var firstPages = pageJSON(id: "first-page", correctOptionID: correctOptionID)
+        var firstLessons = lessonJSON(
+            id: "first-page",
+            moduleID: "first",
+            correctOptionID: correctOptionID
+        )
 
         switch mutation {
         case .duplicateModuleID:
@@ -559,11 +772,15 @@ struct LearnNowDataTests {
             firstPrerequisites = ["second"]
         case .missingCorrectOption:
             correctOptionID = "missing"
-            firstPages = pageJSON(id: "first-page", correctOptionID: correctOptionID)
+            firstLessons = lessonJSON(
+                id: "first-page",
+                moduleID: "first",
+                correctOptionID: correctOptionID
+            )
         case .emptyPages:
-            firstPages = ""
+            firstLessons = ""
         case .unsupportedVersion:
-            version = 2
+            version = 1
         case nil:
             break
         }
@@ -571,53 +788,114 @@ struct LearnNowDataTests {
         let json = """
         {
           "schemaVersion": \(version),
+          "releaseVersion": "1.0.0",
+          "locale": "zh-Hans",
           "primaryRouteID": "route",
+          "tracks": [
+            {"id": "statistics", "title": "Statistics"},
+            {"id": "machineLearning", "title": "Machine Learning"}
+          ],
           "routes": [{
-            "id": "route", "title": "Route", "subtitle": "Subtitle", "accent": "blue",
-            "cta": "继续学习", "interactive": true, "moduleIDs": ["first", "second"]
+            "id": "route", "title": "Route", "subtitle": "Subtitle", "systemImage": "cpu",
+            "accent": "blue", "cta": "继续学习", "interactive": true,
+            "trackIDs": ["statistics", "machineLearning"], "moduleIDs": ["first", "second"]
           }],
           "modules": [
             {
-              "id": "\(firstID)", "track": "statistics", "title": "First", "subtitle": "1",
+              "id": "\(firstID)", "trackID": "statistics", "title": "First", "subtitle": "1",
               "lessonTitle": "First", "prerequisiteModuleIDs": \(jsonArray(firstPrerequisites)),
-              "completionXP": 15, "reviewCardIDs": ["card"], "reviewMessage": "Review",
-              "pages": [\(firstPages)]
+              "completionXP": 15, "reviewMessage": "Review"
             },
             {
-              "id": "second", "track": "machineLearning", "title": "Second", "subtitle": "1",
+              "id": "second", "trackID": "machineLearning", "title": "Second", "subtitle": "1",
               "lessonTitle": "Second", "prerequisiteModuleIDs": \(jsonArray(secondPrerequisites)),
-              "completionXP": 15, "reviewCardIDs": [], "reviewMessage": "Review",
-              "pages": [\(pageJSON(id: "second-page", correctOptionID: "yes"))]
+              "completionXP": 15, "reviewMessage": "Review"
             }
           ],
+          "lessons": [
+            \(firstLessons)
+            \(firstLessons.isEmpty ? "" : ",")
+            \(lessonJSON(id: "second-page", moduleID: "second", correctOptionID: "yes"))
+          ],
+          "exercises": [
+            \(exerciseJSON(id: "first-page.quiz", lessonID: "first-page", correctOptionID: correctOptionID)),
+            \(exerciseJSON(
+                id: "second-page.quiz",
+                lessonID: "second-page",
+                correctOptionID: "second-page.yes",
+                optionNamespace: "second-page"
+            ))
+          ],
           "reviewCards": [{
-            "id": "card", "topic": "Topic", "moduleID": "first", "accent": "mint",
+            "id": "\(reviewCardID)", "moduleID": "first", "sourceLessonID": "first-page",
+            "revision": 1, "locale": "zh-Hans", "topic": "Topic", "accent": "mint",
             "frontTitle": "Front", "frontSubtitle": null, "backTitle": "Back",
-            "backBody": "Body", "backHighlight": "Highlight"
+            "backBody": [\(inlineJSON("Body"))], "backHighlight": [\(inlineJSON("Highlight"))]
           }],
-          "dailyTips": [{
-            "id": "tip", "title": "Tip", "body": "Body", "systemImage": "lightbulb", "accent": "amber"
-          }]
+          "knowledgeTips": [{
+            "id": "tip", "moduleID": null, "sourceLessonID": null, "revision": 1,
+            "locale": "zh-Hans", "title": "Tip", "body": [\(inlineJSON("Body"))],
+            "systemImage": "lightbulb", "accent": "amber"
+          }],
+          "retiredIDs": \(jsonArray(retiredIDs))
         }
         """
         return Data(json.utf8)
     }
 
-    private func pageJSON(id: String, correctOptionID: String) -> String {
+    private func lessonJSON(id: String, moduleID: String, correctOptionID: String) -> String {
         """
         {
-          "id": "\(id)", "badge": "1 / 1", "accent": "blue", "title": "Page",
-          "summary": "Summary", "calloutTitle": "Callout", "calloutBody": "Body",
-          "calloutAccent": "mint", "codeSample": null,
-          "quiz": {
-            "prompt": "Question", "options": [{"id": "yes", "badge": "A", "title": "Yes"}],
-            "correctOptionID": "\(correctOptionID)"
-          }
+          "id": "\(id)", "moduleID": "\(moduleID)", "order": 1, "title": "Page",
+          "accent": "blue", "revision": 1, "locale": "zh-Hans", "objectives": ["objective"],
+          "blocks": [
+            {"type": "paragraph", "content": [\(inlineJSON("Summary"))]},
+            {"type": "singleChoice", "exerciseID": "\(id).quiz"}
+          ]
         }
         """
+    }
+
+    private func exerciseJSON(
+        id: String,
+        lessonID: String,
+        correctOptionID: String,
+        optionNamespace: String? = nil
+    ) -> String {
+        let correctFeedback = feedbackJSON(title: "Correct", body: "Correct body", accent: "mint")
+        let incorrectFeedback = feedbackJSON(title: "Retry", body: "Retry body", accent: "pink")
+        let yesID = optionNamespace.map { "\($0).yes" } ?? "yes"
+        let noID = optionNamespace.map { "\($0).no" } ?? "no"
+        return """
+        {
+          "id": "\(id)", "lessonID": "\(lessonID)", "kind": "singleChoice",
+          "prompt": [\(inlineJSON("Question"))],
+          "options": [
+            {"id": "\(yesID)", "content": [\(inlineJSON("Yes"))], "feedback": null},
+            {"id": "\(noID)", "content": [\(inlineJSON("No"))], "feedback": null}
+          ],
+          "correctOptionID": "\(correctOptionID)",
+          "correctFeedback": \(correctFeedback),
+          "incorrectFeedback": \(incorrectFeedback)
+        }
+        """
+    }
+
+    private func feedbackJSON(title: String, body: String, accent: String) -> String {
+        """
+        {
+          "title": "\(title)", "body": [\(inlineJSON(body))],
+          "tone": "information", "accent": "\(accent)"
+        }
+        """
+    }
+
+    private func inlineJSON(_ text: String) -> String {
+        #"{"type":"text","text":"\#(text)"}"#
     }
 
     private func jsonArray(_ values: [String]) -> String {
         "[" + values.map { "\"\($0)\"" }.joined(separator: ",") + "]"
     }
+
 }

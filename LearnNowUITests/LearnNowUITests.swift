@@ -243,8 +243,12 @@ final class LearnNowUITests: XCTestCase {
         assertExists(app.staticTexts["重新打开 App 后生效"])
 
         tapWhenHittable(profileTab)
+        let settingsScreen = element(matchingIdentifier: "screen.profile.settings")
+        XCTAssertTrue(
+            settingsScreen.waitForNonExistence(timeout: defaultTimeout),
+            "Settings should finish dismissing before interacting with profile shortcuts."
+        )
         assertExists(element(matchingIdentifier: "screen.profile"))
-        XCTAssertFalse(element(matchingIdentifier: "screen.profile.settings").exists)
 
         tapWhenHittable(element(matchingIdentifier: "profile.shortcut.favorites"))
         assertExists(element(matchingIdentifier: "screen.favorites"))
@@ -398,10 +402,7 @@ final class LearnNowUITests: XCTestCase {
 
     @MainActor
     private func completeProbabilityLesson() {
-        let nextLesson = app.buttons
-            .matching(NSPredicate(format: "label BEGINSWITH %@", "学习下一章节"))
-            .firstMatch
-        tapWhenHittable(nextLesson)
+        tapWhenHittable(element(matchingIdentifier: "completion.cta.next"))
         assertExists(element(matchingIdentifier: "screen.lesson"))
 
         tapWhenHittable(element(matchingIdentifier: "lesson.option.bayes-update"))

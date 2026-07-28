@@ -1,4 +1,5 @@
 import Foundation
+import LearnNowContentKit
 
 extension LearnNowFlowState {
     mutating func selectTab(_ tab: LearnNowTab) {
@@ -23,22 +24,38 @@ extension LearnNowFlowState {
         routesDestination = .overview
     }
 
-    mutating func openPath() {
+    mutating func openPath(routeID: String? = nil) {
+        if let routeID, catalog.route(id: routeID)?.interactive == true {
+            selectedRouteID = routeID
+        }
         selectedTab = .routes
         currentScreen = .routes
-        selectedRouteTrack = trackForModuleIndex(nextAvailableModuleIndex) ?? selectedRouteTrack
+        let routeModuleIndex = selectedRouteModuleIDs.compactMap { moduleID in
+            modules.firstIndex(where: { $0.id == moduleID })
+        }
+        .first(where: { isLessonAvailable(for: $0) })
+        if let trackID = routeModuleIndex.flatMap(trackForModuleIndex) {
+            selectedRouteTrackID = trackID
+        } else if let firstTrackID = selectedRoute?.trackIDs.first {
+            selectedRouteTrackID = firstTrackID
+        }
         routesDestination = .path
     }
 
     mutating func openPathForLoadedLesson() {
         selectedTab = .routes
         currentScreen = .routes
-        selectedRouteTrack = trackForModuleIndex(loadedLessonModuleIndex) ?? selectedRouteTrack
+        if modules.indices.contains(loadedLessonModuleIndex),
+           let route = catalog.route(containingModuleID: modules[loadedLessonModuleIndex].id) {
+            selectedRouteID = route.id
+        }
+        selectedRouteTrackID = trackForModuleIndex(loadedLessonModuleIndex) ?? selectedRouteTrackID
         routesDestination = .path
     }
 
-    mutating func selectRouteTrack(_ track: LearnNowRouteTrack) {
-        selectedRouteTrack = track
+    mutating func selectRouteTrack(_ trackID: String) {
+        guard selectedRoute?.trackIDs.contains(trackID) == true else { return }
+        selectedRouteTrackID = trackID
     }
 
     mutating func openLesson() {
@@ -50,7 +67,10 @@ extension LearnNowFlowState {
 
         selectedTab = .routes
         currentScreen = .routes
-        selectedRouteTrack = trackForModuleIndex(loadedLessonModuleIndex) ?? selectedRouteTrack
+        if let route = catalog.route(containingModuleID: modules[loadedLessonModuleIndex].id) {
+            selectedRouteID = route.id
+        }
+        selectedRouteTrackID = trackForModuleIndex(loadedLessonModuleIndex) ?? selectedRouteTrackID
         routesDestination = .lesson
     }
 
@@ -61,7 +81,10 @@ extension LearnNowFlowState {
         loadLesson(for: moduleIndex)
         selectedTab = .routes
         currentScreen = .routes
-        selectedRouteTrack = trackForModuleIndex(moduleIndex) ?? selectedRouteTrack
+        if let route = catalog.route(containingModuleID: moduleID) {
+            selectedRouteID = route.id
+        }
+        selectedRouteTrackID = trackForModuleIndex(moduleIndex) ?? selectedRouteTrackID
         routesDestination = .lesson
     }
 
@@ -72,20 +95,43 @@ extension LearnNowFlowState {
 
     mutating func answerCurrentLesson(with optionID: String) {
         guard lessonPages.indices.contains(currentLessonPageIndex) else { return }
-        guard case .unanswered = lessonPages[currentLessonPageIndex].answerState else { return }
+        guard let exerciseID = lessonPages[currentLessonPageIndex].exerciseIDs.first else { return }
+        answerCurrentLesson(exerciseID: exerciseID, optionID: optionID)
+    }
 
-        let correctOptionID = lessonPages[currentLessonPageIndex].question.correctOptionID
+    mutating func answerCurrentLesson(exerciseID: String, optionID: String) {
+        guard lessonPages.indices.contains(currentLessonPageIndex),
+              let exercise = lessonPages[currentLessonPageIndex].exercise(id: exerciseID),
+              exercise.options.contains(where: { $0.id == optionID }),
+              case .unanswered = lessonPages[currentLessonPageIndex].answerState(for: exerciseID)
+        else { return }
+
+        let correctOptionID = exercise.correctOptionID
         if optionID == correctOptionID {
-            lessonPages[currentLessonPageIndex].answerState = .correct(optionID: optionID)
+            lessonPages[currentLessonPageIndex].answerStateByExerciseID[exerciseID] =
+                .correct(optionID: optionID)
         } else {
-            lessonPages[currentLessonPageIndex].answerState = .incorrect(optionID: optionID)
+            lessonPages[currentLessonPageIndex].answerStateByExerciseID[exerciseID] =
+                .incorrect(optionID: optionID)
         }
     }
 
     mutating func retryCurrentLessonQuestion() {
         guard lessonPages.indices.contains(currentLessonPageIndex) else { return }
-        guard case .incorrect = lessonPages[currentLessonPageIndex].answerState else { return }
-        lessonPages[currentLessonPageIndex].answerState = .unanswered
+        guard let exerciseID = lessonPages[currentLessonPageIndex].exerciseIDs.first(where: {
+            if case .incorrect = lessonPages[currentLessonPageIndex].answerState(for: $0) {
+                return true
+            }
+            return false
+        }) else { return }
+        retryCurrentLessonExercise(id: exerciseID)
+    }
+
+    mutating func retryCurrentLessonExercise(id exerciseID: String) {
+        guard lessonPages.indices.contains(currentLessonPageIndex),
+              case .incorrect = lessonPages[currentLessonPageIndex].answerState(for: exerciseID)
+        else { return }
+        lessonPages[currentLessonPageIndex].answerStateByExerciseID[exerciseID] = .unanswered
     }
 
     mutating func advanceLesson() {
@@ -124,9 +170,16 @@ extension LearnNowFlowState {
         }
 
         activateReviewCards(for: completedModule)
-        let upcomingIndex = modules.firstIndex { module in
+        let routeCandidates = selectedRouteModuleIDs.compactMap { moduleID in
+            modules.firstIndex(where: { $0.id == moduleID })
+        }
+        let upcomingIndex = routeCandidates.first(where: { index in
+            let module = modules[index]
+            return !completedLessonIDs.contains(module.id) &&
+                Set(module.prerequisiteModuleIDs).isSubset(of: completedLessonIDs)
+        }) ?? modules.firstIndex { module in
             !completedLessonIDs.contains(module.id) &&
-            Set(module.prerequisiteModuleIDs).isSubset(of: completedLessonIDs)
+                Set(module.prerequisiteModuleIDs).isSubset(of: completedLessonIDs)
         }
         let nextModuleTitle = upcomingIndex.map { modules[$0].lessonTitle }
 
@@ -159,15 +212,19 @@ extension LearnNowFlowState {
     func pathNodeSubtitle(
         for index: Int,
         baseSubtitle: String,
-        status: LearnNowPathNode.Status
+        status: LearnNowPathNode.Status,
+        hasNewContent: Bool = false
     ) -> String {
+        if hasNewContent {
+            return "\(baseSubtitle) · 有新内容"
+        }
         switch status {
         case .done:
-            "\(baseSubtitle) · 已掌握"
+            return "\(baseSubtitle) · 已掌握"
         case .current:
-            "\(baseSubtitle) · 进行中"
+            return "\(baseSubtitle) · 进行中"
         case .locked:
-            "\(baseSubtitle) · 未解锁"
+            return "\(baseSubtitle) · 未解锁"
         }
     }
 
@@ -177,9 +234,9 @@ extension LearnNowFlowState {
         return Set(module.prerequisiteModuleIDs).isSubset(of: completedLessonIDs) && !module.lessonPages.isEmpty
     }
 
-    func trackForModuleIndex(_ moduleIndex: Int) -> LearnNowRouteTrack? {
+    func trackForModuleIndex(_ moduleIndex: Int) -> String? {
         guard modules.indices.contains(moduleIndex) else { return nil }
-        return modules[moduleIndex].track
+        return modules[moduleIndex].trackID
     }
 }
 
@@ -204,10 +261,18 @@ private extension LearnNowFlowState {
     mutating func loadLesson(for moduleIndex: Int) {
         guard modules.indices.contains(moduleIndex) else { return }
 
+        let module = modules[moduleIndex]
         loadedLessonModuleIndex = moduleIndex
-        lessonPages = modules[moduleIndex].lessonPages
-        currentLessonPageIndex = 0
-        didAwardCompletionXP = completedLessonIDs.contains(modules[moduleIndex].id)
+        lessonPages = module.lessonPages
+        if completedLessonIDs.contains(module.id),
+           let firstUnvisitedIndex = lessonPages.firstIndex(where: {
+               !visitedPageIDsByLessonID[module.id, default: []].contains($0.id)
+           }) {
+            currentLessonPageIndex = firstUnvisitedIndex
+        } else {
+            currentLessonPageIndex = 0
+        }
+        didAwardCompletionXP = completedLessonIDs.contains(module.id)
     }
 
     mutating func activateReviewCards(for module: LearnNowModuleDefinition) {
