@@ -371,6 +371,62 @@ struct InsetCircle<Content: View>: View {
     }
 }
 
+struct AchievementSymbolBadge<Content: View>: View {
+    let size: CGFloat
+    let accent: LearnNowAccent
+    let glowSize: CGFloat
+    let glowOpacity: Double
+    let glowBlur: CGFloat
+    let strokeOpacity: Double
+    let strokeWidth: CGFloat
+    let showsGlow: Bool
+    private let content: Content
+
+    init(
+        size: CGFloat,
+        accent: LearnNowAccent,
+        glowSize: CGFloat,
+        glowOpacity: Double,
+        glowBlur: CGFloat,
+        strokeOpacity: Double,
+        strokeWidth: CGFloat = 1,
+        showsGlow: Bool,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.size = size
+        self.accent = accent
+        self.glowSize = glowSize
+        self.glowOpacity = glowOpacity
+        self.glowBlur = glowBlur
+        self.strokeOpacity = strokeOpacity
+        self.strokeWidth = strokeWidth
+        self.showsGlow = showsGlow
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack {
+            if showsGlow {
+                Circle()
+                    .fill(LearnNowPalette.color(for: accent).opacity(glowOpacity))
+                    .frame(width: glowSize, height: glowSize)
+                    .blur(radius: glowBlur)
+            }
+
+            InsetCircle(size: size) {
+                content
+            }
+            .overlay {
+                Circle()
+                    .stroke(
+                        LearnNowPalette.color(for: accent).opacity(strokeOpacity),
+                        lineWidth: strokeWidth
+                    )
+            }
+        }
+    }
+}
+
 struct FullWidthButton: View {
     let title: String
     var accent: LearnNowAccent? = nil

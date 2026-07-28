@@ -10,6 +10,7 @@ struct HomeScreenModel: Equatable {
 
     let title: String
     let subtitle: String
+    let streakDays: Int
     let statusMetrics: [LearnNowMetric]
     let continueSectionTitle: String
     let continueCard: LearnNowLearningSummary
@@ -352,6 +353,7 @@ extension LearnNowFlowState {
         return HomeScreenModel(
             title: "今天快乐",
             subtitle: todayLabel,
+            streakDays: streakDays,
             statusMetrics: [streakMetric, xpMetric, reviewDueMetric],
             continueSectionTitle: "继续学习",
             continueCard: learningSummary,

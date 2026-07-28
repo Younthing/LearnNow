@@ -202,24 +202,17 @@ private struct CompletionHero: View {
     let showsGlow: Bool
 
     var body: some View {
-        ZStack {
-            if showsGlow {
-                Circle()
-                    .fill(LearnNowPalette.color(for: .mint).opacity(0.18))
-                    .frame(width: 132, height: 132)
-                    .blur(radius: 18)
-            }
-
-            InsetCircle(size: 104) {
-                symbol
-            }
-            .overlay {
-                Circle()
-                    .stroke(
-                        LearnNowPalette.color(for: .mint).opacity(0.38),
-                        lineWidth: 1.25
-                    )
-            }
+        AchievementSymbolBadge(
+            size: 104,
+            accent: .mint,
+            glowSize: 132,
+            glowOpacity: 0.18,
+            glowBlur: 18,
+            strokeOpacity: 0.38,
+            strokeWidth: 1.25,
+            showsGlow: showsGlow
+        ) {
+            symbol
         }
         .scaleEffect(usesDrawOn ? (isPresented ? 1 : 0.86) : 1)
         .opacity(isPresented ? 1 : 0)

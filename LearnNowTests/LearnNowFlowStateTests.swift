@@ -33,6 +33,15 @@ struct LearnNowFlowStateTests {
     }
 
     @Test
+    func homePresentationKeepsTypedStreakValue() {
+        var sut = LearnNowFlowState()
+        sut.streakDays = 14
+
+        #expect(sut.homeScreenModel.streakDays == 14)
+        #expect(sut.homeScreenModel.statusMetrics.first?.value == "14")
+    }
+
+    @Test
     func nestedLearningFlowKeepsRoutesTabSelected() {
         var sut = LearnNowFlowState()
 
