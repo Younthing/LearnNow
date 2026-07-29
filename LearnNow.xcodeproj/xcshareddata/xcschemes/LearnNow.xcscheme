@@ -98,7 +98,7 @@
          </EnvironmentVariable>
       </EnvironmentVariables>
       <StoreKitConfigurationFileReference
-         identifier = "../../../Configuration/LearnNow.storekit">
+         identifier = "../../Configuration/LearnNow.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
