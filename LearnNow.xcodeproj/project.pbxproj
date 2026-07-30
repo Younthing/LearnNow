@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0637A807301C0B6100EF762E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0637A806301C0B6100EF762E /* StoreKit.framework */; };
 		F50000012FA0000000000001 /* FSRS in Frameworks */ = {isa = PBXBuildFile; productRef = F50000032FA0000000000003 /* FSRS */; };
 		F60000012FB0000000000001 /* LearnNowContentKit in Frameworks */ = {isa = PBXBuildFile; productRef = F60000032FB0000000000003 /* LearnNowContentKit */; };
 		F60000052FB0000000000005 /* LearnNowContentKit in Frameworks */ = {isa = PBXBuildFile; productRef = F60000042FB0000000000004 /* LearnNowContentKit */; };
@@ -30,6 +31,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0637A806301C0B6100EF762E /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		06A9D2772F7BE94000348AB9 /* LearnNow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnNow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		06A9D2882F7BE94100348AB9 /* LearnNowTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnNowTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		06A9D2922F7BE94100348AB9 /* LearnNowUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnNowUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -71,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0637A807301C0B6100EF762E /* StoreKit.framework in Frameworks */,
 				F50000012FA0000000000001 /* FSRS in Frameworks */,
 				F60000012FB0000000000001 /* LearnNowContentKit in Frameworks */,
 			);
@@ -94,12 +97,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0637A805301C0B6100EF762E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0637A806301C0B6100EF762E /* StoreKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		06A9D26E2F7BE94000348AB9 = {
 			isa = PBXGroup;
 			children = (
 				06A9D2792F7BE94000348AB9 /* LearnNow */,
 				06A9D28B2F7BE94100348AB9 /* LearnNowTests */,
 				06A9D2952F7BE94100348AB9 /* LearnNowUITests */,
+				0637A805301C0B6100EF762E /* Frameworks */,
 				06A9D2782F7BE94000348AB9 /* Products */,
 			);
 			sourceTree = "<group>";

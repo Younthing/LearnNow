@@ -29,12 +29,6 @@
       "size": "1024x1024"
     },
     {
-      "filename": "AppIcon-vision.png",
-      "idiom": "universal",
-      "platform": "visionos",
-      "size": "1024x1024"
-    },
-    {
       "filename": "icon_16x16.png",
       "idiom": "mac",
       "scale": "1x",
