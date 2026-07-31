@@ -1,0 +1,37 @@
+format: learnnow.lesson-bundle/v1
+id: kc-machine
+title: 计算机在做的三件事
+prerequisites: []
+completion:
+  xp: 15
+  message: 输入、处理、输出这条流程已经加入复习池。
+
+pages:
+  - id: kc-machine-page-flow
+    title: 一次点击拆成三段
+    source: pages/flow.md
+    accent: purple
+    revision: 1
+    objectives:
+      - kc.machine.split-into-three
+      - kc.machine.direction-not-device
+  - id: kc-machine-page-steps
+    title: 处理就是照着步骤做
+    source: pages/steps.md
+    accent: purple
+    revision: 1
+    objectives:
+      - kc.machine.steps-are-written
+      - kc.machine.no-guessing
+  - id: kc-machine-page-general
+    title: 换一份步骤，就换一件事
+    source: pages/general.md
+    accent: purple
+    revision: 1
+    objectives:
+      - kc.machine.same-hardware-many-uses
+
+cards:
+  - cards.md
+tips:
+  - tips.md

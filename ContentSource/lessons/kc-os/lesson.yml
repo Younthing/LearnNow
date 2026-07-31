@@ -1,0 +1,39 @@
+format: learnnow.lesson-bundle/v1
+id: kc-os
+title: 中间为什么要有操作系统
+prerequisites:
+  - kc-program
+completion:
+  xp: 15
+  message: 排队、划界、代办这三件事已经加入复习池。
+
+pages:
+  - id: kc-os-page-share
+    title: 看起来同时，其实是轮流
+    source: pages/share.md
+    accent: purple
+    revision: 1
+    objectives:
+      - kc.os.explain-apparent-concurrency
+      - kc.os.turns-not-decided-by-app
+  - id: kc-os-page-isolate
+    title: 各人一片，互相碰不到
+    source: pages/isolate.md
+    accent: purple
+    revision: 1
+    objectives:
+      - kc.os.memory-boundaries
+      - kc.os.crash-usually-contained
+  - id: kc-os-page-gateway
+    title: 想用器件，先递请求
+    source: pages/gateway.md
+    accent: purple
+    revision: 1
+    objectives:
+      - kc.os.request-not-take
+      - kc.os.permission-gates-request
+
+cards:
+  - cards.md
+tips:
+  - tips.md

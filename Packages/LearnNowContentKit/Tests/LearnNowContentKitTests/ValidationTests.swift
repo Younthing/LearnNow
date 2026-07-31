@@ -121,7 +121,7 @@ final class ValidationTests: XCTestCase {
 
         let incrementedVersion = replacing(
             unchangedVersion,
-            releaseVersion: "2026.7.28.3"
+            releaseVersion: nextReleaseVersion(after: old)
         )
         XCTAssertTrue(
             ContentDiffer.diff(old: old, new: incrementedVersion)
@@ -195,7 +195,7 @@ final class ValidationTests: XCTestCase {
 
     func testStrictDiffAcceptsFullPackageChangeAfterVersionIncrease() throws {
         let old = try compiledCatalog()
-        let new = replacing(old, releaseVersion: "2026.7.28.3")
+        let new = replacing(old, releaseVersion: nextReleaseVersion(after: old))
 
         let report = ContentDiffer.diff(
             old: old,
@@ -225,7 +225,7 @@ final class ValidationTests: XCTestCase {
         let removedTipID = try XCTUnwrap(old.knowledgeTips.first?.id)
         let new = replacing(
             old,
-            releaseVersion: "2026.7.28.3",
+            releaseVersion: nextReleaseVersion(after: old),
             knowledgeTips: Array(old.knowledgeTips.dropFirst())
         )
 
@@ -243,7 +243,7 @@ final class ValidationTests: XCTestCase {
 
         let dropped = replacing(
             old,
-            releaseVersion: "2026.7.28.3",
+            releaseVersion: nextReleaseVersion(after: old),
             retiredIDs: []
         )
         XCTAssertTrue(
@@ -253,7 +253,7 @@ final class ValidationTests: XCTestCase {
 
         let reused = replacing(
             old,
-            releaseVersion: "2026.7.28.3",
+            releaseVersion: nextReleaseVersion(after: old),
             tracks: old.tracks + [
                 TrackDefinition(id: "legacy-content", title: "非法复用"),
             ],
@@ -374,6 +374,14 @@ final class ValidationTests: XCTestCase {
             files: files,
             retiredIDs: catalog.retiredIDs
         )
+    }
+
+    /// A version that is strictly newer than the authored one, so these checks stay
+    /// valid as `learnnow.yml` keeps bumping `releaseVersion`.
+    private func nextReleaseVersion(after catalog: CatalogDocumentV2) -> String {
+        var components = ContentReleaseVersion(catalog.releaseVersion)?.components ?? [0]
+        components[components.count - 1] += 1
+        return components.map(String.init).joined(separator: ".")
     }
 
     private func replacing(

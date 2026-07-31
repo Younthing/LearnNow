@@ -1,11 +1,78 @@
 format: learnnow.project/v1
 schemaVersion: 2
-releaseVersion: "2026.07.28.2"
+releaseVersion: "2026.07.31.4"
 locale: zh-Hans
 primaryRouteID: datascience
 minAppBuild: 1
 publishedAt: "2026-07-28T00:00:00Z"
-retiredIDs: []
+# representation 由 6 个微页合并为 3 个结构化长页，旧页、旧题与旧选项 ID 全部退休。
+retiredIDs:
+  - representation-page-1
+  - representation-page-1.quiz
+  - representation-page-2
+  - representation-page-2.quiz
+  - representation-page-3
+  - representation-page-3.quiz
+  - representation-page-4
+  - representation-page-4.quiz
+  - representation-page-5
+  - representation-page-5.quiz
+  - representation-page-6
+  - representation-page-6.quiz
+  - representation-p1-binary
+  - representation-p1-content
+  - representation-p1-three-states
+  - representation-p2-correct-as-is
+  - representation-p2-one-based
+  - representation-p2-zero-based
+  - representation-p3-innate
+  - representation-p3-self-describing
+  - representation-p3-shared-table
+  - representation-p4-bigger-byte
+  - representation-p4-multi-byte
+  - representation-p4-separate-table
+  - representation-p5-both-inside
+  - representation-p5-mutated
+  - representation-p5-two-tables
+  - representation-p6-converted
+  - representation-p6-needs-format
+  - representation-p6-two-conventions
+  # representation 整课下线：Lesson、3 个页面、6 道题、18 个选项、4 张 Card 与 2 条 Tip
+  # 的 ID 全部退休，后续的编码课会用新 ID 重新开一课。
+  - representation
+  - representation-page-bits
+  - representation-page-color
+  - representation-page-text
+  - representation-bits.quiz-1
+  - representation-bits.quiz-2
+  - representation-color.quiz-1
+  - representation-color.quiz-2
+  - representation-text.quiz-1
+  - representation-text.quiz-2
+  - representation-bits-q1-content
+  - representation-bits-q1-three-states
+  - representation-bits-q1-two-states
+  - representation-bits-q2-as-is
+  - representation-bits-q2-one-based
+  - representation-bits-q2-zero-based
+  - representation-color-q1-corrupted
+  - representation-color-q1-hidden-text
+  - representation-color-q1-wrong-table
+  - representation-color-q2-needs-format
+  - representation-color-q2-rewritten
+  - representation-color-q2-two-conventions
+  - representation-text-q1-innate
+  - representation-text-q1-self-describing
+  - representation-text-q1-shared-table
+  - representation-text-q2-bigger-byte
+  - representation-text-q2-multi-byte
+  - representation-text-q2-separate-table
+  - representation-card-ascii
+  - representation-card-bit-byte
+  - representation-card-convention
+  - representation-card-unicode
+  - representation-tip-byte-range
+  - representation-tip-convention
 
 routes:
   - id: datascience
@@ -28,6 +95,24 @@ routes:
           - lessons/regression/lesson.yml
       - id: deepLearning
         title: 深度学习
+        lessons: []
+  - id: cs
+    title: 计算机科学导论
+    subtitle: 信息表示 · 算法 · 抽象
+    systemImage: chevron.left.forwardslash.chevron.right
+    accent: purple
+    cta: 开始学习
+    interactive: true
+    tracks:
+      - id: knowing-computers
+        title: 认识计算机
+        lessons:
+          - lessons/kc-machine/lesson.yml
+          - lessons/kc-program/lesson.yml
+          - lessons/kc-os/lesson.yml
+          - lessons/kc-files/lesson.yml
+      - id: intro
+        title: 信息的表示
         lessons: []
   - id: design
     title: UI/UX 设计进阶

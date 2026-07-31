@@ -6,7 +6,10 @@ import XCTest
 final class CompilerTests: XCTestCase {
     func testLessonBundleMigrationPreservesCompleteCatalogSemantics() throws {
         let catalog = try ContentCompiler().compile(sourceDirectory: contentSourceURL).catalog
-        let encoded = try DeterministicJSON.encode(catalog, prettyPrinted: false)
+        let encoded = try DeterministicJSON.encode(
+            try migratedSubtree(of: catalog),
+            prettyPrinted: false
+        )
         var object = try XCTUnwrap(
             JSONSerialization.jsonObject(with: encoded) as? [String: Any]
         )
@@ -33,15 +36,7 @@ final class CompilerTests: XCTestCase {
 
     func testMigratedContentPreservesEveryV1StableID() throws {
         let catalog = try ContentCompiler().compile(sourceDirectory: contentSourceURL).catalog
-        let v1 = try XCTUnwrap(
-            JSONSerialization.jsonObject(
-                with: Data(
-                    contentsOf: repositoryRoot.appending(
-                        path: "Packages/LearnNowContentKit/Fixtures/CatalogV1.json"
-                    )
-                )
-            ) as? [String: Any]
-        )
+        let v1 = try v1Fixture()
 
         let v1Routes = try dictionaries(v1["routes"])
         let v1Modules = try dictionaries(v1["modules"])
@@ -53,14 +48,17 @@ final class CompilerTests: XCTestCase {
             return try dictionaries(quiz["options"])
         }
 
-        XCTAssertEqual(Set(try ids(v1Routes)), Set(catalog.routes.map(\.id)))
-        XCTAssertEqual(Set(try ids(v1Modules)), Set(catalog.modules.map(\.id)))
-        XCTAssertEqual(Set(try ids(v1Pages)), Set(catalog.lessons.map(\.id)))
-        XCTAssertEqual(Set(try ids(v1Cards)), Set(catalog.reviewCards.map(\.id)))
-        XCTAssertEqual(Set(try ids(v1Tips)), Set(catalog.knowledgeTips.map(\.id)))
-        XCTAssertEqual(
-            Set(try ids(v1Options)),
-            Set(catalog.exercises.flatMap { $0.options.map(\.id) })
+        // Content authored after the migration may add IDs, but no V1 ID may be
+        // dropped or renamed, so every V1 set must remain a subset of the catalog.
+        assertPreserved(try ids(v1Routes), in: catalog.routes.map(\.id), kind: "route")
+        assertPreserved(try ids(v1Modules), in: catalog.modules.map(\.id), kind: "module")
+        assertPreserved(try ids(v1Pages), in: catalog.lessons.map(\.id), kind: "page")
+        assertPreserved(try ids(v1Cards), in: catalog.reviewCards.map(\.id), kind: "card")
+        assertPreserved(try ids(v1Tips), in: catalog.knowledgeTips.map(\.id), kind: "tip")
+        assertPreserved(
+            try ids(v1Options),
+            in: catalog.exercises.flatMap { $0.options.map(\.id) },
+            kind: "option"
         )
     }
 
@@ -245,9 +243,11 @@ final class CompilerTests: XCTestCase {
             let catalogURL = source.appending(path: "learnnow.yml")
             let original = try String(contentsOf: catalogURL, encoding: .utf8)
             let broken = original.replacingOccurrences(
-                of: #"releaseVersion: "2026.07.28.2""#,
-                with: #"releaseVersion: "\#(invalidVersion)""#
+                of: #"releaseVersion: "[^"]*""#,
+                with: #"releaseVersion: "\#(invalidVersion)""#,
+                options: .regularExpression
             )
+            XCTAssertNotEqual(original, broken, invalidVersion)
             try Data(broken.utf8).write(to: catalogURL, options: .atomic)
 
             XCTAssertTrue(
@@ -354,6 +354,91 @@ final class CompilerTests: XCTestCase {
 
     private func dictionaries(_ value: Any?) throws -> [[String: Any]] {
         try XCTUnwrap(value as? [[String: Any]])
+    }
+
+    private func v1Fixture() throws -> [String: Any] {
+        try XCTUnwrap(
+            JSONSerialization.jsonObject(
+                with: Data(
+                    contentsOf: repositoryRoot.appending(
+                        path: "Packages/LearnNowContentKit/Fixtures/CatalogV1.json"
+                    )
+                )
+            ) as? [String: Any]
+        )
+    }
+
+    /// The part of the catalog that came from the V1 migration: everything
+    /// reachable from the V1 routes. Lessons authored later live under their own
+    /// routes, so scoping here keeps the migration golden meaningful as content grows.
+    private func migratedSubtree(of catalog: CatalogDocumentV2) throws -> CatalogDocumentV2 {
+        let routeIDs = Set(try ids(try dictionaries(try v1Fixture()["routes"])))
+        let routes = catalog.routes.filter { routeIDs.contains($0.id) }
+        let trackIDs = Set(routes.flatMap(\.trackIDs))
+        let moduleIDs = Set(routes.flatMap(\.moduleIDs))
+        let lessons = catalog.lessons.filter { moduleIDs.contains($0.moduleID) }
+        let lessonIDs = Set(lessons.map(\.id))
+        // retiredIDs is catalog-global bookkeeping, so keep only retirements that
+        // touch the migrated ID space. Retiring an ID from later content must not
+        // move this golden.
+        let v1IDs = try v1StableIDs()
+        return CatalogDocumentV2(
+            schemaVersion: catalog.schemaVersion,
+            releaseVersion: catalog.releaseVersion,
+            locale: catalog.locale,
+            primaryRouteID: catalog.primaryRouteID,
+            tracks: catalog.tracks.filter { trackIDs.contains($0.id) },
+            routes: routes,
+            modules: catalog.modules.filter { moduleIDs.contains($0.id) },
+            lessons: lessons,
+            exercises: catalog.exercises.filter { lessonIDs.contains($0.lessonID) },
+            reviewCards: catalog.reviewCards.filter { moduleIDs.contains($0.moduleID) },
+            knowledgeTips: catalog.knowledgeTips.filter {
+                guard let moduleID = $0.moduleID else { return true }
+                return moduleIDs.contains(moduleID)
+            },
+            retiredIDs: catalog.retiredIDs.filter { v1IDs.contains($0) }
+        )
+    }
+
+    /// Every stable ID the V1 catalog published, across routes, modules, pages,
+    /// cards, tips, and quiz options.
+    private func v1StableIDs() throws -> Set<String> {
+        let v1 = try v1Fixture()
+        let modules = try dictionaries(v1["modules"])
+        let pages = try modules.flatMap { try dictionaries($0["pages"]) }
+        let options = try pages.flatMap { page -> [[String: Any]] in
+            let quiz = try XCTUnwrap(page["quiz"] as? [String: Any])
+            return try dictionaries(quiz["options"])
+        }
+        var result = Set<String>()
+        for group in [
+            try dictionaries(v1["routes"]),
+            modules,
+            pages,
+            try dictionaries(v1["reviewCards"]),
+            try dictionaries(v1["dailyTips"]),
+            options,
+        ] {
+            result.formUnion(try ids(group))
+        }
+        return result
+    }
+
+    private func assertPreserved(
+        _ expected: [String],
+        in actual: [String],
+        kind: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let missing = Set(expected).subtracting(actual).sorted()
+        XCTAssertTrue(
+            missing.isEmpty,
+            "Missing migrated \(kind) IDs: \(missing.joined(separator: ", "))",
+            file: file,
+            line: line
+        )
     }
 
     private func ids(_ dictionaries: [[String: Any]]) throws -> [String] {

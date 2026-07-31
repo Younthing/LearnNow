@@ -1,0 +1,38 @@
+format: learnnow.lesson-bundle/v1
+id: kc-program
+title: 程序跑起来的时候
+prerequisites:
+  - kc-machine
+completion:
+  xp: 15
+  message: 程序、CPU 和内存的最小关系已经加入复习池。
+
+pages:
+  - id: kc-program-page-list
+    title: 图标不动的时候它在哪
+    source: pages/list.md
+    accent: purple
+    revision: 1
+    objectives:
+      - kc.program.tell-program-from-run
+  - id: kc-program-page-cpu
+    title: CPU 一条一条地做
+    source: pages/cpu.md
+    accent: purple
+    revision: 1
+    objectives:
+      - kc.program.fetch-then-execute
+      - kc.program.speed-from-count
+  - id: kc-program-page-memory
+    title: 台面上摊着什么
+    source: pages/memory.md
+    accent: purple
+    revision: 1
+    objectives:
+      - kc.program.memory-holds-current-work
+      - kc.program.blame-desk-not-speed
+
+cards:
+  - cards.md
+tips:
+  - tips.md

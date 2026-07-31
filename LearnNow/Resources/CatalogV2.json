@@ -377,6 +377,1227 @@
           "type" : "text"
         }
       ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "一步是不是处理，看它有没有把一份数据变成另一份数据，而不是看它离你按键有多近。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-machine-flow-q1-process",
+      "id" : "kc-machine-flow.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能把「由按键引起的」或「引起了声音变化的」都算进了那一头。对每一步只问一句：这是东西在进出机器，还是数据在被改成另一份数据？",
+            "type" : "text"
+          }
+        ],
+        "title" : "换个问法自检",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-machine-page-flow",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "处理",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "进入机器的是「被按了两下」这个信号；把它变成一个新的音量值，是照步骤在改数据。",
+                "type" : "text"
+              }
+            ],
+            "title" : "它在改数据",
+            "tone" : "success"
+          },
+          "id" : "kc-machine-flow-q1-process"
+        },
+        {
+          "content" : [
+            {
+              "text" : "输入，因为这一步是你按键直接引起的",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-flow-q1-input"
+        },
+        {
+          "content" : [
+            {
+              "text" : "输出，因为紧接着声音就变小了",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-flow-q1-output"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "你按了两下手机的音量减键，音乐声变小了。其中「机器根据你按的次数算出新的音量值」这一步，属于输入、处理还是输出？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "同款手机、不同表现，差别只可能在清单上。行为的来源是步骤，不是机器的脾气。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-machine-steps-q1-new-step",
+      "id" : "kc-machine-steps.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能把这个行为当成了机器自己的判断。自检办法：两台机器一模一样，两个 app 表现不同，那不一样的只能是它们各自照着的那份步骤。",
+            "type" : "text"
+          }
+        ],
+        "title" : "先找不同的那一样",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-machine-page-steps",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "两份清单不一样，你这份里写了检查金额这一步",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-steps-q1-new-step"
+        },
+        {
+          "content" : [
+            {
+              "text" : "你手机用得久，摸清了你的消费习惯，所以主动提醒你",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-steps-q1-machine-doubts"
+        },
+        {
+          "content" : [
+            {
+              "text" : "提醒是手机本来就有的能力，你朋友大概是把它关掉了",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-steps-q1-builtin"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "你和朋友用同款手机，各装了一个记账 app。你输入大额时你的会先问一句「确认吗」，他的从来不问。最合理的解释是什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "步骤不知道那两个数叫什么名字。数的含义在你这边，不在机器那边。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-machine-steps-q2-stock",
+      "id" : "kc-machine-steps.quiz-2",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "把四步再读一次，找出哪一步写了「钱」或「仓库」。一处都找不到，说明含义不是机器带来的。",
+            "type" : "text"
+          }
+        ],
+        "title" : "逐步读一遍",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-machine-page-steps",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "新的库存数量，因为这几步只管取两个数、相加、交出去",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-steps-q2-stock"
+        },
+        {
+          "content" : [
+            {
+              "text" : "还是本月合计，因为这几步本来是给记账写的",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-steps-q2-still-money"
+        },
+        {
+          "content" : [
+            {
+              "text" : "什么都算不出来，步骤里从来没提过仓库",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-steps-q2-fails"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "把上面那四步原样搬到仓库的机器上，只把「旧合计」换成「货架上的旧数量」，其他一个字不改。机器会算出什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "同一台音箱昨天不会、今天会，中间变的那样东西必须是能远程送进去的，而硬件送不进去。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-machine-general-q1-new-steps",
+      "id" : "kc-machine-general.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "自检办法：列出这一个月里可能被送进音箱的东西。喇叭和芯片没法从网线里过来，一份新步骤可以。",
+            "type" : "text"
+          }
+        ],
+        "title" : "问一句什么能寄过去",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-machine-page-general",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "它照着的那份步骤被换成了新的一份",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "能换步骤的机器，功能变化通常来自换清单，而不是来自变硬件。",
+                "type" : "text"
+              }
+            ],
+            "title" : "这就是更新",
+            "tone" : "success"
+          },
+          "id" : "kc-machine-general-q1-new-steps"
+        },
+        {
+          "content" : [
+            {
+              "text" : "厂家远程把它里面的硬件升级了一次",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-general-q1-hardware"
+        },
+        {
+          "content" : [
+            {
+              "text" : "它被用了一个月，自己积累出了这项功能",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-machine-general-q1-self-learn"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "一台智能音箱刚买回来不会报天气。一个月后你什么都没动，它突然会了。按这一课的模型，最可能发生了什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "分清这两样东西，以后遇到「东西怎么没了」就先问一句：没的是清单，还是这一次摊在台面上的东西？",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-program-list-q1-run-ended",
+      "id" : "kc-program-list.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能把「这一次运行」和「那份程序」当成了同一样东西。自检办法：如果程序真的少了一块，重开时它应该做不出记账这件事；但它做得出来。",
+            "type" : "text"
+          }
+        ],
+        "title" : "先分清没的是哪一样",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-program-page-list",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "关掉结束的是这一次照做的过程，摊在台面上的半句备注被收走了；清单还在存储里",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "消失的是这一次运行摊出来的中间结果，不是那份程序。",
+                "type" : "text"
+              }
+            ],
+            "title" : "两个东西，两种命运",
+            "tone" : "success"
+          },
+          "id" : "kc-program-list-q1-run-ended"
+        },
+        {
+          "content" : [
+            {
+              "text" : "关掉会把程序删掉一部分，所以重开时它得重新装一遍",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-list-q1-partly-deleted"
+        },
+        {
+          "content" : [
+            {
+              "text" : "备注还没确认，机器把没算进合计的东西当成无效内容清掉了",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-list-q1-invalid-data"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "你在记账 app 里输了一半的备注，还没点确认就把 app 关掉了。重新打开，备注不见了，但 app 本身好好的。哪种解释最站得住？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "换机器不会改写清单。要做的步数没变，变的是每一步花的时间。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-program-cpu-q1-more-steps-per-second",
+      "id" : "kc-program-cpu.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能以为更快意味着做得更少。自检办法：把那四步念一遍，指出哪一步是可以不做的——找不到，就说明快只能来自每一步更短。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回到那四步",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-program-page-cpu",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "新手机每秒能做的步数更多，同样的一串步骤走得更快",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-cpu-q1-more-steps-per-second"
+        },
+        {
+          "content" : [
+            {
+              "text" : "新手机会把那四步合成一步一次算完",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-cpu-q1-merge-steps"
+        },
+        {
+          "content" : [
+            {
+              "text" : "新手机会跳过其中不必要的步骤",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-cpu-q1-skip-steps"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "同一个记账 app，在今年的新手机上明显更利索。按这一页的说法，最直接的原因是什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "每步很快，不等于总时间很短：总时间＝步数 × 每步的时间，再加上搬运的工夫。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-program-cpu-q2-many-steps",
+      "id" : "kc-program-cpu.quiz-2",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能把「每步多快」直接当成了「一共多久」。自检办法：先问这次要做的步数是四步还是几亿步，再决定要不要惊讶。",
+            "type" : "text"
+          }
+        ],
+        "title" : "把两个量分开看",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-program-page-cpu",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "大 app 要做的步数本来就非常多，而且开头还得先把清单和数据搬上台面",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-cpu-q2-many-steps"
+        },
+        {
+          "content" : [
+            {
+              "text" : "说明几十亿这个数字是夸张的，实际做不到那么多",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-cpu-q2-fake-number"
+        },
+        {
+          "content" : [
+            {
+              "text" : "那两三秒和步数无关，是 app 特意留出来播动画的时间",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-cpu-q2-animation"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "CPU 每秒能做几十亿步，可你打开一个大 app 还是要等两三秒。这两件事怎么同时成立？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "先看症状落在哪一边：每个 app 本身不慢，说明算力够；一多就顿，说明台面紧。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-program-memory-q1-more-memory",
+      "id" : "kc-program-memory.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能把两种「慢」混成了一种。自检办法：只开一个 app 时快不快？快，就说明问题不在每一步的速度上。",
+            "type" : "text"
+          }
+        ],
+        "title" : "先给症状定位",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-program-page-memory",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "A，因为你的困扰是东西摊不下，不是每一步算得慢",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "台面大了，来回切时需要重新搬运的次数就少了。",
+                "type" : "text"
+              }
+            ],
+            "title" : "对症下药",
+            "tone" : "success"
+          },
+          "id" : "kc-program-memory-q1-more-memory"
+        },
+        {
+          "content" : [
+            {
+              "text" : "B，因为来回切也要算，算得快就切得快",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-memory-q1-faster-cpu"
+        },
+        {
+          "content" : [
+            {
+              "text" : "都一样，只要开的 app 多，任何手机都会卡到同样的程度",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-program-memory-q1-no-difference"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "你要换手机。你的习惯是同时开着十几个 app 来回切，而每个 app 用起来本身都不慢。两台价格一样：A 的内存更大，B 的 CPU 更快。按这一页的模型，哪台更对症？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "这也解释了为什么手机开久了要清一清：不是它变笨了，是排队的人太多。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-os-share-q1-thinner-turns",
+      "id" : "kc-os-share.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能以为「同时」意味着互不影响。自检办法：机器每秒能做的步数没变，这一份被 30 个人分，谁拿的会比原来多？",
+            "type" : "text"
+          }
+        ],
+        "title" : "把它当一份要分的东西",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-os-page-share",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "每个 app 分到的轮次变少，都比原来慢一点",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "能做的步数是固定的一份，分的人多了，每个人拿到的就少。",
+                "type" : "text"
+              }
+            ],
+            "title" : "总量没变",
+            "tone" : "success"
+          },
+          "id" : "kc-os-share-q1-thinner-turns"
+        },
+        {
+          "content" : [
+            {
+              "text" : "每个 app 还是原来那么快，因为系统会把它们同时处理掉",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-os-share-q1-same-speed"
+        },
+        {
+          "content" : [
+            {
+              "text" : "只有最后打开的那几个会慢，先打开的那些不受影响",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-os-share-q1-last-one"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "一台机器上原本开着 3 个 app，现在开到 30 个，而机器每秒能做的步数一点没变。按这一页的模型，最可能出现什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "同一块台面不等于同一片地盘。这也是你敢随手装一个陌生 app 的底气。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-os-isolate-q1-own-area",
+      "id" : "kc-os-isolate.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能把「摊在同一块台面上」当成了「混在一起」。自检办法：问一句记账的 38 存放在谁的那一片里，就知道谁能碰到它。",
+            "type" : "text"
+          }
+        ],
+        "title" : "分清台面和地盘",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-os-page-isolate",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "它闪退时坏掉的是自己那一片，记账的数据不在那一片里，通常不受影响",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "「通常」这个词是必要的：界线挡住的是绝大多数情况，不是全部。",
+                "type" : "text"
+              }
+            ],
+            "title" : "界线拦的就是这个",
+            "tone" : "success"
+          },
+          "id" : "kc-os-isolate-q1-own-area"
+        },
+        {
+          "content" : [
+            {
+              "text" : "它们都摊在同一块台面上，所以一个坏了另一个大概也会跟着坏",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-os-isolate-q1-shared-desk"
+        },
+        {
+          "content" : [
+            {
+              "text" : "只要记账是先打开的，它就排在前面，后面的 app 影响不到它",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-os-isolate-q1-order"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "一个刚装的小游戏经常自己闪退。你担心它把记账里的数据也弄坏。按这一页的模型，最合理的判断是什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "分清「能不能提出请求」和「请求会不会被满足」，权限这件事就讲得通了。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-os-gateway-q1-request-denied",
+      "id" : "kc-os-gateway.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能以为权限开关动的是 app 本身。自检办法：关掉权限后 app 还是原来那份程序，改变的只可能是它请求的结果。",
+            "type" : "text"
+          }
+        ],
+        "title" : "想想开关改的是谁",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-os-page-gateway",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "它照样可以发出请求，但请求过不了系统这道口子，拿不到声音",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "权限开关不改 app 的清单，它改的是系统答不答应这个请求。",
+                "type" : "text"
+              }
+            ],
+            "title" : "关的是口子",
+            "tone" : "success"
+          },
+          "id" : "kc-os-gateway-q1-request-denied"
+        },
+        {
+          "content" : [
+            {
+              "text" : "app 里那一步录音的步骤会被系统删掉，所以它不会再尝试",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-os-gateway-q1-rewrite-app"
+        },
+        {
+          "content" : [
+            {
+              "text" : "它可以绕过系统直接从麦克风取声音，只是会慢一点",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-os-gateway-q1-bypass"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "一个记账 app 说它能在后台一直录音，随时听你报账。你在系统设置里把它的麦克风权限关了。按这一页的模型，会发生什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "共用的器件冲突时，做决定的一直是同一个角色，这就是它存在的理由。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-os-gateway-q2-os-arranges",
+      "id" : "kc-os-gateway.quiz-2",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能又把决定权交回给了 app。自检办法：如果 app 能自己接管屏幕，你还怎么把它划走去看别的东西？",
+            "type" : "text"
+          }
+        ],
+        "title" : "回到「谁说话算话」",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-os-page-gateway",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "两个请求都交给操作系统，由它决定屏幕这一刻显示谁的内容",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-os-gateway-q2-os-arranges"
+        },
+        {
+          "content" : [
+            {
+              "text" : "先发出请求的那个 app 直接接管屏幕，另一个只能等它主动放手",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-os-gateway-q2-first-wins"
+        },
+        {
+          "content" : [
+            {
+              "text" : "屏幕会自动一半给一个 app，两个都画得上",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-os-gateway-q2-split-screen"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "两个 app 都想在同一秒把内容画到屏幕上。按这一课的三件事，最可能的处理方式是什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "以后遇到「东西会不会丢」，先判断它在哪一边，比记住任何规则都管用。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-files-power-q1-only-in-memory",
+      "id" : "kc-files-power.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能默认屏幕上能看到就等于已经存下来了。自检办法：这二十分钟里有没有任何一次抄进柜子的动作？没有，就只剩台面这一份。",
+            "type" : "text"
+          }
+        ],
+        "title" : "问一句抄过没有",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-files-page-power",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "那二十分钟的内容一直摊在台面上，没被抄进柜子，断电就随台面消失了",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "文档在屏幕上看得见，不代表它已经被抄进断电不丢的那一边。",
+                "type" : "text"
+              }
+            ],
+            "title" : "它没进柜子",
+            "tone" : "success"
+          },
+          "id" : "kc-files-power-q1-only-in-memory"
+        },
+        {
+          "content" : [
+            {
+              "text" : "内容其实已经存进柜子了，只是断电时名字没来得及记上，所以找不到",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-power-q1-name-lost"
+        },
+        {
+          "content" : [
+            {
+              "text" : "断电会把柜子里的内容也清掉一部分，文档正好在那一部分里",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-power-q1-disk-wiped"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "你在电脑上写了二十分钟文档，一次都没保存，这时候插头被踢掉了。开机后文档是空的。最准确的解释是什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "「自动保存」这个词里，自动只是说不用你点，保存做的还是那两件事。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-files-name-q1-copy-and-name",
+      "id" : "kc-files-name.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你选的两项都把东西留在了台面这一边。自检办法：假设此刻断电，你选的做法还救得回内容吗？",
+            "type" : "text"
+          }
+        ],
+        "title" : "回到断电那一刻",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-files-page-name",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "把台面上这个月的内容抄了一份进柜子，并按一个名字记下它放在哪",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "只抄不起名，明天找不回来；只起名不抄，柜子里其实是空的。",
+                "type" : "text"
+              }
+            ],
+            "title" : "两件事一起做",
+            "tone" : "success"
+          },
+          "id" : "kc-files-name-q1-copy-and-name"
+        },
+        {
+          "content" : [
+            {
+              "text" : "把内容牢牢留在台面上，这样你不小心关掉 app 也不会丢",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-name-q1-keep-in-memory"
+        },
+        {
+          "content" : [
+            {
+              "text" : "让 app 保持在打开状态，只要它不退出内容就一直在",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-name-q1-keep-app-open"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "记账 app 在屏幕角上闪了一句「已自动保存」。按这一页的模型，它刚刚替你做了什么？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "复制动的是内容那一头，改名动的是名字那一头。两个动作管的东西不一样。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-files-name-q2-two-contents",
+      "id" : "kc-files-name.quiz-2",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能把副本当成了指向同一段内容的另一个名字。自检办法：复制一个大文件要等一会儿，这段等待说明柜子里真的又抄出了一段内容。",
+            "type" : "text"
+          }
+        ],
+        "title" : "数一数柜子里有几段",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-files-page-name",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "还在。复制时柜子里多出了另一段内容，两个名字各自对着一段",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-name-q2-two-contents"
+        },
+        {
+          "content" : [
+            {
+              "text" : "不在。两个名字指的是柜子里同一段内容，改一份就等于改两份",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-name-q2-same-content"
+        },
+        {
+          "content" : [
+            {
+              "text" : "不在。副本会跟着原来那份一起变，这是备份的意思",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-name-q2-follows-origin"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "你把 ",
+          "type" : "text"
+        },
+        {
+          "text" : "账目.txt",
+          "type" : "code"
+        },
+        {
+          "text" : " 复制了一份，把副本改名叫 ",
+          "type" : "text"
+        },
+        {
+          "text" : "账目备份.txt",
+          "type" : "code"
+        },
+        {
+          "text" : "。第二天你在原来那份里删掉一笔。备份里那一笔还在吗？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "改后缀只换了「该请谁来读」。请对了人，看到的还是原来那张照片。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-files-format-q1-rename-back",
+      "id" : "kc-files-format.quiz-1",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能以为改名字连内容一起改了。自检办法：改后缀这个动作只碰到了名字，那段内容当时根本没被打开过。",
+            "type" : "text"
+          }
+        ],
+        "title" : "先问内容动过没有",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-files-page-format",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "把后缀改回 ",
+              "type" : "text"
+            },
+            {
+              "text" : ".jpg",
+              "type" : "code"
+            },
+            {
+              "text" : "，或者直接用看图的 app 打开这个文件",
+              "type" : "text"
+            }
+          ],
+          "feedback" : {
+            "accent" : "mint",
+            "body" : [
+              {
+                "text" : "乱码那一次只是被读错了，柜子里那段内容从头到尾没动过。",
+                "type" : "text"
+              }
+            ],
+            "title" : "内容一直在",
+            "tone" : "success"
+          },
+          "id" : "kc-files-format-q1-rename-back"
+        },
+        {
+          "content" : [
+            {
+              "text" : "没办法了，它已经变成一个文本文件，照片回不来了",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-format-q1-lost"
+        },
+        {
+          "content" : [
+            {
+              "text" : "把乱码全选复制，粘贴进看图的 app，让它重新拼回照片",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-format-q1-copy-paste"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "你不小心把一张照片的后缀从 ",
+          "type" : "text"
+        },
+        {
+          "text" : ".jpg",
+          "type" : "code"
+        },
+        {
+          "text" : " 改成了 ",
+          "type" : "text"
+        },
+        {
+          "text" : ".txt",
+          "type" : "code"
+        },
+        {
+          "text" : "，双击后打开的是文本 app，满屏乱码。现在你想看这张照片，哪个做法最靠得住？",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "correctFeedback" : {
+        "accent" : "mint",
+        "body" : [
+          {
+            "text" : "这种时候要找的是一个认识这套约定的 app，或者请对方换一种双方都认的约定导出。",
+            "type" : "text"
+          }
+        ],
+        "title" : "回答正确",
+        "tone" : "success"
+      },
+      "correctOptionID" : "kc-files-format-q2-unknown-convention",
+      "id" : "kc-files-format.quiz-2",
+      "incorrectFeedback" : {
+        "accent" : "amber",
+        "body" : [
+          {
+            "text" : "你可能指望改名字能解决问题。自检办法：改后缀只换了「请谁来读」，读的人还是不认识那套约定。",
+            "type" : "text"
+          }
+        ],
+        "title" : "后缀不是钥匙",
+        "tone" : "warning"
+      },
+      "kind" : "singleChoice",
+      "lessonID" : "kc-files-page-format",
+      "options" : [
+        {
+          "content" : [
+            {
+              "text" : "你的 app 不认识写下这段内容时用的那套约定，所以还原不出来",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-format-q2-unknown-convention"
+        },
+        {
+          "content" : [
+            {
+              "text" : "把后缀改成你的 app 认识的那个就能正常打开了",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-format-q2-rename"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这个文件里其实是空的，没有内容可读",
+              "type" : "text"
+            }
+          ],
+          "id" : "kc-files-format-q2-empty"
+        }
+      ],
+      "prompt" : [
+        {
+          "text" : "同事发来一份文件，你的 app 提示「格式不支持」。按这一页的模型，最合理的判断是什么？",
+          "type" : "text"
+        }
+      ]
     }
   ],
   "knowledgeTips" : [
@@ -411,6 +1632,134 @@
       "sourceLessonID" : "hypothesis-page-2",
       "systemImage" : "lightbulb",
       "title" : "p 值不是「原假设为真的概率」"
+    },
+    {
+      "accent" : "purple",
+      "body" : [
+        {
+          "text" : "对任何一个功能问三句话：什么进去了，照什么步骤改的，什么出来了。三段填满，多半就不神秘了。",
+          "type" : "text"
+        }
+      ],
+      "id" : "kc-machine-tip-three-questions",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-machine",
+      "revision" : 1,
+      "sourceLessonID" : "kc-machine-page-flow",
+      "systemImage" : "lightbulb",
+      "title" : "看不懂的功能先拆三段"
+    },
+    {
+      "accent" : "purple",
+      "body" : [
+        {
+          "text" : "遇到「它怎么不提醒我」，通常答案是没人写这一步，而不是机器偷懒。",
+          "type" : "text"
+        }
+      ],
+      "id" : "kc-machine-tip-no-guessing",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-machine",
+      "revision" : 1,
+      "sourceLessonID" : "kc-machine-page-steps",
+      "systemImage" : "cpu",
+      "title" : "机器不猜，只照做"
+    },
+    {
+      "accent" : "purple",
+      "body" : [
+        {
+          "text" : "每一步很快，不等于一共很快。一件事久，先问它要做的步数是不是本来就多。",
+          "type" : "text"
+        }
+      ],
+      "id" : "kc-program-tip-two-numbers",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-program",
+      "revision" : 1,
+      "sourceLessonID" : "kc-program-page-cpu",
+      "systemImage" : "cpu",
+      "title" : "快和多是两件事"
+    },
+    {
+      "accent" : "purple",
+      "body" : [
+        {
+          "text" : "顿一下然后就顺了，通常是刚才被挪走的东西又搬回了内存；如果是一直慢，才该怀疑算力。",
+          "type" : "text"
+        }
+      ],
+      "id" : "kc-program-tip-switch-lag",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-program",
+      "revision" : 1,
+      "sourceLessonID" : "kc-program-page-memory",
+      "systemImage" : "lightbulb",
+      "title" : "切回来卡一下，多半在搬东西"
+    },
+    {
+      "accent" : "purple",
+      "body" : [
+        {
+          "text" : "几个程序抢同一样东西时，做决定的通常不是它们自己，而是底下那个负责分配的角色。",
+          "type" : "text"
+        }
+      ],
+      "id" : "kc-os-tip-who-decides",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-os",
+      "revision" : 1,
+      "sourceLessonID" : "kc-os-page-share",
+      "systemImage" : "cpu",
+      "title" : "遇到抢资源，先问谁分配"
+    },
+    {
+      "accent" : "purple",
+      "body" : [
+        {
+          "text" : "关掉一个 app 的权限，并没有改动这个 app；改动的是它的请求还能不能被答应。",
+          "type" : "text"
+        }
+      ],
+      "id" : "kc-os-tip-permission",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-os",
+      "revision" : 1,
+      "sourceLessonID" : "kc-os-page-gateway",
+      "systemImage" : "lightbulb",
+      "title" : "权限关的是口子"
+    },
+    {
+      "accent" : "purple",
+      "body" : [
+        {
+          "text" : "正在改的东西通常只在内存里，断电就没了；只有被抄进存储的那一份，明天才找得回来。",
+          "type" : "text"
+        }
+      ],
+      "id" : "kc-files-tip-which-side",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-files",
+      "revision" : 1,
+      "sourceLessonID" : "kc-files-page-power",
+      "systemImage" : "lightbulb",
+      "title" : "怕丢就先问在哪一边"
+    },
+    {
+      "accent" : "purple",
+      "body" : [
+        {
+          "text" : "打开文件看到满屏乱码，先怀疑读它的方式不对，而不是内容已经坏了。",
+          "type" : "text"
+        }
+      ],
+      "id" : "kc-files-tip-garbled",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-files",
+      "revision" : 1,
+      "sourceLessonID" : "kc-files-page-format",
+      "systemImage" : "cpu",
+      "title" : "乱码多半是约定对不上"
     }
   ],
   "lessons" : [
@@ -736,6 +2085,1820 @@
       "order" : 2,
       "revision" : 1,
       "title" : "R² 的边界"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "你在记账 app 里敲下「12」，点一下「记一笔」，屏幕上的「本月合计」从 26 变成 38。这一下之间，机器到底做了什么？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "它做了三件事：接住你按下的东西，照着一套事先写好的步骤算出新的合计，再把结果画到屏幕上。这三件事各有名字：输入、处理、输出。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "一次点击，拆成三段",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "先把这次记账按发生的顺序摆出来。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : "输入          处理                 输出\n按下 12   →   26 ＋ 12 = 38   →   屏幕显示 38\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "顺序不能反。没有输入，处理没有可算的东西；没有输出，算完的 38 留在机器里，你根本不知道它算过。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "输入不只是键盘，输出不只是屏幕",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "很多人以为输入就是打字、输出就是屏幕。其实这两个词只是在说方向：东西进入机器，还是离开机器。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "items" : [
+            {
+              "content" : [
+                {
+                  "text" : "你点的那一下、你拍的那张照片、麦克风听到的声音，都是输入。",
+                  "type" : "text"
+                }
+              ]
+            },
+            {
+              "content" : [
+                {
+                  "text" : "外放的音乐、手机的震动、屏幕上的那个 38，都是输出。",
+                  "type" : "text"
+                }
+              ]
+            },
+            {
+              "content" : [
+                {
+                  "text" : "从网上收到的一条消息是输入，你发出去的那条是输出。",
+                  "type" : "text"
+                }
+              ]
+            }
+          ],
+          "ordered" : false,
+          "type" : "list"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "同一样东西，进来的时候叫输入，出去的时候叫输出。判断依据是方向，不是它长什么样。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "看方向，不看长相",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "content" : [
+            {
+              "text" : "中间那一段最不透明",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "输入和输出你都看得见：手指按下去，数字亮起来。中间的「处理」你一眼看不到，它是这一课接下来要拆开的东西。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "先拿一件小事练手：按下音量键之后，机器算出新的音量值，这一步属于三段中的哪一段？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "exerciseID" : "kc-machine-flow.quiz-1",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-machine-page-flow",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-machine",
+      "objectives" : [
+        "kc.machine.split-into-three",
+        "kc.machine.direction-not-device"
+      ],
+      "order" : 1,
+      "revision" : 1,
+      "title" : "一次点击拆成三段"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "上一页把这次记账拆成了三段，其中最不透明的是中间那一段：26 加 12 得到 38，这个「加」是谁决定的？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "不是机器自己想到要相加。有人事先把步骤一条条写下来了，机器只是照着做。写下来的那几步之外，它什么都不做。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "把那几步写出来看看",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "那份步骤大致长这样。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : "第 1 步   取出旧合计            26\n第 2 步   取出你刚输入的数字      12\n第 3 步   两个数相加            38\n第 4 步   把 38 交给屏幕\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这四步里没有一处提到「记账」这两个字。机器执行它们的时候，也不需要知道 26 和 12 是钱。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "它不会替你怀疑",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "你手一抖输成 1200，机器照样把 1200 加进去，合计变成 1226。它不会停下来问「这笔是不是多打了个零」——第 3 步只写了相加。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "想让它提醒你，得有人事先补一步：如果新数字大于 1000，先弹一句确认。app 里所有看起来贴心的地方，背后都是有人事先写下的一步。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "所以，计算机是什么",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "到这里可以给它一句定义：计算机是一台接收输入、按事先写好的步骤处理、再给出输出的机器。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "它的强项是把很小的步骤重复很多次而几乎不出错。它不擅长的是猜你想干什么：步骤里没写的情况，通常就是不会发生的情况。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "机器严格照步骤做，不多做也不少做。它的可靠和它的死板，来自同一个原因。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "聪明和笨是同一件事",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-machine-steps.quiz-1",
+          "type" : "singleChoice"
+        },
+        {
+          "exerciseID" : "kc-machine-steps.quiz-2",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-machine-page-steps",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-machine",
+      "objectives" : [
+        "kc.machine.steps-are-written",
+        "kc.machine.no-guessing"
+      ],
+      "order" : 2,
+      "revision" : 1,
+      "title" : "处理就是照着步骤做"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "记账用的是那四步。可是同一台手机，还能拍照、还能放歌、还能导航。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "硬件一直是那一台，换掉的只是那份步骤。所以「这台机器现在是什么机器」，由它当下照着哪一份步骤决定。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "一台机器，几份步骤",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "code" : "同一部手机\n├─ 照着记账的步骤   →  一台记账机\n├─ 照着放歌的步骤   →  一台播放机\n└─ 照着导航的步骤   →  一台导航仪\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "你切 app 的时候，机器没有变形，只是开始照另一份清单做事。多装一个 app，感觉像多了一台小机器，原因就在这里。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "固定步骤，还是可换步骤",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "老式计算器的步骤是固定在机器里的，你没办法让它放歌。手机属于另一类：给它一份新清单，它就开始做新的事。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这条差别决定了三件很实际的事。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "items" : [
+            {
+              "content" : [
+                {
+                  "text" : "想多做一件事：前者要换整台机器，后者只要多一份清单。",
+                  "type" : "text"
+                }
+              ]
+            },
+            {
+              "content" : [
+                {
+                  "text" : "发现步骤写错了：前者只能召回，后者改一份清单就行，这就是你常看到的「更新」。",
+                  "type" : "text"
+                }
+              ]
+            },
+            {
+              "content" : [
+                {
+                  "text" : "用途会不会变：前者出厂时就定死了，后者一辈子都在变。",
+                  "type" : "text"
+                }
+              ]
+            }
+          ],
+          "ordered" : false,
+          "type" : "list"
+        },
+        {
+          "content" : [
+            {
+              "text" : "机器本身不决定用途",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "于是这一课可以收在一句判断上：问一台机器能干什么，其实是在问，现在给它的是哪一份步骤。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这句判断也留下一个新问题——这些步骤平时放在哪里，点开 app 的一瞬间它们去了哪里。那是下一课的事。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "换用途不用换机器，换清单就够了。所以「这是什么机器」是个会变的答案。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "先问哪一份清单",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-machine-general.quiz-1",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-machine-page-general",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-machine",
+      "objectives" : [
+        "kc.machine.same-hardware-many-uses"
+      ],
+      "order" : 3,
+      "revision" : 1,
+      "title" : "换一份步骤，就换一件事"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "上一课说，机器照着一份写下来的步骤做事。可你现在看着手机主屏，记账 app 的图标就在那里，什么也没发生。那份步骤此刻在哪里？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "它以文件的样子躺在手机的存储里，这份躺着的清单就叫程序。你点一下图标，它被搬到一块叫内存的地方，机器才开始一条条照着做。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "点一下，发生了一次搬运",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "code" : "存储里                点一下图标            内存里\n记账的步骤清单    ──────────────→    这份清单 ＋ 26、12\n（一直躺着不动）                      （接下来马上要用的）\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "搬运这件事你平时是感觉得到的：大一点的 app 打开时要等一小会儿，那一小会儿就在搬。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "清单，和照着清单做",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这是两件事。清单本身不会自己算出 38；只有当它被搬上来、有人开始逐条照做，那四步才真的发生。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "所以关掉 app 结束的是这一次照做的过程。清单还躺在存储里，一个字都没少，你重新点开又是新的一次。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "为什么要先搬上来",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "把内存想成一块工作台：要用的东西得先摊在台面上，干活的那一位才拿得到。存储更像旁边的柜子，东西放得多，但不摊开就用不上。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这个说法只解释两件事——为什么东西要先搬上来，以及台面不够会怎样。它不解释台面上的东西关机后去了哪，那牵扯到另一套器件。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "程序是躺着的那一份，运行是有人正在逐条读它。关掉 app，停的是读的那个人。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "清单不等于正在做",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-program-list.quiz-1",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-program-page-list",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-program",
+      "objectives" : [
+        "kc.program.tell-program-from-run"
+      ],
+      "order" : 1,
+      "revision" : 1,
+      "title" : "图标不动的时候它在哪"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "清单已经摊在台面上了。接下来是谁在读它？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "机器里干活的那一位叫 CPU。它取出第 1 步，做掉；取出第 2 步，做掉。一次只做一小步，不会把四步一口气想明白。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "取一条，做一条",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "code" : "取第 1 步 → 执行 → 取第 2 步 → 执行 → 取第 3 步 → 执行\n 取旧合计    26      取新数字    12       相加      38\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这个节奏一直重复到清单读完。中间没有哪一步是「同时」发生的，只是每一步都短得你察觉不到。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "那为什么感觉是瞬间",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "因为步子小，但数量大：一台今天的手机，CPU 每秒能做的步数在几十亿这个量级。四步这种小事，快到你抬手的工夫就结束了。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "你感觉到的快，是很多很小的步骤叠起来的结果，不是某一步特别聪明。这一点很实际：一件事慢，通常是它要做的步数太多，而不是机器某一步偷懒了。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "顺序不由 CPU 决定",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "它不会自己跳过第 2 步，也不会改成先做第 3 步。上一课那句「机器不猜」在这里同样成立：清单怎么写，它就怎么走。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "一台机器里可以有好几个这样干活的单位，同时各读一份清单。即便如此，每一份清单上的顺序仍然照写下的来。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "没有哪一步是聪明的。快是因为小步足够小、足够多、足够密。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "快来自数量",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-program-cpu.quiz-1",
+          "type" : "singleChoice"
+        },
+        {
+          "exerciseID" : "kc-program-cpu.quiz-2",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-program-page-cpu",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-program",
+      "objectives" : [
+        "kc.program.fetch-then-execute",
+        "kc.program.speed-from-count"
+      ],
+      "order" : 2,
+      "revision" : 1,
+      "title" : "CPU 一条一条地做"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "CPU 一直在从台面上拿东西。那台面上除了那份清单，还摊着什么？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "摊着这次要用的数：旧合计 26、你输入的 12、算出来的 38。清单告诉 CPU 做什么，这些数是它动手的对象。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "台面上的两类东西",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "code" : "内存（工作台）\n├─ 步骤清单：取旧合计 / 取新数字 / 相加 / 交给屏幕\n└─ 用到的数：26   12   38\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "CPU 每做一步，都从台面上拿一样东西，再把结果放回台面上。所以这两类东西必须同时摊得开，缺一样这一步就做不下去。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "谁动手，谁摊东西",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "CPU 是动手的那一位，内存是摊东西的那块地方。它们的分工可以用三句话分清。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "items" : [
+            {
+              "content" : [
+                {
+                  "text" : "谁在改数据：CPU 动手改，内存只是让数据待着。",
+                  "type" : "text"
+                }
+              ]
+            },
+            {
+              "content" : [
+                {
+                  "text" : "谁在留住数据：数一直待在内存里，CPU 做完一步就不替你留着。",
+                  "type" : "text"
+                }
+              ]
+            },
+            {
+              "content" : [
+                {
+                  "text" : "数量的意义：内存大，同时摊得开的东西多；CPU 快，每一步花的时间短。",
+                  "type" : "text"
+                }
+              ]
+            }
+          ],
+          "ordered" : false,
+          "type" : "list"
+        },
+        {
+          "content" : [
+            {
+              "text" : "台面摊不下的时候",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "你同时开着地图、音乐和十几个网页，台面就会被占满。机器只能把暂时不用的东西挪走，腾出地方给正在用的。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "等你切回记账，它得先把要用的重新搬上来。你看到的那一下卡顿，就是这次重新搬运，不是 CPU 忽然变慢了。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "那谁在决定挪谁",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这一课可以收在一句话上：程序是躺着的清单，运行是 CPU 从台面上逐条取来执行。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "可是刚才那句「机器只能把暂时不用的东西挪走」里，有一个没露面的角色：谁决定挪谁、谁决定 CPU 先读哪一份清单？那是下一课的事。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "同时开太多东西会卡，通常不是算得慢了，而是摊不下了。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "挤的是台面",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-program-memory.quiz-1",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-program-page-memory",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-program",
+      "objectives" : [
+        "kc.program.memory-holds-current-work",
+        "kc.program.blame-desk-not-speed"
+      ],
+      "order" : 3,
+      "revision" : 1,
+      "title" : "台面上摊着什么"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "上一课台面上只有记账一个 app。现在你一边听歌一边记账：一个 CPU，一块台面，两份清单都想被读。谁说话算话？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "机器里有一个东西一直在管这件事，它叫操作系统——手机上的 iOS 和安卓，电脑上的 Windows 和 macOS，都是它。这一页只看它管的第一件事：排队。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "看起来同时，其实是轮流",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "CPU 一次只做一小步，所以两份清单是轮着被读的。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : "时间 →\n记账  ██      ██      ██\n音乐    ██      ██      ██\n      轮换快到你察觉不到\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "歌没断，记账也没卡，于是你以为它们在同时跑。真实情况是它们各自被读了很多小段。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "轮到谁不由 app 自己说",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "音乐 app 没有办法宣布「接下来两秒都归我」。轮到谁、轮多久，由操作系统决定。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这一点关系到你的日常体验：如果 app 能自己抢，那么任何一个写得不客气的 app 都可以把整台机器占住，别的东西全得等它。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "有几个人干活，也还是要排队",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "今天的机器里干活的单位往往不止一个，所以确实有几件事真的在同时做。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "但你开着的 app 通常比这些单位多得多。人少活多，排队依然是常态，只是队伍变成了好几条。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "你看到的「同时」，多半是轮换得太快。快到看不出接缝，就像没有接缝。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "同时是看出来的",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-os-share.quiz-1",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-os-page-share",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-os",
+      "objectives" : [
+        "kc.os.explain-apparent-concurrency",
+        "kc.os.turns-not-decided-by-app"
+      ],
+      "order" : 1,
+      "revision" : 1,
+      "title" : "看起来同时，其实是轮流"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "排队解决了「什么时候轮到我」。还有一个问题没解决：台面上同时摊着记账的数和音乐的数，它们凭什么不互相踩？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "因为地盘是被划开的。操作系统给每个 app 分出自己的一块，一个 app 不能直接伸手去读或改另一个 app 的那块。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "一块台面，划成几片",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "code" : "内存（工作台）\n├─ 记账的地盘：26  12  38  它的步骤清单\n├─ 音乐的地盘：这首歌的数据  它的步骤清单\n└─ 界线由操作系统划，app 不能自己越过去\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "记账那四步只在自己那一片里取数、放数。它想读音乐那一片，请求会被拦下来。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "崩溃为什么通常不传染",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "音乐 app 忽然退出了，你切回记账，那 38 还在。因为记账用的数从来就不在音乐那一片里。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这不是绝对的。同一台机器上的东西终究共享着同一套硬件，极端情况下整台机器都可能卡住或重启。但绝大多数崩溃确实被界线关在了一个 app 里面。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "界线也解释了另一件事",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "你可能好奇：为什么一个 app 没法直接读出另一个 app 里的内容，非要你手动复制粘贴一次。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "同一条界线。复制粘贴之所以能穿过界线，是因为这次搬运是你发起的，而且是由操作系统代你完成的，不是那个 app 自己伸的手。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "app 之间不是靠自觉不去碰对方，是根本碰不到——界线不由它们自己划。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "各人一片",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-os-isolate.quiz-1",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-os-page-isolate",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-os",
+      "objectives" : [
+        "kc.os.memory-boundaries",
+        "kc.os.crash-usually-contained"
+      ],
+      "order" : 2,
+      "revision" : 1,
+      "title" : "各人一片，互相碰不到"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "排队和划界都是对 app 的限制。第三件事更像是替 app 干活：它想用的那些器件，都不是它自己去碰的。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "记账 app 想在屏幕上画出 38，想打开麦克风记一句语音备注，想把这个月的数据存下来，它做的都是同一个动作：向操作系统递一个请求。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "请求，而不是自取",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "code" : "记账 app  ──请求──→  操作系统  ──操作──→  屏幕 / 麦克风 / 存储\n                        ↑\n                    音乐 app 的请求也走这里\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "器件只有一套，想用的 app 有很多。让每个 app 直接抢，谁写得早、谁写得狠就赢；收到统一的地方来排，才排得出队。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "你见过这个入口",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "某个 app 第一次想用麦克风时，屏幕上弹出的那句「是否允许」不是 app 自己画的。是系统在你和器件之间站了一道。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "app 只能提出请求，答不答应由系统和你决定。这也是为什么同一个 app 在你手机上用得了摄像头，在你朋友手机上用不了：清单一样，答复不一样。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "一句可以带走的判断",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "凡是要用到大家共用的东西——CPU 的时间、内存的地盘、屏幕、麦克风、存储——app 都只能申请，不能自取。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "其中「把这个月的数据存下来」值得单独看一次：它请求的对象是一块关掉电也不会忘的地方。东西究竟怎么留下来的，是下一课的问题。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "共用的东西只有一套，所以 app 说的是「请帮我」，不是「我来」。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "申请，不自取",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-os-gateway.quiz-1",
+          "type" : "singleChoice"
+        },
+        {
+          "exerciseID" : "kc-os-gateway.quiz-2",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-os-page-gateway",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-os",
+      "objectives" : [
+        "kc.os.request-not-take",
+        "kc.os.permission-gates-request"
+      ],
+      "order" : 3,
+      "revision" : 1,
+      "title" : "想用器件，先递请求"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "上一课末尾留了个问题：记账 app 想「把这个月的数据存下来」，它请求的到底是什么？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "先看一个你一定遇过的现象。手机没电自动关机，第二天充上电打开记账，本月合计 38 还在；可要是你刚输了一半的备注就没电了，那半句话没了。同一台机器，两个结果。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "断电那一刻，谁记得住",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "差别在于东西当时待在哪里。内存那块台面上的东西断电就空，一样不留；存储不一样，手机和电脑里的存储断了电内容还在。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : "断电前                        断电后\n台面（内存）：半句备注   →    空了\n柜子（存储）：合计 38    →    还在\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "半句备注一直摊在台面上，没被抄进柜子，所以它随台面一起消失。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "那为什么不全放柜子里",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "因为从柜子里取东西比从台面上取慢得多。CPU 每做一步都去柜子里翻一次，整台机器就会慢下来。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "items" : [
+            {
+              "content" : [
+                {
+                  "text" : "拿东西的快慢：台面上随手就拿，柜子里要翻一会儿。",
+                  "type" : "text"
+                }
+              ]
+            },
+            {
+              "content" : [
+                {
+                  "text" : "装得下多少：台面小，柜子大得多。",
+                  "type" : "text"
+                }
+              ]
+            },
+            {
+              "content" : [
+                {
+                  "text" : "断电以后：台面清空，柜子里的东西还在。",
+                  "type" : "text"
+                }
+              ]
+            }
+          ],
+          "ordered" : false,
+          "type" : "list"
+        },
+        {
+          "content" : [
+            {
+              "text" : "所以「保存」是什么",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "保存就是把台面上的内容抄一份进柜子。这也解释了那句让人心疼的提示：文档没保存，说的是它还只在台面上。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "按第三课的规矩，这一抄不是 app 自己动手，它得请系统代办——存储也是大家共用的东西。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "东西会不会因为断电消失，只取决于它此刻在台面上还是在柜子里。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "先问它在哪一边",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-files-power.quiz-1",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-files-page-power",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-files",
+      "objectives" : [
+        "kc.files.tell-memory-from-storage",
+        "kc.files.predict-power-loss"
+      ],
+      "order" : 1,
+      "revision" : 1,
+      "title" : "断电那一刻，谁记得住"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "抄进柜子还不够。柜子里堆着成千上万段内容，如果这一份没有名字，明天你怎么把它找出来？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "所以保存其实做了两件事：把内容抄一份进柜子，再给这份内容一个名字，并让系统记住它放在哪里。这两样凑齐，就是你平时说的文件。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "一个文件是两样东西",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "code" : "文件\n├─ 名字：记账2026.txt      ← 给人和系统找它用的标签\n└─ 内容：这个月的每一笔    ← 你真正要的东西\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "系统另外记着一件事：这个名字对应的内容放在柜子的哪个位置。文件夹就是这份记录的组织方式。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "名字变了，内容不会变",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "把 ",
+              "type" : "text"
+            },
+            {
+              "text" : "记账2026.txt",
+              "type" : "code"
+            },
+            {
+              "text" : " 改名成 ",
+              "type" : "text"
+            },
+            {
+              "text" : "账目.txt",
+              "type" : "code"
+            },
+            {
+              "text" : "，双击打开，里面一个字都没少。改名动的是标签，内容在柜子里一动没动。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "同一条道理反过来也成立：两个文件可以内容一模一样、名字完全不同。名字不参与决定内容是什么。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "重新打开是怎么发生的",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "你第二天点开记账，顺序正好和保存相反：系统按名字找到那段内容，把它抄回台面上，CPU 才能接着算。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "于是「打开一个大文件要等一会儿」也不奇怪了——那一会儿就是在从柜子往台面搬。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "保存是从台面抄进柜子，打开是从柜子搬回台面。你等的那一会儿，都花在搬上。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "两个方向",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-files-name.quiz-1",
+          "type" : "singleChoice"
+        },
+        {
+          "exerciseID" : "kc-files-name.quiz-2",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-files-page-name",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-files",
+      "objectives" : [
+        "kc.files.save-copies-and-names",
+        "kc.files.name-is-not-content"
+      ],
+      "order" : 2,
+      "revision" : 1,
+      "title" : "保存做了哪两件事"
+    },
+    {
+      "accent" : "purple",
+      "blocks" : [
+        {
+          "content" : [
+            {
+              "text" : "柜子里的这段内容被抄回台面之后，还有一个问题没人回答：机器凭什么知道该把它显示成一行数字，而不是一张照片？",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "靠约定。写下这段内容的 app 按某套规矩排布它，读它的 app 按同一套规矩还原。约定对上了，你就看到本月合计 38；对不上，你看到的就是一堆乱码。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "同一段内容，两种读法",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "code" : "柜子里的一段内容\n├─ 用记账的约定读  →  这个月的每一笔\n└─ 用文本的约定读  →  一串看不懂的字符\n",
+          "language" : "text",
+          "type" : "code"
+        },
+        {
+          "content" : [
+            {
+              "text" : "内容一个字都没变，两次的差别只在于你请谁、按哪套约定去读。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "后缀是提示，不是内容",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "名字末尾的 ",
+              "type" : "text"
+            },
+            {
+              "text" : ".txt",
+              "type" : "code"
+            },
+            {
+              "text" : "、",
+              "type" : "text"
+            },
+            {
+              "text" : ".jpg",
+              "type" : "code"
+            },
+            {
+              "text" : " 是给人和系统看的提示，系统靠它猜该请哪个 app 来打开。很多格式还会在内容开头写一小段说明自己是什么的记号，但那也只是提示：真正读懂它，仍然要靠 app 认识这套约定。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "提示写错了不会改动内容，只会让系统请错人来读。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "这条线通向哪里",
+              "type" : "text"
+            }
+          ],
+          "level" : 2,
+          "type" : "heading"
+        },
+        {
+          "content" : [
+            {
+              "text" : "四课下来，一次记账已经走完全程：输入进来，CPU 照清单处理，系统分配和代办，最后抄进柜子留一个名字。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "content" : [
+            {
+              "text" : "还剩最后一层没打开——那段内容本身是怎么被写下来的，文字、颜色、声音怎么变成机器存得下的东西。那是后面一门专门讲表示的课。",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "accent" : "purple",
+          "body" : [
+            {
+              "content" : [
+                {
+                  "text" : "同一段内容读出什么，取决于用哪套约定去读它。",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "title" : "内容不自带读法",
+          "tone" : "information",
+          "type" : "callout"
+        },
+        {
+          "exerciseID" : "kc-files-format.quiz-1",
+          "type" : "singleChoice"
+        },
+        {
+          "exerciseID" : "kc-files-format.quiz-2",
+          "type" : "singleChoice"
+        }
+      ],
+      "id" : "kc-files-page-format",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-files",
+      "objectives" : [
+        "kc.files.reading-needs-convention"
+      ],
+      "order" : 3,
+      "revision" : 1,
+      "title" : "同一段内容，两种读法"
     }
   ],
   "locale" : "zh-Hans",
@@ -787,12 +3950,123 @@
       "subtitle" : "2 个小节",
       "title" : "线性回归模型",
       "trackID" : "machineLearning"
+    },
+    {
+      "completionXP" : 15,
+      "id" : "kc-machine",
+      "lessonTitle" : "计算机在做的三件事",
+      "prerequisiteModuleIDs" : [
+
+      ],
+      "reviewMessage" : "输入、处理、输出这条流程已经加入复习池。",
+      "subtitle" : "3 个小节",
+      "title" : "计算机在做的三件事",
+      "trackID" : "knowing-computers"
+    },
+    {
+      "completionXP" : 15,
+      "id" : "kc-program",
+      "lessonTitle" : "程序跑起来的时候",
+      "prerequisiteModuleIDs" : [
+        "kc-machine"
+      ],
+      "reviewMessage" : "程序、CPU 和内存的最小关系已经加入复习池。",
+      "subtitle" : "3 个小节",
+      "title" : "程序跑起来的时候",
+      "trackID" : "knowing-computers"
+    },
+    {
+      "completionXP" : 15,
+      "id" : "kc-os",
+      "lessonTitle" : "中间为什么要有操作系统",
+      "prerequisiteModuleIDs" : [
+        "kc-program"
+      ],
+      "reviewMessage" : "排队、划界、代办这三件事已经加入复习池。",
+      "subtitle" : "3 个小节",
+      "title" : "中间为什么要有操作系统",
+      "trackID" : "knowing-computers"
+    },
+    {
+      "completionXP" : 20,
+      "id" : "kc-files",
+      "lessonTitle" : "关掉之后东西为什么还在",
+      "prerequisiteModuleIDs" : [
+        "kc-os"
+      ],
+      "reviewMessage" : "断电的分界与文件的两样东西已经加入复习池。",
+      "subtitle" : "3 个小节",
+      "title" : "关掉之后东西为什么还在",
+      "trackID" : "knowing-computers"
     }
   ],
   "primaryRouteID" : "datascience",
-  "releaseVersion" : "2026.07.28.2",
+  "releaseVersion" : "2026.07.31.4",
   "retiredIDs" : [
-
+    "representation",
+    "representation-bits-q1-content",
+    "representation-bits-q1-three-states",
+    "representation-bits-q1-two-states",
+    "representation-bits-q2-as-is",
+    "representation-bits-q2-one-based",
+    "representation-bits-q2-zero-based",
+    "representation-bits.quiz-1",
+    "representation-bits.quiz-2",
+    "representation-card-ascii",
+    "representation-card-bit-byte",
+    "representation-card-convention",
+    "representation-card-unicode",
+    "representation-color-q1-corrupted",
+    "representation-color-q1-hidden-text",
+    "representation-color-q1-wrong-table",
+    "representation-color-q2-needs-format",
+    "representation-color-q2-rewritten",
+    "representation-color-q2-two-conventions",
+    "representation-color.quiz-1",
+    "representation-color.quiz-2",
+    "representation-p1-binary",
+    "representation-p1-content",
+    "representation-p1-three-states",
+    "representation-p2-correct-as-is",
+    "representation-p2-one-based",
+    "representation-p2-zero-based",
+    "representation-p3-innate",
+    "representation-p3-self-describing",
+    "representation-p3-shared-table",
+    "representation-p4-bigger-byte",
+    "representation-p4-multi-byte",
+    "representation-p4-separate-table",
+    "representation-p5-both-inside",
+    "representation-p5-mutated",
+    "representation-p5-two-tables",
+    "representation-p6-converted",
+    "representation-p6-needs-format",
+    "representation-p6-two-conventions",
+    "representation-page-1",
+    "representation-page-1.quiz",
+    "representation-page-2",
+    "representation-page-2.quiz",
+    "representation-page-3",
+    "representation-page-3.quiz",
+    "representation-page-4",
+    "representation-page-4.quiz",
+    "representation-page-5",
+    "representation-page-5.quiz",
+    "representation-page-6",
+    "representation-page-6.quiz",
+    "representation-page-bits",
+    "representation-page-color",
+    "representation-page-text",
+    "representation-text-q1-innate",
+    "representation-text-q1-self-describing",
+    "representation-text-q1-shared-table",
+    "representation-text-q2-bigger-byte",
+    "representation-text-q2-multi-byte",
+    "representation-text-q2-separate-table",
+    "representation-text.quiz-1",
+    "representation-text.quiz-2",
+    "representation-tip-byte-range",
+    "representation-tip-convention"
   ],
   "reviewCards" : [
     {
@@ -962,6 +4236,294 @@
       "revision" : 1,
       "sourceLessonID" : "regression-page-2",
       "topic" : "线性回归"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "东西进入机器算输入，离开机器算输出。照片、声音、消息都可以是其中任意一头，取决于它当时往哪个方向走。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "把一份数据改成另一份数据的那一步既不是输入也不是输出，它是处理。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "看方向",
+      "frontSubtitle" : "同一样东西怎么归类",
+      "frontTitle" : "输入还是输出",
+      "id" : "kc-machine-card-direction",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-machine",
+      "revision" : 1,
+      "sourceLessonID" : "kc-machine-page-flow",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "机器只执行事先写下的步骤。它没有起疑心的能力，也没有替你补一步的习惯。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "app 里看起来贴心的行为，每一个背后都是有人写下的一步。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "步骤里没写",
+      "frontSubtitle" : "多打一个零它也照加",
+      "frontTitle" : "机器为什么不提醒你",
+      "id" : "kc-machine-card-written-steps",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-machine",
+      "revision" : 1,
+      "sourceLessonID" : "kc-machine-page-steps",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "可换步骤的机器，用途由它当下照着的那份步骤决定，硬件不必动。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "功能一夜之间变了，先猜换了步骤，别先猜换了硬件。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "换的是清单",
+      "frontSubtitle" : "手机既能记账又能放歌",
+      "frontTitle" : "同一台机器做不同的事",
+      "id" : "kc-machine-card-swap-steps",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-machine",
+      "revision" : 1,
+      "sourceLessonID" : "kc-machine-page-general",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "程序是躺在存储里的一份步骤清单；运行是这份清单被搬上台面、被逐条读掉的那个过程。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "关掉 app 结束的是这一次运行，清单一个字都没少。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "两样东西",
+      "frontSubtitle" : "点开图标之前和之后",
+      "frontTitle" : "程序和运行",
+      "id" : "kc-program-card-program-vs-run",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-program",
+      "revision" : 1,
+      "sourceLessonID" : "kc-program-page-list",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "CPU 一次只做一小步，取一条、执行、再取下一条，顺序照清单写的来。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "快来自小步足够多、足够密，不来自某一步很聪明。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "取一条，做一条",
+      "frontSubtitle" : "为什么感觉是瞬间",
+      "frontTitle" : "CPU 怎么干活",
+      "id" : "kc-program-card-step-by-step",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-program",
+      "revision" : 1,
+      "sourceLessonID" : "kc-program-page-cpu",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "内存摊着清单和当下要用的数。开的东西太多，暂时不用的会被挪走，切回来得重新搬。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "顿一下然后恢复，指向一次搬运；一直慢，才轮到算力。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "台面摊不下",
+      "frontSubtitle" : "顿一下之后又很顺",
+      "frontTitle" : "开太多就卡",
+      "id" : "kc-program-card-desk-full",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-program",
+      "revision" : 1,
+      "sourceLessonID" : "kc-program-page-memory",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "两份清单被轮着读，每次只读一小段。轮到谁、轮多久，由操作系统决定，不由 app 自己宣布。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "「同时」通常是轮换快到看不出接缝，不是各占一半机器。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "轮换很快",
+      "frontSubtitle" : "歌不断，记账也不卡",
+      "frontTitle" : "同时开着两个 app",
+      "id" : "kc-os-card-turns",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-os",
+      "revision" : 1,
+      "sourceLessonID" : "kc-os-page-share",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "每个 app 在内存里有自己的一片，别的 app 碰不到。崩溃通常被关在那一片里面。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "同一块台面不等于同一片地盘；界线由系统划，不靠 app 自觉。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "地盘被划开",
+      "frontSubtitle" : "别的为什么还活着",
+      "frontTitle" : "一个 app 崩了",
+      "id" : "kc-os-card-boundary",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-os",
+      "revision" : 1,
+      "sourceLessonID" : "kc-os-page-isolate",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "屏幕、麦克风、存储这些共用的东西，app 只能向操作系统请求，由它去操作。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "关掉权限改的不是 app 的步骤，是这个请求会不会被答应。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "申请，不自取",
+      "frontSubtitle" : "那句「是否允许」是谁弹的",
+      "frontTitle" : "app 想用麦克风",
+      "id" : "kc-os-card-request",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-os",
+      "revision" : 1,
+      "sourceLessonID" : "kc-os-page-gateway",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "内存那块台面上的东西断电就空；存储里的内容断电还在。保存就是把台面上的内容抄一份进存储。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "屏幕上看得见，不代表已经被抄进断电不丢的那一边。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "看它在哪一边",
+      "frontSubtitle" : "半句备注没了，合计还在",
+      "frontTitle" : "断电会丢什么",
+      "id" : "kc-files-card-power-line",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-files",
+      "revision" : 1,
+      "sourceLessonID" : "kc-files-page-power",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "文件＝一个用来找它的名字 ＋ 一段内容，位置由系统另外记着。改名动的是标签。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "改一个几百兆文件的名字是瞬间完成的，因为内容根本没被重写。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "名字和内容",
+      "frontSubtitle" : "改名之后内容还在吗",
+      "frontTitle" : "文件的两样东西",
+      "id" : "kc-files-card-name-vs-content",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-files",
+      "revision" : 1,
+      "sourceLessonID" : "kc-files-page-name",
+      "topic" : "认识计算机"
+    },
+    {
+      "accent" : "purple",
+      "backBody" : [
+        {
+          "text" : "读出什么取决于用哪套约定去读。后缀只是提示系统该请谁来读，不决定内容是什么。",
+          "type" : "text"
+        }
+      ],
+      "backHighlight" : [
+        {
+          "text" : "乱码通常说明约定对不上，而不是内容坏了。",
+          "type" : "text"
+        }
+      ],
+      "backTitle" : "靠约定还原",
+      "frontSubtitle" : "后缀一改就成了乱码",
+      "frontTitle" : "同一段内容两种读法",
+      "id" : "kc-files-card-convention",
+      "locale" : "zh-Hans",
+      "moduleID" : "kc-files",
+      "revision" : 1,
+      "sourceLessonID" : "kc-files-page-format",
+      "topic" : "认识计算机"
     }
   ],
   "routes" : [
@@ -983,6 +4545,25 @@
         "statistics",
         "machineLearning",
         "deepLearning"
+      ]
+    },
+    {
+      "accent" : "purple",
+      "cta" : "开始学习",
+      "id" : "cs",
+      "interactive" : true,
+      "moduleIDs" : [
+        "kc-machine",
+        "kc-program",
+        "kc-os",
+        "kc-files"
+      ],
+      "subtitle" : "信息表示 · 算法 · 抽象",
+      "systemImage" : "chevron.left.forwardslash.chevron.right",
+      "title" : "计算机科学导论",
+      "trackIDs" : [
+        "knowing-computers",
+        "intro"
       ]
     },
     {
@@ -1029,6 +4610,14 @@
     {
       "id" : "deepLearning",
       "title" : "深度学习"
+    },
+    {
+      "id" : "knowing-computers",
+      "title" : "认识计算机"
+    },
+    {
+      "id" : "intro",
+      "title" : "信息的表示"
     }
   ]
 }
