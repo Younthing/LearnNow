@@ -241,6 +241,24 @@ extension LearnNowFlowState {
         }
     }
 
+    /// Real in-lesson progress for the path card: visited pages / total pages.
+    /// Only the current node shows a bar; locked/done use status chrome instead.
+    func pathNodeProgress(for node: LearnNowPathNode) -> Double? {
+        guard node.status == .current,
+              let module = modules.first(where: { $0.id == node.id })
+        else {
+            return nil
+        }
+
+        let pageIDs = Set(module.lessonPages.map(\.id))
+        guard !pageIDs.isEmpty else { return 0 }
+
+        let visitedCount = visitedPageIDsByLessonID[node.id, default: []]
+            .intersection(pageIDs)
+            .count
+        return Double(visitedCount) / Double(pageIDs.count)
+    }
+
     func isLessonAvailable(for moduleIndex: Int) -> Bool {
         guard modules.indices.contains(moduleIndex) else { return false }
         let module = modules[moduleIndex]

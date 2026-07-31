@@ -347,7 +347,7 @@ extension LearnNowFlowState {
                     subtitle: node.subtitle,
                     status: node.status,
                     isInteractive: node.isInteractive,
-                    progress: node.status == .current ? 0.40 : nil,
+                    progress: pathNodeProgress(for: node),
                     hasNewContent: node.hasNewContent
                 )
             },

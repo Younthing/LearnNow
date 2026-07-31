@@ -221,6 +221,26 @@ struct LearnNowFlowStateTests {
     }
 
     @Test
+    func pathScreenShowsVisitedPageFractionForCurrentNode() throws {
+        let catalog = LearnNowFlowFixtures.catalog
+        let baseline = LearnNowFlowState(catalog: catalog, snapshot: .empty)
+        let currentID = try #require(baseline.pathScreenModel.nodes.first { $0.status == .current }?.id)
+        let module = try #require(catalog.module(id: currentID))
+        let pageIDs = module.lessonPages.map(\.id)
+        #expect(pageIDs.count >= 2)
+
+        var snapshot = LearningSnapshot.empty
+        snapshot.visitedPageIDsByLessonID[currentID] = [pageIDs[0]]
+
+        let sut = LearnNowFlowState(catalog: catalog, snapshot: snapshot)
+        let current = try #require(sut.pathScreenModel.nodes.first { $0.status == .current })
+
+        #expect(current.id == currentID)
+        #expect(current.progress == Double(1) / Double(pageIDs.count))
+        #expect(baseline.pathScreenModel.nodes.first { $0.status == .current }?.progress == 0)
+    }
+
+    @Test
     func reopeningCompletedModuleWithNewContentStartsAtFirstUnvisitedPage() {
         var snapshot = LearnNowFlowFixtures.learningSnapshot
         snapshot.completedLessonIDs.insert("hypothesis")
