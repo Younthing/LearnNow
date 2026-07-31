@@ -27,6 +27,16 @@ LearnNow 使用 Private CloudKit 数据库 `iCloud.fanxi.LearnNow`。课程内�
 
 在 CloudKit Console 使用 Deploy Schema Changes 将已验证的 Development schema 部署到 Production。发布构建不会执行初始化工具，且 App 不会尝试从客户端修改 Production schema。
 
+### 2026-07-31 部署与核验
+
+- 工程的 iOS 与 macOS entitlement、SwiftData 配置和 CloudKit Console 均指向 `iCloud.fanxi.LearnNow`。
+- 同步使用 **Private** CloudKit 数据库；不会将学习记录写入 Public 数据库。
+- Console 待部署清单为 5 个同步 record type：`CD_CardPreferenceRecord`、`CD_LearningEventRecord`、`CD_LessonProgressRecord`、`CD_ProfilePreferenceRecord`、`CD_ReviewLogRecord`；对应索引创建项为 16、26、19、17、45 个。
+- 另含 `_world`、`_icloud`、`_creator` 三个系统 security role 的变更。
+- 经账户持有人确认后，Console 已显示 `Changes Deployed` / `The schema is deployed to Production`。
+- Production 环境已只读核验，显示以上 5 个同步 record type；另有 CloudKit 自动创建的 `Users` record type。
+- 截图归档：`AppStoreConnect-Screenshots/2026-07-31-cloudkit-production-schema-deployment-preview.jpeg`、`AppStoreConnect-Screenshots/2026-07-31-cloudkit-production-schema-deployed.jpeg`、`AppStoreConnect-Screenshots/2026-07-31-cloudkit-production-schema-verified.jpeg`。
+
 注意：
 
 - CloudKit 同步是最终一致的。未登录 iCloud、账号受限或暂时不可用时，应用继续使用本地 SwiftData 数据，并在个人页显示“仅本机”。

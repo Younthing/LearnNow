@@ -9,7 +9,7 @@ ai_develop_note/
 
 ## Obj-C/Swift specific
 *.hmap
-
+docs
 ## App packaging
 *.ipa
 *.dSYM.zip
