@@ -6,63 +6,46 @@ struct PathScreen: View {
     let onSelectTrack: (String) -> Void
     let onOpenLesson: (String) -> Void
 
-    @State private var animateNodes = false
-
-    var body: some View {
-        ScreenScaffold(bottomPadding: 60) {
-            pathHeader
-            RouteTrackTabs(
-                tabs: model.trackTabs,
-                onSelectTrack: onSelectTrack
-            )
-            selectedTrackHeader
-
-            if model.nodes.isEmpty {
-                PathEmptyStateCard(
-                    title: model.emptyStateTitle ?? "",
-                    message: model.emptyStateMessage ?? ""
-                )
-            } else {
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(Array(model.nodes.enumerated()), id: \.element.id) { index, node in
-                        PathNodeRow(
-                            node: node,
-                            showsLineBelow: index < model.nodes.count - 1,
-                            onTap: { onOpenLesson(node.id) }
-                        )
-                        .opacity(animateNodes ? 1 : 0)
-                        .offset(y: animateNodes ? 0 : 30)
-                        .animation(
-                            .spring(response: 0.5, dampingFraction: 0.8).delay(Double(index) * 0.1),
-                            value: animateNodes
-                        )
-                    }
-                }
-                .padding(.top, 8)
-            }
-        }
-        .onAppear {
-            animateNodes = true
-        }
-        .onDisappear {
-            animateNodes = false
-        }
-        .accessibilityIdentifier("screen.path")
+    private var selectionBinding: Binding<String> {
+        Binding(
+            get: { model.selectedTrackID },
+            set: { onSelectTrack($0) }
+        )
     }
 
-    private var selectedTrackHeader: some View {
-        VStack(spacing: 6) {
-            Text(model.selectedTrackTitle)
-                .font(LearnNowTypography.sectionTitle)
-                .foregroundStyle(LearnNowPalette.textPrimary)
+    var body: some View {
+        GeometryReader { geometry in
+            let horizontalPadding = LearnNowSpacing.screenHorizontal(for: geometry.size.width)
+
+            VStack(spacing: LearnNowSpacing.section) {
+                pathHeader
+                    .padding(.horizontal, horizontalPadding)
+                    .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
+                    .frame(maxWidth: .infinity)
+
+                RouteTrackTabs(
+                    tabs: model.trackTabs,
+                    onSelectTrack: onSelectTrack
+                )
+                .padding(.horizontal, horizontalPadding)
+                .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
                 .frame(maxWidth: .infinity)
 
-            Text(model.selectedTrackSummary)
-                .font(LearnNowTypography.screenSubtitle)
-                .foregroundStyle(LearnNowPalette.textMuted)
-                .frame(maxWidth: .infinity)
+                TabView(selection: selectionBinding) {
+                    ForEach(model.tracks) { track in
+                        PathTrackPage(
+                            track: track,
+                            horizontalPadding: horizontalPadding,
+                            onOpenLesson: onOpenLesson
+                        )
+                        .tag(track.id)
+                    }
+                }
+                .learnNowPathTabStyle()
+            }
+            .padding(.top, LearnNowSpacing.screenTop)
         }
-        .padding(.top, 4)
+        .accessibilityIdentifier("screen.path")
     }
 
     private var pathHeader: some View {
@@ -84,22 +67,105 @@ struct PathScreen: View {
     }
 }
 
+private extension View {
+    @ViewBuilder
+    func learnNowPathTabStyle() -> some View {
+#if os(macOS)
+        self
+#else
+        tabViewStyle(.page(indexDisplayMode: .never))
+#endif
+    }
+}
+
+private struct PathTrackPage: View {
+    let track: PathScreenModel.Track
+    let horizontalPadding: CGFloat
+    let onOpenLesson: (String) -> Void
+
+    @State private var animateNodes = false
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: LearnNowSpacing.section) {
+                trackHeader
+
+                if track.nodes.isEmpty {
+                    PathEmptyStateCard(
+                        title: track.emptyStateTitle ?? "",
+                        message: track.emptyStateMessage ?? ""
+                    )
+                } else {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(Array(track.nodes.enumerated()), id: \.element.id) { index, node in
+                            PathNodeRow(
+                                node: node,
+                                showsLineBelow: index < track.nodes.count - 1,
+                                onTap: { onOpenLesson(node.id) }
+                            )
+                            .opacity(animateNodes ? 1 : 0)
+                            .offset(y: animateNodes ? 0 : 30)
+                            .animation(
+                                .spring(response: 0.5, dampingFraction: 0.8).delay(Double(index) * 0.1),
+                                value: animateNodes
+                            )
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+            }
+            .padding(.horizontal, horizontalPadding)
+            .padding(.bottom, 60)
+            .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
+            .frame(maxWidth: .infinity)
+        }
+        .onAppear {
+            animateNodes = true
+        }
+        .onDisappear {
+            animateNodes = false
+        }
+    }
+
+    private var trackHeader: some View {
+        VStack(spacing: 6) {
+            Text(track.title)
+                .font(LearnNowTypography.sectionTitle)
+                .foregroundStyle(LearnNowPalette.textPrimary)
+                .frame(maxWidth: .infinity)
+
+            Text(track.summary)
+                .font(LearnNowTypography.screenSubtitle)
+                .foregroundStyle(LearnNowPalette.textMuted)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.top, 4)
+    }
+}
+
 private struct RouteTrackTabs: View {
     let tabs: [PathScreenModel.TrackTab]
     let onSelectTrack: (String) -> Void
 
+    private var selectedTabID: String? {
+        tabs.first(where: \.isSelected)?.id
+    }
+
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 8) {
-                ForEach(tabs) { tab in
-                    trackButton(tab)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(tabs) { tab in
+                        trackButton(tab)
+                            .id(tab.id)
+                    }
                 }
             }
-
-            VStack(spacing: 8) {
-                ForEach(tabs) { tab in
-                    trackButton(tab)
-                }
+            .onAppear {
+                scrollSelectedTab(using: proxy, animated: false)
+            }
+            .onChange(of: selectedTabID) { _, _ in
+                scrollSelectedTab(using: proxy, animated: true)
             }
         }
     }
@@ -109,11 +175,21 @@ private struct RouteTrackTabs: View {
             title: tab.title,
             role: .brand,
             isSelected: tab.isSelected,
-            isExpanded: true,
+            isExpanded: false,
             action: { onSelectTrack(tab.id) }
         )
-        .frame(maxWidth: .infinity)
         .accessibilityIdentifier("path.track.\(tab.id)")
+    }
+
+    private func scrollSelectedTab(using proxy: ScrollViewProxy, animated: Bool) {
+        guard let selectedTabID else { return }
+        if animated {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                proxy.scrollTo(selectedTabID, anchor: .center)
+            }
+        } else {
+            proxy.scrollTo(selectedTabID, anchor: .center)
+        }
     }
 }
 

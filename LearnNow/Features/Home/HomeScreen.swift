@@ -446,13 +446,7 @@ private struct KnowledgeTipCard: View {
             TipIcon(systemImage: tip.systemImage, accent: tip.accent)
 
             TipCopy(tip: tip)
-                .padding(.trailing, 72)
                 .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .overlay(alignment: .trailing) {
-            TipIllustration(accent: tip.accent)
-                .frame(width: 70, height: 54)
-                .allowsHitTesting(false)
         }
         .padding(.top, 8)
     }
@@ -498,77 +492,6 @@ private struct TipCopy: View {
                 .fixedSize(horizontal: false, vertical: true)
 
         }
-    }
-}
-
-private struct TipIllustration: View {
-    let accent: LearnNowAccent
-
-    var body: some View {
-        GeometryReader { geometry in
-            let width = geometry.size.width
-            let height = geometry.size.height
-            let baseline = height * 0.82
-            let peakX = width * 0.58
-            let peakY = height * 0.14
-
-            ZStack(alignment: .bottom) {
-                TipBellCurve()
-                    .stroke(
-                        LearnNowPalette.color(for: accent),
-                        style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round)
-                    )
-
-                Path { path in
-                    path.move(to: CGPoint(x: peakX, y: baseline))
-                    path.addLine(to: CGPoint(x: peakX, y: peakY))
-                }
-                .stroke(
-                    LearnNowPalette.color(for: accent).opacity(0.6),
-                    style: StrokeStyle(lineWidth: 1.4, dash: [5, 4])
-                )
-
-                Path { path in
-                    path.move(to: CGPoint(x: width * 0.73, y: baseline))
-                    path.addCurve(
-                        to: CGPoint(x: width * 0.96, y: baseline),
-                        control1: CGPoint(x: width * 0.80, y: height * 0.50),
-                        control2: CGPoint(x: width * 0.88, y: height * 0.66)
-                    )
-                    path.addLine(to: CGPoint(x: width * 0.96, y: baseline))
-                    path.closeSubpath()
-                }
-                .fill(LearnNowPalette.color(for: accent).opacity(0.22))
-
-                Path { path in
-                    path.move(to: CGPoint(x: width * 0.06, y: baseline))
-                    path.addLine(to: CGPoint(x: width * 0.96, y: baseline))
-                }
-                .stroke(LearnNowPalette.color(for: accent).opacity(0.7), lineWidth: 1)
-            }
-        }
-        .aspectRatio(1.55, contentMode: .fit)
-    }
-}
-
-private struct TipBellCurve: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let baseline = rect.height * 0.82
-
-        path.move(to: CGPoint(x: rect.width * 0.06, y: baseline))
-        path.addCurve(
-            to: CGPoint(x: rect.width * 0.58, y: rect.height * 0.14),
-            control1: CGPoint(x: rect.width * 0.24, y: baseline),
-            control2: CGPoint(x: rect.width * 0.40, y: rect.height * 0.15)
-        )
-        path.addCurve(
-            to: CGPoint(x: rect.width * 0.96, y: baseline),
-            control1: CGPoint(x: rect.width * 0.75, y: rect.height * 0.12),
-            control2: CGPoint(x: rect.width * 0.78, y: baseline)
-        )
-
-        return path
     }
 }
 

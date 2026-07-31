@@ -184,23 +184,58 @@ struct LearnNowFlowStateTests {
     }
 
     @Test
-    func tipRotationIsStableAndOnlyIncludesUnlockedModules() {
-        var locked = LearnNowFlowState(
-            catalog: LearnNowFlowFixtures.catalog,
+    func tipRotationIsStableAndOnlyIncludesCompletedModules() throws {
+        let catalog = LearnNowFlowFixtures.catalog
+        var tipsByModule: [String: [CourseCatalog.KnowledgeTip]] = [:]
+        for tip in catalog.dailyTips {
+            guard let moduleID = tip.moduleID else { continue }
+            tipsByModule[moduleID, default: []].append(tip)
+        }
+
+        let firstModuleID = try #require(
+            catalog.modules.first { !(tipsByModule[$0.id] ?? []).isEmpty }?.id
+        )
+        let secondModuleID = try #require(
+            catalog.modules.first { $0.id != firstModuleID && !(tipsByModule[$0.id] ?? []).isEmpty }?.id
+        )
+        let firstModuleTips = try #require(tipsByModule[firstModuleID]).sorted { $0.id < $1.id }
+        let rotatedTitles = ([firstModuleID, secondModuleID] as [String])
+            .flatMap { tipsByModule[$0] ?? [] }
+            .sorted { $0.id < $1.id }
+            .map(\.title)
+
+        var incomplete = LearnNowFlowState(
+            catalog: catalog,
             snapshot: .empty,
             now: Date(timeIntervalSince1970: 1_752_787_800)
         )
-        locked.tipRotationDayOrdinal = 1
-        #expect(locked.homeScreenModel.knowledgeTip.title == "偏态分布别只看均值")
+        incomplete.tipRotationDayOrdinal = 1
+        #expect(incomplete.homeScreenModel.knowledgeTip.title == "开始今天的学习")
 
-        var unlocked = LearnNowFlowState.homePreview
-        unlocked.tipRotationDayOrdinal = 0
-        let firstTitle = unlocked.homeScreenModel.knowledgeTip.title
-        #expect(firstTitle == "偏态分布别只看均值")
-        #expect(unlocked.homeScreenModel.knowledgeTip.title == firstTitle)
+        var oneCompletedSnapshot = LearningSnapshot.empty
+        oneCompletedSnapshot.completedLessonIDs = [firstModuleID]
+        var completed = LearnNowFlowState(
+            catalog: catalog,
+            snapshot: oneCompletedSnapshot,
+            now: Date(timeIntervalSince1970: 1_752_787_800)
+        )
+        completed.tipRotationDayOrdinal = 0
+        #expect(completed.homeScreenModel.knowledgeTip.title == firstModuleTips[0].title)
+        completed.tipRotationDayOrdinal = 1
+        #expect(
+            completed.homeScreenModel.knowledgeTip.title ==
+                firstModuleTips[1 % firstModuleTips.count].title
+        )
 
-        unlocked.tipRotationDayOrdinal = 1
-        #expect(unlocked.homeScreenModel.knowledgeTip.title == "p 值不是「原假设为真的概率」")
+        var bothCompleted = completed
+        bothCompleted.completedLessonIDs = [firstModuleID, secondModuleID]
+        bothCompleted.tipRotationDayOrdinal = 0
+        #expect(bothCompleted.homeScreenModel.knowledgeTip.title == rotatedTitles[0])
+        bothCompleted.tipRotationDayOrdinal = 1
+        #expect(
+            bothCompleted.homeScreenModel.knowledgeTip.title ==
+                rotatedTitles[1 % rotatedTitles.count]
+        )
     }
 
     @Test

@@ -42,14 +42,33 @@ struct PathScreenModel: Equatable {
         let hasNewContent: Bool
     }
 
+    struct Track: Identifiable, Equatable {
+        let id: String
+        let title: String
+        let summary: String
+        let nodes: [Node]
+        let emptyStateTitle: String?
+        let emptyStateMessage: String?
+    }
+
     let title: String
     let subtitle: String
-    let trackTabs: [TrackTab]
-    let selectedTrackTitle: String
-    let selectedTrackSummary: String
-    let nodes: [Node]
-    let emptyStateTitle: String?
-    let emptyStateMessage: String?
+    let tracks: [Track]
+    let selectedTrackID: String
+
+    var trackTabs: [TrackTab] {
+        tracks.map {
+            .init(id: $0.id, title: $0.title, isSelected: $0.id == selectedTrackID)
+        }
+    }
+
+    var selectedTrack: Track? {
+        tracks.first { $0.id == selectedTrackID }
+    }
+
+    var nodes: [Node] {
+        selectedTrack?.nodes ?? []
+    }
 }
 
 struct LessonScreenModel: Equatable {
@@ -328,31 +347,37 @@ extension LearnNowFlowState {
     }
 
     var pathScreenModel: PathScreenModel {
-        let visibleNodes = visiblePathNodes
+        let tracks = routeTracks.map { track -> PathScreenModel.Track in
+            let nodes = pathNodes.filter { $0.trackID == track.id }
+            return PathScreenModel.Track(
+                id: track.id,
+                title: track.title,
+                summary: nodes.isEmpty
+                    ? "当前课程暂无章节"
+                    : "共 \(nodes.count) 个章节",
+                nodes: nodes.map { node in
+                    PathScreenModel.Node(
+                        id: node.id,
+                        title: node.title,
+                        subtitle: node.subtitle,
+                        status: node.status,
+                        isInteractive: node.isInteractive,
+                        progress: pathNodeProgress(for: node),
+                        hasNewContent: node.hasNewContent
+                    )
+                },
+                emptyStateTitle: nodes.isEmpty ? "\(track.title) 即将开放" : nil,
+                emptyStateMessage: nodes.isEmpty
+                    ? "这一门课程还没有填充章节数据，后续会在这里展示完整章节路线。"
+                    : nil
+            )
+        }
 
         return PathScreenModel(
             title: "\(routeCategoryTitle)路线",
-            subtitle: "切换课程查看章节",
-            trackTabs: routeTracks.map {
-                .init(id: $0.id, title: $0.title, isSelected: $0.id == selectedRouteTrackID)
-            },
-            selectedTrackTitle: selectedRouteTrackTitle,
-            selectedTrackSummary: visibleNodes.isEmpty
-                ? "当前课程暂无章节"
-                : "共 \(visibleNodes.count) 个章节",
-            nodes: visibleNodes.map { node in
-                PathScreenModel.Node(
-                    id: node.id,
-                    title: node.title,
-                    subtitle: node.subtitle,
-                    status: node.status,
-                    isInteractive: node.isInteractive,
-                    progress: pathNodeProgress(for: node),
-                    hasNewContent: node.hasNewContent
-                )
-            },
-            emptyStateTitle: visibleNodes.isEmpty ? "\(selectedRouteTrackTitle) 即将开放" : nil,
-            emptyStateMessage: visibleNodes.isEmpty ? "这一门课程还没有填充章节数据，后续会在这里展示完整章节路线。" : nil
+            subtitle: "切换单元查看章节",
+            tracks: tracks,
+            selectedTrackID: selectedRouteTrackID
         )
     }
 
@@ -702,18 +727,10 @@ extension LearnNowFlowState {
     }
 
     private var rotatingKnowledgeTip: CourseCatalog.KnowledgeTip? {
-        let unlockedModuleIDs = Set(
-            modules
-                .filter {
-                    completedLessonIDs.contains($0.id) ||
-                        Set($0.prerequisiteModuleIDs).isSubset(of: completedLessonIDs)
-                }
-                .map(\.id)
-        )
         let candidates = catalog.dailyTips
             .filter { tip in
-                guard let moduleID = tip.moduleID else { return true }
-                return unlockedModuleIDs.contains(moduleID)
+                guard let moduleID = tip.moduleID else { return false }
+                return completedLessonIDs.contains(moduleID)
             }
             .sorted { $0.id < $1.id }
         guard !candidates.isEmpty else { return nil }

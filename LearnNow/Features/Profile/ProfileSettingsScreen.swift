@@ -2,8 +2,8 @@ import StoreKit
 import SwiftUI
 
 struct ProfileSettingsScreen: View {
-    private static let privacyPolicyURL = URL(string: "https://nsgnrdmv72a8.sg.larksuite.com/wiki/RJchw2s1UicDbYkY4jDlpPiCglf?from=from_copylink")!
-    private static let supportURL = URL(string: "https://nsgnrdmv72a8.sg.larksuite.com/wiki/JAgDw4FCzib0XxkngKAlmggig0c?from=from_copylink")!
+    private static let privacyPolicyURL = URL(string: "https://app.notion.com/p/3aeeeba16e66808790bdeca25f4daf93")!
+    private static let supportURL = URL(string: "https://app.notion.com/p/3aeeeba16e66801481c6e20fb119855f")!
 
     let model: SettingsScreenModel
     @Binding var reminderTime: Date
