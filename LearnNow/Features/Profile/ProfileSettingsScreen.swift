@@ -2,6 +2,9 @@ import StoreKit
 import SwiftUI
 
 struct ProfileSettingsScreen: View {
+    private static let privacyPolicyURL = URL(string: "https://nsgnrdmv72a8.sg.larksuite.com/wiki/RJchw2s1UicDbYkY4jDlpPiCglf?from=from_copylink")!
+    private static let supportURL = URL(string: "https://nsgnrdmv72a8.sg.larksuite.com/wiki/JAgDw4FCzib0XxkngKAlmggig0c?from=from_copylink")!
+
     let model: SettingsScreenModel
     @Binding var reminderTime: Date
     @Binding var remindersEnabled: Bool
@@ -119,6 +122,19 @@ struct ProfileSettingsScreen: View {
                             .foregroundStyle(LearnNowSemanticRole.warning.foreground)
                     }
                 }
+            }
+            .listRowBackground(LearnNowPalette.surfaceOpaque)
+
+            Section("支持与隐私") {
+                Link(destination: Self.privacyPolicyURL) {
+                    Label("隐私政策", systemImage: "hand.raised.fill")
+                }
+                .accessibilityIdentifier("settings.privacy.policy")
+
+                Link(destination: Self.supportURL) {
+                    Label("支持与联系", systemImage: "questionmark.circle")
+                }
+                .accessibilityIdentifier("settings.support")
             }
             .listRowBackground(LearnNowPalette.surfaceOpaque)
         }
