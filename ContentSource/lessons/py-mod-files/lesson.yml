@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-mod-files
 title: 怎样把程序拆成多个文件？
-prerequisites: []
+prerequisites: [py-scope]
 completion:
   xp: 15
   message: 模块拆分与导入，已经加入复习池。

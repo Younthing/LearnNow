@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-test
 title: 怎样测试一个函数？
-prerequisites: []
+prerequisites: [py-except]
 completion:
   xp: 15
   message: 给定输入对预期输出，已经加入复习池。

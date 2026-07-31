@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-except
 title: 异常处理解决什么问题？
-prerequisites: []
+prerequisites: [py-traceback]
 completion:
   xp: 15
   message: 接住可预期失败并给出路，已经加入复习池。

@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-types
 title: Python 中有哪些基础数据类型？
-prerequisites: []
+prerequisites: [py-var]
 completion:
   xp: 15
   message: 数字、文本、真假，这三类已经加入复习池。

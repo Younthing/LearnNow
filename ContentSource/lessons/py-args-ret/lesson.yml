@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-args-ret
 title: 参数和返回值分别有什么作用？
-prerequisites: []
+prerequisites: [py-why-fn]
 completion:
   xp: 15
   message: 参数送进、返回值送出，已经加入复习池。

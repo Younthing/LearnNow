@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-scope
 title: 变量的作用范围是什么？
-prerequisites: []
+prerequisites: [py-args-ret]
 completion:
   xp: 15
   message: 局部与外部边界，已经加入复习池。

@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-traceback
 title: 怎样阅读错误信息？
-prerequisites: []
+prerequisites: [py-err-kinds]
 completion:
   xp: 15
   message: 从最后看类型与行号，已经加入复习池。

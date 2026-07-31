@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-io
 title: 怎样输出信息和接收输入？
-prerequisites: []
+prerequisites: [py-run]
 completion:
   xp: 15
   message: print 往外说、input 往里听，已经加入复习池。

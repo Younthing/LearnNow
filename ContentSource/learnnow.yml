@@ -1,6 +1,6 @@
 format: learnnow.project/v1
 schemaVersion: 2
-releaseVersion: "2026.08.01.4"
+releaseVersion: "2026.08.01.5"
 locale: zh-Hans
 primaryRouteID: cs-basics
 minAppBuild: 1

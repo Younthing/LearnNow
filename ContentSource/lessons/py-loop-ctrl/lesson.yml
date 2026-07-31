@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-loop-ctrl
 title: 怎样控制循环的开始和结束？
-prerequisites: []
+prerequisites: [py-loop]
 completion:
   xp: 15
   message: 开始条件与提前结束，已经加入复习池。

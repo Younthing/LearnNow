@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-csv-json
 title: CSV 和 JSON 文件是什么？
-prerequisites: []
+prerequisites: [py-write]
 completion:
   xp: 15
   message: 两种常见结构化文本，已经加入复习池。

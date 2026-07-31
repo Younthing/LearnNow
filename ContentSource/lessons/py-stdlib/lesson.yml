@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-stdlib
 title: 怎样使用 Python 标准库和第三方模块？
-prerequisites: []
+prerequisites: [py-test]
 completion:
   xp: 15
   message: 先标准库，再按需第三方，已经加入复习池。

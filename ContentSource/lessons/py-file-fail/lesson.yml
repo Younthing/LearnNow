@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-file-fail
 title: 文件操作为什么可能失败？
-prerequisites: []
+prerequisites: [py-csv-json]
 completion:
   xp: 15
   message: 路径、权限与占用，已经加入复习池。

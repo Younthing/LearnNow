@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-iter
 title: 怎样遍历和处理一组数据？
-prerequisites: []
+prerequisites: [py-set]
 completion:
   xp: 15
   message: 遍历中做转换与汇总，已经加入复习池。

@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-write
 title: 怎样把结果写入文件？
-prerequisites: []
+prerequisites: [py-read]
 completion:
   xp: 15
   message: 写入与追加，已经加入复习池。

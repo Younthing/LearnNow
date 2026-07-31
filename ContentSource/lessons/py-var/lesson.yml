@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-var
 title: 变量怎样保存数据？
-prerequisites: []
+prerequisites: [py-io]
 completion:
   xp: 15
   message: 名字贴在值上，这条规则已经加入复习池。

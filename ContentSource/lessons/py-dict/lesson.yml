@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-dict
 title: 字典怎样通过名称查找数据？
-prerequisites: []
+prerequisites: [py-tuple]
 completion:
   xp: 15
   message: 键到值的查找，已经加入复习池。

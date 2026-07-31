@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-nest
 title: 嵌套结构为什么容易变复杂？
-prerequisites: []
+prerequisites: [py-loop-ctrl]
 completion:
   xp: 15
   message: 嵌套要克制，这条提醒已经加入复习池。

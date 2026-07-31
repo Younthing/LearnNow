@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-tuple
 title: 元组和列表有什么区别？
-prerequisites: []
+prerequisites: [py-list]
 completion:
   xp: 15
   message: 不可变的有序一组，已经加入复习池。

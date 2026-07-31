@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-read
 title: 怎样读取文本文件？
-prerequisites: []
+prerequisites: [py-str]
 completion:
   xp: 15
   message: 打开、读行、关闭，已经加入复习池。

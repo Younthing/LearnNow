@@ -66265,7 +66265,7 @@
       "id" : "py-io",
       "lessonTitle" : "怎样输出信息和接收输入？",
       "prerequisiteModuleIDs" : [
-
+        "py-run"
       ],
       "reviewMessage" : "print 往外说、input 往里听，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66277,7 +66277,7 @@
       "id" : "py-var",
       "lessonTitle" : "变量怎样保存数据？",
       "prerequisiteModuleIDs" : [
-
+        "py-io"
       ],
       "reviewMessage" : "名字贴在值上，这条规则已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66289,7 +66289,7 @@
       "id" : "py-types",
       "lessonTitle" : "Python 中有哪些基础数据类型？",
       "prerequisiteModuleIDs" : [
-
+        "py-var"
       ],
       "reviewMessage" : "数字、文本、真假，这三类已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66313,7 +66313,7 @@
       "id" : "py-loop",
       "lessonTitle" : "循环怎样处理重复任务？",
       "prerequisiteModuleIDs" : [
-
+        "py-if"
       ],
       "reviewMessage" : "重复交给循环，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66325,7 +66325,7 @@
       "id" : "py-loop-ctrl",
       "lessonTitle" : "怎样控制循环的开始和结束？",
       "prerequisiteModuleIDs" : [
-
+        "py-loop"
       ],
       "reviewMessage" : "开始条件与提前结束，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66337,7 +66337,7 @@
       "id" : "py-nest",
       "lessonTitle" : "嵌套结构为什么容易变复杂？",
       "prerequisiteModuleIDs" : [
-
+        "py-loop-ctrl"
       ],
       "reviewMessage" : "嵌套要克制，这条提醒已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66361,7 +66361,7 @@
       "id" : "py-args-ret",
       "lessonTitle" : "参数和返回值分别有什么作用？",
       "prerequisiteModuleIDs" : [
-
+        "py-why-fn"
       ],
       "reviewMessage" : "参数送进、返回值送出，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66373,7 +66373,7 @@
       "id" : "py-scope",
       "lessonTitle" : "变量的作用范围是什么？",
       "prerequisiteModuleIDs" : [
-
+        "py-args-ret"
       ],
       "reviewMessage" : "局部与外部边界，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66385,7 +66385,7 @@
       "id" : "py-mod-files",
       "lessonTitle" : "怎样把程序拆成多个文件？",
       "prerequisiteModuleIDs" : [
-
+        "py-scope"
       ],
       "reviewMessage" : "模块拆分与导入，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66409,7 +66409,7 @@
       "id" : "py-tuple",
       "lessonTitle" : "元组和列表有什么区别？",
       "prerequisiteModuleIDs" : [
-
+        "py-list"
       ],
       "reviewMessage" : "不可变的有序一组，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66421,7 +66421,7 @@
       "id" : "py-dict",
       "lessonTitle" : "字典怎样通过名称查找数据？",
       "prerequisiteModuleIDs" : [
-
+        "py-tuple"
       ],
       "reviewMessage" : "键到值的查找，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66433,7 +66433,7 @@
       "id" : "py-set",
       "lessonTitle" : "集合怎样处理不重复的数据？",
       "prerequisiteModuleIDs" : [
-
+        "py-dict"
       ],
       "reviewMessage" : "去重与成员判断，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66445,7 +66445,7 @@
       "id" : "py-iter",
       "lessonTitle" : "怎样遍历和处理一组数据？",
       "prerequisiteModuleIDs" : [
-
+        "py-set"
       ],
       "reviewMessage" : "遍历中做转换与汇总，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66469,7 +66469,7 @@
       "id" : "py-read",
       "lessonTitle" : "怎样读取文本文件？",
       "prerequisiteModuleIDs" : [
-
+        "py-str"
       ],
       "reviewMessage" : "打开、读行、关闭，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66481,7 +66481,7 @@
       "id" : "py-write",
       "lessonTitle" : "怎样把结果写入文件？",
       "prerequisiteModuleIDs" : [
-
+        "py-read"
       ],
       "reviewMessage" : "写入与追加，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66493,7 +66493,7 @@
       "id" : "py-csv-json",
       "lessonTitle" : "CSV 和 JSON 文件是什么？",
       "prerequisiteModuleIDs" : [
-
+        "py-write"
       ],
       "reviewMessage" : "两种常见结构化文本，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66505,7 +66505,7 @@
       "id" : "py-file-fail",
       "lessonTitle" : "文件操作为什么可能失败？",
       "prerequisiteModuleIDs" : [
-
+        "py-csv-json"
       ],
       "reviewMessage" : "路径、权限与占用，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66529,7 +66529,7 @@
       "id" : "py-traceback",
       "lessonTitle" : "怎样阅读错误信息？",
       "prerequisiteModuleIDs" : [
-
+        "py-err-kinds"
       ],
       "reviewMessage" : "从最后看类型与行号，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66541,7 +66541,7 @@
       "id" : "py-except",
       "lessonTitle" : "异常处理解决什么问题？",
       "prerequisiteModuleIDs" : [
-
+        "py-traceback"
       ],
       "reviewMessage" : "接住可预期失败并给出路，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66553,7 +66553,7 @@
       "id" : "py-test",
       "lessonTitle" : "怎样测试一个函数？",
       "prerequisiteModuleIDs" : [
-
+        "py-except"
       ],
       "reviewMessage" : "给定输入对预期输出，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -66565,7 +66565,7 @@
       "id" : "py-stdlib",
       "lessonTitle" : "怎样使用 Python 标准库和第三方模块？",
       "prerequisiteModuleIDs" : [
-
+        "py-test"
       ],
       "reviewMessage" : "先标准库，再按需第三方，已经加入复习池。",
       "subtitle" : "2 个小节",
@@ -67282,7 +67282,7 @@
     }
   ],
   "primaryRouteID" : "cs-basics",
-  "releaseVersion" : "2026.08.01.4",
+  "releaseVersion" : "2026.08.01.5",
   "retiredIDs" : [
     "bayes",
     "bayes-certainty",

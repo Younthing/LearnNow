@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-set
 title: 集合怎样处理不重复的数据？
-prerequisites: []
+prerequisites: [py-dict]
 completion:
   xp: 15
   message: 去重与成员判断，已经加入复习池。

@@ -1,7 +1,7 @@
 format: learnnow.lesson-bundle/v1
 id: py-loop
 title: 循环怎样处理重复任务？
-prerequisites: []
+prerequisites: [py-if]
 completion:
   xp: 15
   message: 重复交给循环，已经加入复习池。
