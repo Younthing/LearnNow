@@ -137,6 +137,7 @@ private struct LessonPageView: View {
                     blocks: page.blocks,
                     exercisesByID: page.exercisesByID,
                     contentRootURL: page.contentRootURL,
+                    accent: page.accent,
                     onAnswer: onAnswer,
                     onRetryExercise: onRetryExercise
                 )
@@ -178,6 +179,7 @@ private struct LessonBlockList: View {
     let blocks: [LessonContentBlock]
     let exercisesByID: [String: LessonScreenModel.Exercise]
     let contentRootURL: URL?
+    let accent: LearnNowAccent
     let onAnswer: (String, String) -> Void
     let onRetryExercise: (String) -> Void
 
@@ -188,6 +190,7 @@ private struct LessonBlockList: View {
                     block: block,
                     exercisesByID: exercisesByID,
                     contentRootURL: contentRootURL,
+                    accent: accent,
                     onAnswer: onAnswer,
                     onRetryExercise: onRetryExercise
                 )
@@ -200,6 +203,7 @@ private struct LessonContentBlockView: View {
     let block: LessonContentBlock
     let exercisesByID: [String: LessonScreenModel.Exercise]
     let contentRootURL: URL?
+    let accent: LearnNowAccent
     let onAnswer: (String, String) -> Void
     let onRetryExercise: (String) -> Void
 
@@ -242,13 +246,14 @@ private struct LessonContentBlockView: View {
                     blocks: body,
                     exercisesByID: exercisesByID,
                     contentRootURL: contentRootURL,
+                    accent: self.accent,
                     onAnswer: onAnswer,
                     onRetryExercise: onRetryExercise
                 )
             }
 
         case let .code(language, code):
-            CodeSampleCard(language: language, code: code)
+            CodeSampleCard(language: language, code: code, accent: accent)
 
         case let .table(header, rows, columnAlignments):
             LessonTableCard(
@@ -454,26 +459,61 @@ private struct ContentCalloutCard<Content: View>: View {
 private struct CodeSampleCard: View {
     let language: String?
     let code: String
+    let accent: LearnNowAccent
+
+    private let cornerRadius: CGFloat = 18
+    private let accentBarWidth: CGFloat = 3
 
     var body: some View {
-        InsetCard(contentPadding: 18) {
-            VStack(alignment: .leading, spacing: 10) {
-                if let language, !language.isEmpty {
-                    MetadataChip(text: language, accent: .purple)
-                }
-                // Diagrams rely on monospace column alignment. Soft-wrapping a line
-                // mid-Chinese-word (or mid-arrow row) destroys the drawing — same as
-                // the broken "输入 / 处理 / 输出" slab. Keep each source line intact
-                // and scroll horizontally when the phone is narrower than the drawing.
-                ScrollView(.horizontal, showsIndicators: true) {
-                    Text(code)
-                        .font(LearnNowTypography.body.monospaced())
-                        .foregroundStyle(LearnNowPalette.textPrimary)
-                        .textSelection(.enabled)
-                        .fixedSize(horizontal: true, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+        // Diagrams rely on monospace column alignment. Soft-wrapping a line
+        // mid-Chinese-word (or mid-arrow row) destroys the drawing — same as
+        // the broken "输入 / 处理 / 输出" slab. Keep each source line intact
+        // and scroll horizontally when the phone is narrower than the drawing.
+        HStack(alignment: .top, spacing: 0) {
+            UnevenRoundedRectangle(
+                topLeadingRadius: cornerRadius,
+                bottomLeadingRadius: cornerRadius,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 0,
+                style: .continuous
+            )
+            .fill(accentColor)
+            .frame(width: accentBarWidth)
+
+            ScrollView(.horizontal, showsIndicators: true) {
+                Text(code)
+                    .font(LearnNowTypography.body.monospaced())
+                    .foregroundStyle(LearnNowPalette.textPrimary)
+                    .textSelection(.enabled)
+                    .fixedSize(horizontal: true, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
             }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(accentColor.opacity(0.10))
+        )
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .stroke(accentColor.opacity(0.22), lineWidth: 1)
+        )
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var accentColor: Color {
+        LearnNowPalette.color(for: accent)
+    }
+
+    private var accessibilityLabel: String {
+        if let language, !language.isEmpty {
+            "代码示例，\(language)"
+        } else {
+            "代码示例"
         }
     }
 }
