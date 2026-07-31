@@ -578,7 +578,7 @@ struct LearnNowDataTests {
 
         let initial = try await repository.loadSnapshot(catalog: catalog)
         #expect(initial.profilePreference == ProfilePreference())
-        #expect(initial.profilePreference.displayName == "学习者")
+        #expect(initial.profilePreference.displayName == "HI")
         #expect(initial.profilePreference.avatarID == "fox")
 
         try repository.saveProfilePreference(

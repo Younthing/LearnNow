@@ -331,7 +331,7 @@ enum LearnNowCloudSyncPreference {
 
 struct ProfilePreference: Equatable, Sendable {
     static let stableID = "primary-profile"
-    static let defaultDisplayName = "学习者"
+    static let defaultDisplayName = "HI"
     static let defaultAvatarID = "fox"
 
     var displayName: String

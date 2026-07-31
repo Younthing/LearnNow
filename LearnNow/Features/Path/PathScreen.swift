@@ -20,16 +20,16 @@ struct PathScreen: View {
             VStack(spacing: LearnNowSpacing.section) {
                 pathHeader
                     .padding(.horizontal, horizontalPadding)
-                    .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: LearnNowSpacing.maximumContentWidth, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 RouteTrackTabs(
                     tabs: model.trackTabs,
                     onSelectTrack: onSelectTrack
                 )
                 .padding(.horizontal, horizontalPadding)
-                .frame(maxWidth: LearnNowSpacing.maximumContentWidth)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: LearnNowSpacing.maximumContentWidth, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 TabView(selection: selectionBinding) {
                     ForEach(model.tracks) { track in
@@ -62,7 +62,10 @@ struct PathScreen: View {
                     .font(LearnNowTypography.screenSubtitle)
                     .foregroundStyle(LearnNowPalette.textMuted)
             }
+
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 10)
     }
 }

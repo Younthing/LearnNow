@@ -320,7 +320,7 @@ extension LearnNowFlowState {
         let tip = rotatingKnowledgeTip
 
         return HomeScreenModel(
-            title: "今天快乐",
+            title: "天天向上",
             subtitle: todayLabel,
             streakDays: streakDays,
             statusMetrics: [streakMetric, xpMetric, reviewDueMetric],

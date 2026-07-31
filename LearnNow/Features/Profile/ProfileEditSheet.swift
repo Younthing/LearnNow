@@ -33,7 +33,7 @@ struct ProfileEditSheet: View {
                             .font(LearnNowTypography.cardTitle)
                             .foregroundStyle(LearnNowPalette.textPrimary)
 
-                        TextField("学习者", text: $displayName)
+                        TextField("HI", text: $displayName)
                             .focused($isNameFocused)
                             .learnNowPlainTextInputBehavior()
                             .font(LearnNowTypography.body)
