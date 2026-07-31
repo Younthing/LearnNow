@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-traceback
+title: 怎样阅读错误信息？
+prerequisites: []
+completion:
+  xp: 15
+  message: 从最后看类型与行号，已经加入复习池。
+
+pages:
+  - id: py-traceback-page-bottom
+    title: 先看最后的异常类型
+    source: pages/bottom.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.tb.read-bottom-first
+      - py.tb.type-and-message
+  - id: py-traceback-page-line
+    title: 用行号回到那一行代码
+    source: pages/line.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.tb.use-line-number
+      - py.tb.trace-callers
+
+cards:
+  - cards.md
+tips:
+  - tips.md

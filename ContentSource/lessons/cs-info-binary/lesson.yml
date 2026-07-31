@@ -1,0 +1,34 @@
+format: learnnow.lesson-bundle/v1
+id: cs-info-binary
+title: 文字、图片和声音怎样变成二进制？
+prerequisites: [cs-info-why-represent]
+completion:
+  xp: 25
+  message: 比特与约定表已进入复习池。
+
+pages:
+  - id: cs-info-binary-page-bit
+    title: 比特是两种状态
+    source: pages/bit.md
+    accent: purple
+    revision: 1
+    objectives:
+      - cs-info-binary.bit.two-states
+  - id: cs-info-binary-page-media
+    title: 媒介不同，落法不同
+    source: pages/media.md
+    accent: mint
+    revision: 1
+    objectives:
+      - cs-info-binary.media.map-by-type
+  - id: cs-info-binary-page-table
+    title: 解码必须用对表
+    source: pages/table.md
+    accent: amber
+    revision: 1
+    objectives:
+      - cs-info-binary.table.wrong-table-fails
+cards:
+  - cards.md
+tips:
+  - tips.md

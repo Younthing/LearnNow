@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-err-kinds
+title: Python 程序常见的错误有哪些？
+prerequisites: []
+completion:
+  xp: 15
+  message: 语法、运行、逻辑三类，已经加入复习池。
+
+pages:
+  - id: py-err-kinds-page-three
+    title: 先分成三种病
+    source: pages/three.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.err.three-kinds
+      - py.err.logic-silent
+  - id: py-err-kinds-page-spot
+    title: 按现象把错误归类
+    source: pages/spot.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.err.classify-by-symptom
+      - py.err.runtime-example
+
+cards:
+  - cards.md
+tips:
+  - tips.md

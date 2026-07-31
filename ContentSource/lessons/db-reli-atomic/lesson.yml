@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-reli-atomic
+title: 数据库怎样避免不完整的修改
+prerequisites:
+  - db-reli-tx
+completion:
+  xp: 20
+  message: 提交边界守护完整性，已加入复习池。
+
+pages:
+  - id: db-reli-atomic-page-crash
+    title: 崩溃后谁留下
+    source: pages/crash.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.atomic.expect-rollback-on-crash
+  - id: db-reli-atomic-page-app
+    title: 应用怎样配合原子性
+    source: pages/app.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.atomic.commit-only-when-complete
+
+cards:
+  - cards.md
+tips:
+  - tips.md

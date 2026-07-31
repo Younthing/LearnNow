@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-nest
+title: 嵌套结构为什么容易变复杂？
+prerequisites: []
+completion:
+  xp: 15
+  message: 嵌套要克制，这条提醒已经加入复习池。
+
+pages:
+  - id: py-nest-page-cost
+    title: 每深一层就要多记一点
+    source: pages/cost.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.nest.extra-state
+      - py.nest.hard-to-trace
+  - id: py-nest-page-flatten
+    title: 先减一层再往下写
+    source: pages/flatten.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.nest.early-skip
+      - py.nest.prefer-shallow
+
+cards:
+  - cards.md
+tips:
+  - tips.md

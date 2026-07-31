@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: db-intro-files
+title: 为什么不能一直用普通文件保存数据
+prerequisites: []
+completion:
+  xp: 20
+  message: 文件的边界与 DBMS 中间层已加入复习池。
+
+pages:
+  - id: db-intro-files-page-pain
+    title: 文件在什么时候撑不住
+    source: pages/pain.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.intro.files.spot-file-limits
+      - db.intro.files.contrast-store-vs-manage
+  - id: db-intro-files-page-dbms
+    title: 谁夹在你和数据中间
+    source: pages/dbms.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.intro.files.name-dbms-role
+      - db.intro.files.separate-design-from-engine
+
+cards:
+  - cards.md
+tips:
+  - tips.md

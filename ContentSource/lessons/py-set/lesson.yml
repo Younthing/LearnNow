@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-set
+title: 集合怎样处理不重复的数据？
+prerequisites: []
+completion:
+  xp: 15
+  message: 去重与成员判断，已经加入复习池。
+
+pages:
+  - id: py-set-page-unique
+    title: 集合里同样的元素只留一份
+    source: pages/unique.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.set.unique
+      - py.set.dedupe
+  - id: py-set-page-member
+    title: 用 in 问「在不在」
+    source: pages/member.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.set.membership
+      - py.set.when-over-list
+
+cards:
+  - cards.md
+tips:
+  - tips.md

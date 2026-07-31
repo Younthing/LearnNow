@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-read
+title: 怎样读取文本文件？
+prerequisites: []
+completion:
+  xp: 15
+  message: 打开、读行、关闭，已经加入复习池。
+
+pages:
+  - id: py-read-page-open
+    title: 打开文件，把文字读进程序
+    source: pages/open_read.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.read.open-file
+      - py.read.with-closes
+  - id: py-read-page-lines
+    title: 按行读，一行当作一条记录
+    source: pages/lines.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.read.line-by-line
+      - py.read.strip-each-line
+
+cards:
+  - cards.md
+tips:
+  - tips.md

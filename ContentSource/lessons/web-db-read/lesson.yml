@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-db-read
+title: 怎样从数据库读取并展示数据？
+prerequisites:
+  - web-db-write
+completion:
+  xp: 15
+  message: 查询并展示的路径已加入复习池。
+
+pages:
+  - id: web-db-read-page-query
+    title: 查询出要展示的行
+    source: pages/query.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.read.query-for-list
+  - id: web-db-read-page-render
+    title: 填模板并处理空列表
+    source: pages/render.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.read.render-or-empty
+
+cards:
+  - cards.md
+tips:
+  - tips.md

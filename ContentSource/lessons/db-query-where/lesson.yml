@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-query-where
+title: 怎样根据条件筛选数据
+prerequisites:
+  - db-sql-delete
+completion:
+  xp: 20
+  message: WHERE 筛选行，已加入复习池。
+
+pages:
+  - id: db-query-where-page-filter
+    title: WHERE 留下哪些行
+    source: pages/filter.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.where.filter-rows
+  - id: db-query-where-page-null
+    title: 条件里的 NULL
+    source: pages/null.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.where.handle-null-in-predicates
+
+cards:
+  - cards.md
+tips:
+  - tips.md

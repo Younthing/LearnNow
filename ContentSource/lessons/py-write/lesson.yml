@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-write
+title: 怎样把结果写入文件？
+prerequisites: []
+completion:
+  xp: 15
+  message: 写入与追加，已经加入复习池。
+
+pages:
+  - id: py-write-page-write
+    title: 把字符串写到磁盘
+    source: pages/write.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.write.write-text
+      - py.write.need-newline
+  - id: py-write-page-append
+    title: 覆盖写入还是追加写入
+    source: pages/append.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.write.mode-w-vs-a
+      - py.write.keep-history
+
+cards:
+  - cards.md
+tips:
+  - tips.md

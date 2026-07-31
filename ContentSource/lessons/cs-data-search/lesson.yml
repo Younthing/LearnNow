@@ -1,0 +1,34 @@
+format: learnnow.lesson-bundle/v1
+id: cs-data-search
+title: 怎样在数据中查找目标？
+prerequisites: [cs-data-string]
+completion:
+  xp: 25
+  message: 线性查找已进入复习池。
+
+pages:
+  - id: cs-data-search-page-goal
+    title: 查找是在集合中定位目标
+    source: pages/goal.md
+    accent: purple
+    revision: 1
+    objectives:
+      - cs-data-search.goal.locate
+  - id: cs-data-search-page-linear
+    title: 逐个比较直到找到
+    source: pages/linear.md
+    accent: mint
+    revision: 1
+    objectives:
+      - cs-data-search.linear.scan
+  - id: cs-data-search-page-miss
+    title: 找不到也是一种结果
+    source: pages/miss.md
+    accent: amber
+    revision: 1
+    objectives:
+      - cs-data-search.miss.not-found
+cards:
+  - cards.md
+tips:
+  - tips.md

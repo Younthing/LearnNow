@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-file-fail
+title: 文件操作为什么可能失败？
+prerequisites: []
+completion:
+  xp: 15
+  message: 路径、权限与占用，已经加入复习池。
+
+pages:
+  - id: py-file-fail-page-why
+    title: 读写依赖外部世界
+    source: pages/why.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.filefail.external-deps
+      - py.filefail.not-guaranteed
+  - id: py-file-fail-page-clues
+    title: 用现象猜测失败类别
+    source: pages/clues.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.filefail.categorize
+      - py.filefail.check-path-first
+
+cards:
+  - cards.md
+tips:
+  - tips.md

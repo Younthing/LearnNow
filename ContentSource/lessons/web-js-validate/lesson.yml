@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-js-validate
+title: 怎样检查用户提交的数据？
+prerequisites:
+  - web-js-events
+completion:
+  xp: 15
+  message: 提交前检查与其边界已加入复习池。
+
+pages:
+  - id: web-js-validate-page-why
+    title: 提交前先按规则查
+    source: pages/why.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.validate.check-before-submit
+  - id: web-js-validate-page-limit
+    title: 前端检查不是唯一防线
+    source: pages/limit.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.validate.server-still-required
+
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-query-group
+title: 怎样对数据进行分组和统计
+prerequisites:
+  - db-query-order
+completion:
+  xp: 20
+  message: GROUP BY 切分粒度，已加入复习池。
+
+pages:
+  - id: db-query-group-page-bucket
+    title: 分组怎样改变粒度
+    source: pages/bucket.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.group.change-grain
+  - id: db-query-group-page-shape
+    title: 汇总行怎样写才合法
+    source: pages/shape.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.group.keep-select-aligned
+
+cards:
+  - cards.md
+tips:
+  - tips.md

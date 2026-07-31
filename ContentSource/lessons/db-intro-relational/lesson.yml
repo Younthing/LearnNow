@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-intro-relational
+title: 关系数据库是什么意思
+prerequisites:
+  - db-intro-dbms
+completion:
+  xp: 20
+  message: 关系＝表结构对齐，这一判断已加入复习池。
+
+pages:
+  - id: db-intro-relational-page-tables
+    title: 用表把同类事物排齐
+    source: pages/tables.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.intro.relational.see-tables-as-relations
+  - id: db-intro-relational-page-shape
+    title: 为什么表要形状稳定
+    source: pages/shape.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.intro.relational.require-uniform-rows
+
+cards:
+  - cards.md
+tips:
+  - tips.md

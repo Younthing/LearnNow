@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-types
+title: Python 中有哪些基础数据类型？
+prerequisites: []
+completion:
+  xp: 15
+  message: 数字、文本、真假，这三类已经加入复习池。
+
+pages:
+  - id: py-types-page-kinds
+    title: 值有种类：数、文本、真假
+    source: pages/kinds.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.types.three-kinds
+      - py.types.kind-limits-ops
+  - id: py-types-page-input-str
+    title: input 拿到的默认是文本
+    source: pages/input_str.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.types.input-is-str
+      - py.types.convert-before-math
+
+cards:
+  - cards.md
+tips:
+  - tips.md

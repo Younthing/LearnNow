@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-sql-delete
+title: 怎样删除数据
+prerequisites:
+  - db-sql-update
+completion:
+  xp: 20
+  message: DELETE 删行且依赖 WHERE，已加入复习池。
+
+pages:
+  - id: db-sql-delete-page-row
+    title: DELETE 删的是行
+    source: pages/row.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.delete.remove-rows-keep-table
+  - id: db-sql-delete-page-care
+    title: 删除前确认范围
+    source: pages/care.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.delete.confirm-before-delete
+
+cards:
+  - cards.md
+tips:
+  - tips.md

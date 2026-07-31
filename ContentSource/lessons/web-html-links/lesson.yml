@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-html-links
+title: 链接和图片怎样加入网页？
+prerequisites:
+  - web-html-structure
+completion:
+  xp: 15
+  message: 链接与图片的基本写法已加入复习池。
+
+pages:
+  - id: web-html-links-page-anchor
+    title: 用链接指向去处
+    source: pages/anchor.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.links.write-anchor
+  - id: web-html-links-page-img
+    title: 嵌入图片并写说明
+    source: pages/img.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.links.img-src-alt
+
+cards:
+  - cards.md
+tips:
+  - tips.md

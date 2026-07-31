@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-server-routing
+title: URL 怎样对应服务器中的功能？
+prerequisites:
+  - web-server-why
+completion:
+  xp: 15
+  message: 路由映射模型已加入复习池。
+
+pages:
+  - id: web-server-routing-page-map
+    title: 路径对到功能
+    source: pages/map.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.routing.url-maps-feature
+  - id: web-server-routing-page-handler
+    title: 匹配后跑处理函数
+    source: pages/handler.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.routing.handler-runs
+
+cards:
+  - cards.md
+tips:
+  - tips.md

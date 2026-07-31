@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-reli-index
+title: 索引为什么能加快查询
+prerequisites:
+  - db-rel-dup
+completion:
+  xp: 20
+  message: 索引加速定位，已加入复习池。
+
+pages:
+  - id: db-reli-index-page-why
+    title: 目录怎样加快查找
+    source: pages/why.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.index.see-index-as-directory
+  - id: db-reli-index-page-which
+    title: 给哪些列建索引
+    source: pages/which.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.index.choose-columns-by-access
+
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: db-intro-dbms
+title: 数据库管理系统做了什么
+prerequisites:
+  - db-intro-files
+completion:
+  xp: 20
+  message: DBMS 的执行管道与职责分界已加入复习池。
+
+pages:
+  - id: db-intro-dbms-page-pipeline
+    title: 指令怎样变成一次读写
+    source: pages/pipeline.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.intro.dbms.trace-command-pipeline
+      - db.intro.dbms.expect-rule-check
+  - id: db-intro-dbms-page-boundary
+    title: 哪些归你，哪些归引擎
+    source: pages/boundary.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.intro.dbms.draw-responsibility-line
+
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-css-selectors
+title: 选择器怎样找到网页元素？
+prerequisites:
+  - web-css-style
+completion:
+  xp: 15
+  message: 选择器的找法已加入复习池。
+
+pages:
+  - id: web-css-selectors-page-find
+    title: 用选择器对准目标
+    source: pages/find.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.selectors.find-elements
+  - id: web-css-selectors-page-specific
+    title: 没命中就谈不上样式
+    source: pages/specific.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.selectors.check-match-first
+
+cards:
+  - cards.md
+tips:
+  - tips.md

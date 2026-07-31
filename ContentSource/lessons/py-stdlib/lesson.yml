@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-stdlib
+title: 怎样使用 Python 标准库和第三方模块？
+prerequisites: []
+completion:
+  xp: 15
+  message: 先标准库，再按需第三方，已经加入复习池。
+
+pages:
+  - id: py-stdlib-page-std
+    title: 标准库：安装 Python 就带上的工具箱
+    source: pages/std.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.stdlib.batteries
+      - py.stdlib.import-direct
+  - id: py-stdlib-page-third
+    title: 第三方：先安装，再 import
+    source: pages/third.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.stdlib.third-party-install
+      - py.stdlib.choose-source
+
+cards:
+  - cards.md
+tips:
+  - tips.md

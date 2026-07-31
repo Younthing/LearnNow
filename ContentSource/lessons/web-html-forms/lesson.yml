@@ -1,0 +1,36 @@
+format: learnnow.lesson-bundle/v1
+id: web-html-forms
+title: 怎样创建网页表单？
+prerequisites:
+  - web-html-links
+completion:
+  xp: 15
+  message: 表单的基本结构已加入复习池。
+
+pages:
+  - id: web-html-forms-page-form
+    title: 表单把控件收在一起
+    source: pages/form.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.forms.form-as-container
+  - id: web-html-forms-page-fields
+    title: 字段要能对上号
+    source: pages/fields.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.forms.controls-need-name
+  - id: web-html-forms-page-submit
+    title: 提交才会送出
+    source: pages/submit.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.forms.submit-sends-request
+
+cards:
+  - cards.md
+tips:
+  - tips.md

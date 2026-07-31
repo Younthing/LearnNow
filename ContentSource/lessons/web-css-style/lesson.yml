@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-css-style
+title: CSS 怎样控制网页外观？
+prerequisites:
+  - web-html-forms
+completion:
+  xp: 15
+  message: CSS 管外观的分工已加入复习池。
+
+pages:
+  - id: web-css-style-page-look
+    title: 给内容加上外观
+    source: pages/look.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.style.control-look
+  - id: web-css-style-page-separate
+    title: 外观与结构分离
+    source: pages/separate.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.style.separate-from-html
+
+cards:
+  - cards.md
+tips:
+  - tips.md

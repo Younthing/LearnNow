@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-loop
+title: 循环怎样处理重复任务？
+prerequisites: []
+completion:
+  xp: 15
+  message: 重复交给循环，已经加入复习池。
+
+pages:
+  - id: py-loop-page-repeat
+    title: 重复任务交给循环
+    source: pages/repeat.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.loop.why-loop
+      - py.loop.same-steps
+  - id: py-loop-page-for
+    title: for 取出每一个再处理
+    source: pages/for_each.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.loop.for-each-item
+      - py.loop.body-runs-per-item
+
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-sql-create
+title: 怎样创建数据表
+prerequisites:
+  - db-design-dup
+completion:
+  xp: 20
+  message: CREATE TABLE＝登记形状，已加入复习池。
+
+pages:
+  - id: db-sql-create-page-shape
+    title: 建表在登记什么
+    source: pages/shape.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.create.see-create-as-schema
+  - id: db-sql-create-page-constraints
+    title: 创建时写下约束
+    source: pages/constraints.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.create.declare-constraints-early
+
+cards:
+  - cards.md
+tips:
+  - tips.md

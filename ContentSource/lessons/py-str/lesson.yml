@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-str
+title: 怎样处理字符串？
+prerequisites: []
+completion:
+  xp: 15
+  message: 拼接、切割与清理，已经加入复习池。
+
+pages:
+  - id: py-str-page-build
+    title: 把几段文本拼成一句
+    source: pages/build.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.str.concat
+      - py.str.parts-to-sentence
+  - id: py-str-page-split
+    title: 切开一行，并去掉首尾空白
+    source: pages/split_strip.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.str.split
+      - py.str.strip-before-use
+
+cards:
+  - cards.md
+tips:
+  - tips.md

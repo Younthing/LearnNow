@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-reli-tx
+title: 事务解决什么问题
+prerequisites:
+  - db-reli-cost
+completion:
+  xp: 20
+  message: 事务避免部分完成，已加入复习池。
+
+pages:
+  - id: db-reli-tx-page-unit
+    title: 多步修改绑成一组
+    source: pages/unit.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.tx.see-all-or-nothing
+  - id: db-reli-tx-page-commit
+    title: 提交与回滚
+    source: pages/commit.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.tx.contrast-commit-rollback
+
+cards:
+  - cards.md
+tips:
+  - tips.md

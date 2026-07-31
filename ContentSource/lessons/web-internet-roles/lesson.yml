@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-internet-roles
+title: 浏览器和服务器分别做什么？
+prerequisites:
+  - web-internet-same
+completion:
+  xp: 15
+  message: 浏览器与服务器的分工已经加入复习池。
+
+pages:
+  - id: web-internet-roles-page-two
+    title: 一端要，一端给
+    source: pages/two.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.internet.roles.split-two-ends
+  - id: web-internet-roles-page-boundary
+    title: 共享内容放哪一端
+    source: pages/boundary.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.internet.roles.shared-on-server
+
+cards:
+  - cards.md
+tips:
+  - tips.md

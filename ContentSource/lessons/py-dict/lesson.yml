@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-dict
+title: 字典怎样通过名称查找数据？
+prerequisites: []
+completion:
+  xp: 15
+  message: 键到值的查找，已经加入复习池。
+
+pages:
+  - id: py-dict-page-map
+    title: 用键找到对应的值
+    source: pages/map.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.dict.key-to-value
+      - py.dict.unique-keys
+  - id: py-dict-page-vs
+    title: 什么时候字典比列表下标更合适
+    source: pages/vs_list.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.dict.when-over-list
+      - py.dict.lookup-by-name
+
+cards:
+  - cards.md
+tips:
+  - tips.md

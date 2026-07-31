@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-db-connect
+title: 服务器怎样连接数据库？
+prerequisites:
+  - web-server-session
+completion:
+  xp: 15
+  message: 程序连接数据库的基本图景已加入复习池。
+
+pages:
+  - id: web-db-connect-page-why
+    title: 持久数据放进数据库
+    source: pages/why.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.connect.why-database
+  - id: web-db-connect-page-how
+    title: 连接配置留在服务器
+    source: pages/how.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.connect.config-on-server
+
+cards:
+  - cards.md
+tips:
+  - tips.md

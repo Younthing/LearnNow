@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-test
+title: 怎样测试一个函数？
+prerequisites: []
+completion:
+  xp: 15
+  message: 给定输入对预期输出，已经加入复习池。
+
+pages:
+  - id: py-test-page-cases
+    title: 给定输入，对照预期输出
+    source: pages/cases.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.test.input-expected
+      - py.test.catch-logic
+  - id: py-test-page-boundary
+    title: 边界和反例也要测
+    source: pages/boundary.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.test.boundaries
+      - py.test.representative
+
+cards:
+  - cards.md
+tips:
+  - tips.md

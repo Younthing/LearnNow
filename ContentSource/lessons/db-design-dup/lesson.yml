@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-design-dup
+title: 怎样减少重复数据
+prerequisites:
+  - db-design-null
+completion:
+  xp: 20
+  message: 一份真相、多处引用，已加入复习池。
+
+pages:
+  - id: db-design-dup-page-why
+    title: 重复怎样伤害更新
+    source: pages/why.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.dup.spot-update-anomaly
+  - id: db-design-dup-page-how
+    title: 引用与快照怎样选
+    source: pages/how.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.dup.choose-reference-vs-snapshot
+
+cards:
+  - cards.md
+tips:
+  - tips.md

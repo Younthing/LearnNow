@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-list
+title: 列表适合保存什么数据？
+prerequisites: []
+completion:
+  xp: 15
+  message: 有序可变的一串值，已经加入复习池。
+
+pages:
+  - id: py-list-page-when
+    title: 一串同类、按顺序放
+    source: pages/when.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.list.when-to-use
+      - py.list.ordered-items
+  - id: py-list-page-ops
+    title: 按下标取，也可以改
+    source: pages/ops.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.list.index-from-zero
+      - py.list.mutable
+
+cards:
+  - cards.md
+tips:
+  - tips.md

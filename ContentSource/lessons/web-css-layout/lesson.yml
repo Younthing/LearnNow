@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-css-layout
+title: 怎样控制元素的位置和布局？
+prerequisites:
+  - web-css-box
+completion:
+  xp: 15
+  message: 文档流与布局工具入门已加入复习池。
+
+pages:
+  - id: web-css-layout-page-flow
+    title: 先用好默认文档流
+    source: pages/flow.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.layout.prefer-normal-flow
+  - id: web-css-layout-page-tools
+    title: 并排时再请工具
+    source: pages/tools.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.layout.choose-flex-or-grid
+
+cards:
+  - cards.md
+tips:
+  - tips.md

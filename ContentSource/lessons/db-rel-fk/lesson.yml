@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-rel-fk
+title: 外键怎样建立表之间的关系
+prerequisites:
+  - db-rel-split
+completion:
+  xp: 20
+  message: 外键强制合法引用，已加入复习池。
+
+pages:
+  - id: db-rel-fk-page-ref
+    title: 外键约束什么
+    source: pages/ref.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.fk.enforce-valid-reference
+  - id: db-rel-fk-page-order
+    title: 父行与子行的顺序
+    source: pages/order.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.fk.insert-parent-before-child
+
+cards:
+  - cards.md
+tips:
+  - tips.md

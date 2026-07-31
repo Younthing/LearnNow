@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-mod-files
+title: 怎样把程序拆成多个文件？
+prerequisites: []
+completion:
+  xp: 15
+  message: 模块拆分与导入，已经加入复习池。
+
+pages:
+  - id: py-mod-files-page-why
+    title: 按职责拆到不同文件
+    source: pages/why_split.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.mod.why-split
+      - py.mod.one-job-file
+  - id: py-mod-files-page-import
+    title: 用 import 取用另一文件的函数
+    source: pages/import.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.mod.import-use
+      - py.mod.module-name
+
+cards:
+  - cards.md
+tips:
+  - tips.md

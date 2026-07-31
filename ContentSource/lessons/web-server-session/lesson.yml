@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-server-session
+title: Cookie 和 Session 解决什么问题？
+prerequisites:
+  - web-server-templates
+completion:
+  xp: 15
+  message: 会话机制要解决的问题已加入复习池。
+
+pages:
+  - id: web-server-session-page-problem
+    title: 请求之间如何还认得你
+    source: pages/problem.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.session.cross-request-identity
+  - id: web-server-session-page-pair
+    title: 记号与会话数据
+    source: pages/pair.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.session.cookie-and-session-roles
+
+cards:
+  - cards.md
+tips:
+  - tips.md

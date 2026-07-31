@@ -1,0 +1,34 @@
+format: learnnow.lesson-bundle/v1
+id: cs-mem-array-limit
+title: 数组为什么有时不够灵活？
+prerequisites: [cs-mem-address]
+completion:
+  xp: 20
+  message: 数组插入成本已进入复习池。
+
+pages:
+  - id: cs-mem-array-limit-page-fixed
+    title: 中间插入要搬家
+    source: pages/insert.md
+    accent: purple
+    revision: 1
+    objectives:
+      - cs-mem-array-limit.insert.shift
+  - id: cs-mem-array-limit-page-size
+    title: 长度常需预先规划
+    source: pages/size.md
+    accent: mint
+    revision: 1
+    objectives:
+      - cs-mem-array-limit.size.plan
+  - id: cs-mem-array-limit-page-when
+    title: 何时仍该用数组
+    source: pages/when.md
+    accent: amber
+    revision: 1
+    objectives:
+      - cs-mem-array-limit.when.keep
+cards:
+  - cards.md
+tips:
+  - tips.md

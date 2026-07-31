@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-tuple
+title: 元组和列表有什么区别？
+prerequisites: []
+completion:
+  xp: 15
+  message: 不可变的有序一组，已经加入复习池。
+
+pages:
+  - id: py-tuple-page-immut
+    title: 元组：有序，但不可改
+    source: pages/immut.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.tuple.ordered
+      - py.tuple.immutable
+  - id: py-tuple-page-choose
+    title: 什么时候用元组，什么时候用列表
+    source: pages/choose.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.tuple.when-fixed
+      - py.tuple.vs-list
+
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-server-why
+title: 为什么网页需要服务器端程序？
+prerequisites:
+  - web-js-validate
+completion:
+  xp: 15
+  message: 服务器端存在的理由已加入复习池。
+
+pages:
+  - id: web-server-why-page-need
+    title: 共享与保存需要远端
+    source: pages/need.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.why.shared-needs-server
+  - id: web-server-why-page-secret
+    title: 机密规则放哪一端
+    source: pages/secret.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.why.secrets-on-server
+
+cards:
+  - cards.md
+tips:
+  - tips.md

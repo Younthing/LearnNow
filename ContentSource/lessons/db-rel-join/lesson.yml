@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-rel-join
+title: JOIN 怎样连接多张表
+prerequisites:
+  - db-rel-cardinality
+completion:
+  xp: 20
+  message: JOIN 按条件拼行，已加入复习池。
+
+pages:
+  - id: db-rel-join-page-inner
+    title: 按键把行拼宽
+    source: pages/inner.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.join.align-on-keys
+  - id: db-rel-join-page-chain
+    title: 连接是阅读策略
+    source: pages/chain.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.join.keep-storage-split
+
+cards:
+  - cards.md
+tips:
+  - tips.md

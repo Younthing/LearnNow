@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-internet-dns
+title: 域名和 IP 地址有什么关系？
+prerequisites:
+  - web-internet-url-flow
+completion:
+  xp: 15
+  message: 域名与 IP 的对应关系已经加入复习池。
+
+pages:
+  - id: web-internet-dns-page-name
+    title: 名字和门牌
+    source: pages/name.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.internet.dns.name-points-to-ip
+  - id: web-internet-dns-page-lookup
+    title: 先查找再连接
+    source: pages/lookup.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.internet.dns.lookup-before-connect
+
+cards:
+  - cards.md
+tips:
+  - tips.md

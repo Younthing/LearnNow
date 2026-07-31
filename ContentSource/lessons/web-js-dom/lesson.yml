@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-js-dom
+title: 怎样读取和修改网页元素？
+prerequisites:
+  - web-js-vars
+completion:
+  xp: 15
+  message: 读写页面节点的基本路径已加入复习池。
+
+pages:
+  - id: web-js-dom-page-read
+    title: 先找到再读取
+    source: pages/read.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.dom.find-then-read
+  - id: web-js-dom-page-write
+    title: 修改当前页的节点
+    source: pages/write.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.dom.update-current-page
+
+cards:
+  - cards.md
+tips:
+  - tips.md

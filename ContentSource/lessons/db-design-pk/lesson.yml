@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-design-pk
+title: 主键为什么能够标识一条记录
+prerequisites:
+  - db-design-types
+completion:
+  xp: 20
+  message: 主键＝行的稳定唯一标识，已加入复习池。
+
+pages:
+  - id: db-design-pk-page-id
+    title: 为什么要有主键
+    source: pages/id.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.pk.explain-unique-identity
+  - id: db-design-pk-page-rules
+    title: 主键有哪些硬规则
+    source: pages/rules.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.pk.enforce-unique-not-null
+
+cards:
+  - cards.md
+tips:
+  - tips.md

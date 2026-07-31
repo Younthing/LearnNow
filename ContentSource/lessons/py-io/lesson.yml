@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-io
+title: 怎样输出信息和接收输入？
+prerequisites: []
+completion:
+  xp: 15
+  message: print 往外说、input 往里听，已经加入复习池。
+
+pages:
+  - id: py-io-page-print
+    title: 用 print 把信息送出去
+    source: pages/print.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.io.print-sends-out
+      - py.io.see-result
+  - id: py-io-page-input
+    title: 用 input 把信息接进来
+    source: pages/input.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.io.input-receives
+      - py.io.prompt-for-human
+
+cards:
+  - cards.md
+tips:
+  - tips.md

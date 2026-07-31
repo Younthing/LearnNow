@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-scope
+title: 变量的作用范围是什么？
+prerequisites: []
+completion:
+  xp: 15
+  message: 局部与外部边界，已经加入复习池。
+
+pages:
+  - id: py-scope-page-local
+    title: 函数内的名字默认出不去
+    source: pages/local.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.scope.local-default
+      - py.scope.outside-cant-see
+  - id: py-scope-page-boundary
+    title: 用进出来往，而不是同名碰运气
+    source: pages/boundary.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.scope.pass-in-out
+      - py.scope.same-name-not-same
+
+cards:
+  - cards.md
+tips:
+  - tips.md

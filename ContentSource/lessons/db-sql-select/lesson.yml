@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-sql-select
+title: 怎样查询需要的数据
+prerequisites:
+  - db-sql-insert
+completion:
+  xp: 20
+  message: SELECT 只读出结果集，已加入复习池。
+
+pages:
+  - id: db-sql-select-page-basic
+    title: SELECT 取出哪些列
+    source: pages/basic.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.select.project-columns
+  - id: db-sql-select-page-describe
+    title: 查询是在描述目标
+    source: pages/describe.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.select.treat-query-as-description
+
+cards:
+  - cards.md
+tips:
+  - tips.md

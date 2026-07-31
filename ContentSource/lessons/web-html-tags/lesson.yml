@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-html-tags
+title: 标签、元素和属性有什么区别？
+prerequisites:
+  - web-html-content
+completion:
+  xp: 15
+  message: 标签／元素／属性的区分已加入复习池。
+
+pages:
+  - id: web-html-tags-page-three
+    title: 三个词各指什么
+    source: pages/three.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.tags.tell-three-apart
+  - id: web-html-tags-page-attr
+    title: 属性补充什么
+    source: pages/attr.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.tags.attr-adds-info
+
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-server-templates
+title: 模板怎样生成动态网页？
+prerequisites:
+  - web-server-get-post
+completion:
+  xp: 15
+  message: 模板填数据生成 HTML 的模型已加入复习池。
+
+pages:
+  - id: web-server-templates-page-dynamic
+    title: 一份结构多次生成
+    source: pages/dynamic.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.templates.generate-html
+  - id: web-server-templates-page-fill
+    title: 占位符对齐数据
+    source: pages/fill.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.templates.align-fields
+
+cards:
+  - cards.md
+tips:
+  - tips.md

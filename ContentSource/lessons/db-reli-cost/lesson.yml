@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-reli-cost
+title: 索引为什么不能建立得越多越好
+prerequisites:
+  - db-reli-index
+completion:
+  xp: 20
+  message: 索引有写入与空间成本，已加入复习池。
+
+pages:
+  - id: db-reli-cost-page-write
+    title: 索引怎样拖慢写入
+    source: pages/write.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.cost.see-write-amplification
+  - id: db-reli-cost-page-policy
+    title: 怎样克制地建索引
+    source: pages/policy.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.cost.add-indexes-from-evidence
+
+cards:
+  - cards.md
+tips:
+  - tips.md

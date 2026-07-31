@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-csv-json
+title: CSV 和 JSON 文件是什么？
+prerequisites: []
+completion:
+  xp: 15
+  message: 两种常见结构化文本，已经加入复习池。
+
+pages:
+  - id: py-csv-json-page-csv
+    title: CSV：用行列表示表格
+    source: pages/csv.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.csv.rows-cols
+      - py.csv.when-table
+  - id: py-csv-json-page-json
+    title: JSON：用嵌套表达结构
+    source: pages/json.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.json.nested-structure
+      - py.json.when-nested
+
+cards:
+  - cards.md
+tips:
+  - tips.md

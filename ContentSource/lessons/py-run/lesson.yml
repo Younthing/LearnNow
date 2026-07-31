@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-run
+title: Python 程序怎样运行？
+prerequisites: []
+completion:
+  xp: 15
+  message: 解释器逐行执行，这条路径已经加入复习池。
+
+pages:
+  - id: py-run-page-handoff
+    title: 源文件要交给解释器
+    source: pages/handoff.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.run.file-needs-interpreter
+      - py.run.edit-vs-run
+  - id: py-run-page-lines
+    title: 解释器从上到下逐行做
+    source: pages/lines.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.run.top-to-bottom
+      - py.run.error-stops-line
+
+cards:
+  - cards.md
+tips:
+  - tips.md

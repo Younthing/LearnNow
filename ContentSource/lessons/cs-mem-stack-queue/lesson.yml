@@ -1,0 +1,34 @@
+format: learnnow.lesson-bundle/v1
+id: cs-mem-stack-queue
+title: 栈和队列解决什么问题？
+prerequisites: [cs-mem-linked]
+completion:
+  xp: 25
+  message: 栈与队列的纪律已进入复习池。
+
+pages:
+  - id: cs-mem-stack-queue-page-stack
+    title: 栈：后进先出
+    source: pages/stack.md
+    accent: purple
+    revision: 1
+    objectives:
+      - cs-mem-stack-queue.stack.lifo
+  - id: cs-mem-stack-queue-page-queue
+    title: 队列：先进先出
+    source: pages/queue.md
+    accent: mint
+    revision: 1
+    objectives:
+      - cs-mem-stack-queue.queue.fifo
+  - id: cs-mem-stack-queue-page-use
+    title: 用纪律匹配问题
+    source: pages/use.md
+    accent: amber
+    revision: 1
+    objectives:
+      - cs-mem-stack-queue.use.match
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: db-intro-table
+title: 表、行和列分别表示什么
+prerequisites:
+  - db-intro-relational
+completion:
+  xp: 20
+  message: 表、行、列三个方向已加入复习池。
+
+pages:
+  - id: db-intro-table-page-row
+    title: 表和行在说什么
+    source: pages/row.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.intro.table.read-row-as-object
+  - id: db-intro-table-page-column
+    title: 列在说什么
+    source: pages/column.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.intro.table.read-column-as-attribute
+      - db.intro.table.contrast-three-terms
+
+cards:
+  - cards.md
+tips:
+  - tips.md

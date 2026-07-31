@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-why-fn
+title: 为什么要把代码写成函数？
+prerequisites: []
+completion:
+  xp: 15
+  message: 函数打包可复用步骤，已经加入复习池。
+
+pages:
+  - id: py-why-fn-page-pack
+    title: 函数给一套步骤起名
+    source: pages/pack.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.fn.named-steps
+      - py.fn.define-then-call
+  - id: py-why-fn-page-reuse
+    title: 调用复用，改一处就够
+    source: pages/reuse.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.fn.reuse-calls
+      - py.fn.one-place-change
+
+cards:
+  - cards.md
+tips:
+  - tips.md

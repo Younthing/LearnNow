@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-query-order
+title: 怎样对查询结果排序
+prerequisites:
+  - db-query-where
+completion:
+  xp: 20
+  message: ORDER BY 只管顺序，已加入复习池。
+
+pages:
+  - id: db-query-order-page-sort
+    title: ORDER BY 怎样排
+    source: pages/sort.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.order.sort-result-rows
+  - id: db-query-order-page-multi
+    title: 多键排序与叠用
+    source: pages/multi.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.order.use-multiple-sort-keys
+
+cards:
+  - cards.md
+tips:
+  - tips.md

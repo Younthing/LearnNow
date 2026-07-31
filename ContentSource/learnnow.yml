@@ -1,24 +1,34 @@
 format: learnnow.project/v1
 schemaVersion: 2
-releaseVersion: "2026.08.01.2"
+releaseVersion: "2026.08.01.4"
 locale: zh-Hans
-primaryRouteID: datascience
+primaryRouteID: cs-basics
 minAppBuild: 1
-publishedAt: "2026-07-28T00:00:00Z"
-# representation 由 6 个微页合并为 3 个结构化长页，旧页、旧题与旧选项 ID 全部退休。
+publishedAt: "2026-08-01T00:00:00Z"
+# 四门课程 = 四个 Route；单元 = Track；编号题 = Lesson。
+# 旧 Catalog 中仍存活的 Route/Track/Module/Page/Quiz/Option/Card/Tip ID 全部退休。
 retiredIDs:
-  - representation-page-1
-  - representation-page-1.quiz
-  - representation-page-2
-  - representation-page-2.quiz
-  - representation-page-3
-  - representation-page-3.quiz
-  - representation-page-4
-  - representation-page-4.quiz
-  - representation-page-5
-  - representation-page-5.quiz
-  - representation-page-6
-  - representation-page-6.quiz
+  - representation
+  - representation-bits-q1-content
+  - representation-bits-q1-three-states
+  - representation-bits-q1-two-states
+  - representation-bits-q2-as-is
+  - representation-bits-q2-one-based
+  - representation-bits-q2-zero-based
+  - representation-bits.quiz-1
+  - representation-bits.quiz-2
+  - representation-card-ascii
+  - representation-card-bit-byte
+  - representation-card-convention
+  - representation-card-unicode
+  - representation-color-q1-corrupted
+  - representation-color-q1-hidden-text
+  - representation-color-q1-wrong-table
+  - representation-color-q2-needs-format
+  - representation-color-q2-rewritten
+  - representation-color-q2-two-conventions
+  - representation-color.quiz-1
+  - representation-color.quiz-2
   - representation-p1-binary
   - representation-p1-content
   - representation-p1-three-states
@@ -37,96 +47,426 @@ retiredIDs:
   - representation-p6-converted
   - representation-p6-needs-format
   - representation-p6-two-conventions
-  # representation 整课下线：Lesson、3 个页面、6 道题、18 个选项、4 张 Card 与 2 条 Tip
-  # 的 ID 全部退休，后续的编码课会用新 ID 重新开一课。
-  - representation
+  - representation-page-1
+  - representation-page-1.quiz
+  - representation-page-2
+  - representation-page-2.quiz
+  - representation-page-3
+  - representation-page-3.quiz
+  - representation-page-4
+  - representation-page-4.quiz
+  - representation-page-5
+  - representation-page-5.quiz
+  - representation-page-6
+  - representation-page-6.quiz
   - representation-page-bits
   - representation-page-color
   - representation-page-text
-  - representation-bits.quiz-1
-  - representation-bits.quiz-2
-  - representation-color.quiz-1
-  - representation-color.quiz-2
-  - representation-text.quiz-1
-  - representation-text.quiz-2
-  - representation-bits-q1-content
-  - representation-bits-q1-three-states
-  - representation-bits-q1-two-states
-  - representation-bits-q2-as-is
-  - representation-bits-q2-one-based
-  - representation-bits-q2-zero-based
-  - representation-color-q1-corrupted
-  - representation-color-q1-hidden-text
-  - representation-color-q1-wrong-table
-  - representation-color-q2-needs-format
-  - representation-color-q2-rewritten
-  - representation-color-q2-two-conventions
   - representation-text-q1-innate
   - representation-text-q1-self-describing
   - representation-text-q1-shared-table
   - representation-text-q2-bigger-byte
   - representation-text-q2-multi-byte
   - representation-text-q2-separate-table
-  - representation-card-ascii
-  - representation-card-bit-byte
-  - representation-card-convention
-  - representation-card-unicode
+  - representation-text.quiz-1
+  - representation-text.quiz-2
   - representation-tip-byte-range
   - representation-tip-convention
+  - bayes
+  - bayes-certainty
+  - bayes-update
+  - cs
+  - datascience
+  - deepLearning
+  - design
+  - hypothesis
+  - hypothesis-page-1
+  - hypothesis-page-1.quiz
+  - hypothesis-page-2
+  - hypothesis-page-2.quiz
+  - intro
+  - kc-files
+  - kc-files-card-convention
+  - kc-files-card-name-vs-content
+  - kc-files-card-power-line
+  - kc-files-format-q1-copy-paste
+  - kc-files-format-q1-lost
+  - kc-files-format-q1-rename-back
+  - kc-files-format-q2-empty
+  - kc-files-format-q2-rename
+  - kc-files-format-q2-unknown-convention
+  - kc-files-format.quiz-1
+  - kc-files-format.quiz-2
+  - kc-files-name-q1-copy-and-name
+  - kc-files-name-q1-keep-app-open
+  - kc-files-name-q1-keep-in-memory
+  - kc-files-name-q2-follows-origin
+  - kc-files-name-q2-same-content
+  - kc-files-name-q2-two-contents
+  - kc-files-name.quiz-1
+  - kc-files-name.quiz-2
+  - kc-files-page-format
+  - kc-files-page-name
+  - kc-files-page-power
+  - kc-files-power-q1-disk-wiped
+  - kc-files-power-q1-name-lost
+  - kc-files-power-q1-only-in-memory
+  - kc-files-power.quiz-1
+  - kc-files-tip-garbled
+  - kc-files-tip-which-side
+  - kc-machine
+  - kc-machine-card-direction
+  - kc-machine-card-swap-steps
+  - kc-machine-card-written-steps
+  - kc-machine-flow-q1-input
+  - kc-machine-flow-q1-output
+  - kc-machine-flow-q1-process
+  - kc-machine-flow.quiz-1
+  - kc-machine-general-q1-hardware
+  - kc-machine-general-q1-new-steps
+  - kc-machine-general-q1-self-learn
+  - kc-machine-general.quiz-1
+  - kc-machine-page-flow
+  - kc-machine-page-general
+  - kc-machine-page-steps
+  - kc-machine-steps-q1-builtin
+  - kc-machine-steps-q1-machine-doubts
+  - kc-machine-steps-q1-new-step
+  - kc-machine-steps-q2-fails
+  - kc-machine-steps-q2-still-money
+  - kc-machine-steps-q2-stock
+  - kc-machine-steps.quiz-1
+  - kc-machine-steps.quiz-2
+  - kc-machine-tip-no-guessing
+  - kc-machine-tip-three-questions
+  - kc-os
+  - kc-os-card-boundary
+  - kc-os-card-request
+  - kc-os-card-turns
+  - kc-os-gateway-q1-bypass
+  - kc-os-gateway-q1-request-denied
+  - kc-os-gateway-q1-rewrite-app
+  - kc-os-gateway-q2-first-wins
+  - kc-os-gateway-q2-os-arranges
+  - kc-os-gateway-q2-split-screen
+  - kc-os-gateway.quiz-1
+  - kc-os-gateway.quiz-2
+  - kc-os-isolate-q1-order
+  - kc-os-isolate-q1-own-area
+  - kc-os-isolate-q1-shared-desk
+  - kc-os-isolate.quiz-1
+  - kc-os-page-gateway
+  - kc-os-page-isolate
+  - kc-os-page-share
+  - kc-os-share-q1-last-one
+  - kc-os-share-q1-same-speed
+  - kc-os-share-q1-thinner-turns
+  - kc-os-share.quiz-1
+  - kc-os-tip-permission
+  - kc-os-tip-who-decides
+  - kc-program
+  - kc-program-card-desk-full
+  - kc-program-card-program-vs-run
+  - kc-program-card-step-by-step
+  - kc-program-cpu-q1-merge-steps
+  - kc-program-cpu-q1-more-steps-per-second
+  - kc-program-cpu-q1-skip-steps
+  - kc-program-cpu-q2-animation
+  - kc-program-cpu-q2-fake-number
+  - kc-program-cpu-q2-many-steps
+  - kc-program-cpu.quiz-1
+  - kc-program-cpu.quiz-2
+  - kc-program-list-q1-invalid-data
+  - kc-program-list-q1-partly-deleted
+  - kc-program-list-q1-run-ended
+  - kc-program-list.quiz-1
+  - kc-program-memory-q1-faster-cpu
+  - kc-program-memory-q1-more-memory
+  - kc-program-memory-q1-no-difference
+  - kc-program-memory.quiz-1
+  - kc-program-page-cpu
+  - kc-program-page-list
+  - kc-program-page-memory
+  - kc-program-tip-switch-lag
+  - kc-program-tip-two-numbers
+  - knowing-computers
+  - machineLearning
+  - mean
+  - mean-fixed
+  - mean-rises
+  - mean-tip
+  - null-hypothesis-probability
+  - p-value
+  - p-value-meaning
+  - p-value-tip
+  - probability
+  - probability-page-1
+  - probability-page-1.quiz
+  - r2
+  - r2-perfect-prediction
+  - r2-variance-explained
+  - reg-negative-direction
+  - reg-strong-causality
+  - regression
+  - regression-coef
+  - regression-page-1
+  - regression-page-1.quiz
+  - regression-page-2
+  - regression-page-2.quiz
+  - statistics
+  - stats
+  - stats-page-1
+  - stats-page-1.quiz
+  - stats-page-2
+  - stats-page-2.quiz
+  - strict-normality
+  - t-test-robust
+  - type-one-error
+  - variance
+  - variance-same
+  - variance-second
+  - web
+  # 2026.08.01.3 误把「单元」做成 Route；并入四门课程后退休这些 Route ID。
+  - cs-info
+  - cs-thinking
+  - cs-programming
+  - cs-data-algo
+  - cs-memory-ds
+  - py-start
+  - py-control
+  - py-functions
+  - py-structures
+  - py-files
+  - py-errors
+  - db-intro
+  - db-design
+  - db-sql
+  - db-query
+  - db-relations
+  - db-reliability
+  - web-internet
+  - web-html
+  - web-css
+  - web-js
+  - web-server
+  - web-db
 
 routes:
-  - id: datascience
-    title: 数据科学与人工智能
-    subtitle: 统计 · 机器学习 · 深度学习
+  # —— 课程一：计算机基础（5 单元 / 24 课）——
+  - id: cs-basics
+    title: 计算机基础
+    subtitle: 信息 · 思维 · 程序 · 数据 · 内存
     systemImage: cpu
-    accent: blue
-    cta: 继续学习
-    interactive: true
-    tracks:
-      - id: statistics
-        title: 统计基础
-        lessons:
-          - lessons/stats/lesson.yml
-          - lessons/probability/lesson.yml
-          - lessons/hypothesis/lesson.yml
-      - id: machineLearning
-        title: 机器学习
-        lessons:
-          - lessons/regression/lesson.yml
-      - id: deepLearning
-        title: 深度学习
-        lessons: []
-  - id: cs
-    title: 计算机科学导论
-    subtitle: 信息表示 · 算法 · 抽象
-    systemImage: chevron.left.forwardslash.chevron.right
     accent: purple
     cta: 开始学习
     interactive: true
     tracks:
-      - id: knowing-computers
-        title: 认识计算机
+      - id: cs-info-track
+        title: 计算机与信息
         lessons:
-          - lessons/kc-machine/lesson.yml
-          - lessons/kc-program/lesson.yml
-          - lessons/kc-os/lesson.yml
-          - lessons/kc-files/lesson.yml
-      - id: intro
-        title: 信息的表示
-        lessons: []
-  - id: design
-    title: UI/UX 设计进阶
-    subtitle: 色彩体系 · 组件化设计 · 交互
-    systemImage: paintpalette
-    accent: pink
-    cta: 即将开放
-    interactive: false
-    tracks: []
-  - id: web
-    title: 全栈 Web 开发
-    subtitle: React · Node.js · 数据库架构
+          - lessons/cs-info-task/lesson.yml
+          - lessons/cs-info-why-represent/lesson.yml
+          - lessons/cs-info-binary/lesson.yml
+          - lessons/cs-info-together/lesson.yml
+      - id: cs-thinking-track
+        title: 计算思维
+        lessons:
+          - lessons/cs-thinking-decompose/lesson.yml
+          - lessons/cs-thinking-control/lesson.yml
+          - lessons/cs-thinking-describe/lesson.yml
+          - lessons/cs-thinking-correctness/lesson.yml
+      - id: cs-programming-track
+        title: 程序设计原理
+        lessons:
+          - lessons/cs-prog-language/lesson.yml
+          - lessons/cs-prog-variables/lesson.yml
+          - lessons/cs-prog-control/lesson.yml
+          - lessons/cs-prog-functions/lesson.yml
+          - lessons/cs-prog-debug/lesson.yml
+      - id: cs-data-algo-track
+        title: 数据与算法
+        lessons:
+          - lessons/cs-data-array/lesson.yml
+          - lessons/cs-data-string/lesson.yml
+          - lessons/cs-data-search/lesson.yml
+          - lessons/cs-data-sort/lesson.yml
+          - lessons/cs-data-efficiency/lesson.yml
+      - id: cs-memory-ds-track
+        title: 内存与数据结构
+        lessons:
+          - lessons/cs-mem-where/lesson.yml
+          - lessons/cs-mem-address/lesson.yml
+          - lessons/cs-mem-array-limit/lesson.yml
+          - lessons/cs-mem-linked/lesson.yml
+          - lessons/cs-mem-stack-queue/lesson.yml
+          - lessons/cs-mem-org-efficiency/lesson.yml
+
+  # —— 课程二：Python 基础（6 单元 / 27 课）——
+  - id: py-basics
+    title: Python 基础
+    subtitle: 语法 · 流程 · 函数 · 结构 · 文件 · 错误
     systemImage: chevron.left.forwardslash.chevron.right
+    accent: blue
+    cta: 开始学习
+    interactive: true
+    tracks:
+      - id: py-start-track
+        title: 开始使用 Python
+        lessons:
+          - lessons/py-run/lesson.yml
+          - lessons/py-io/lesson.yml
+          - lessons/py-var/lesson.yml
+          - lessons/py-types/lesson.yml
+      - id: py-control-track
+        title: 控制程序流程
+        lessons:
+          - lessons/py-if/lesson.yml
+          - lessons/py-loop/lesson.yml
+          - lessons/py-loop-ctrl/lesson.yml
+          - lessons/py-nest/lesson.yml
+      - id: py-functions-track
+        title: 函数与程序组织
+        lessons:
+          - lessons/py-why-fn/lesson.yml
+          - lessons/py-args-ret/lesson.yml
+          - lessons/py-scope/lesson.yml
+          - lessons/py-mod-files/lesson.yml
+      - id: py-structures-track
+        title: 常用数据结构
+        lessons:
+          - lessons/py-list/lesson.yml
+          - lessons/py-tuple/lesson.yml
+          - lessons/py-dict/lesson.yml
+          - lessons/py-set/lesson.yml
+          - lessons/py-iter/lesson.yml
+      - id: py-files-track
+        title: 文本与文件
+        lessons:
+          - lessons/py-str/lesson.yml
+          - lessons/py-read/lesson.yml
+          - lessons/py-write/lesson.yml
+          - lessons/py-csv-json/lesson.yml
+          - lessons/py-file-fail/lesson.yml
+      - id: py-errors-track
+        title: 错误、测试与模块
+        lessons:
+          - lessons/py-err-kinds/lesson.yml
+          - lessons/py-traceback/lesson.yml
+          - lessons/py-except/lesson.yml
+          - lessons/py-test/lesson.yml
+          - lessons/py-stdlib/lesson.yml
+
+  # —— 课程三：数据库基础（6 单元 / 29 课）——
+  - id: db-basics
+    title: 数据库基础
+    subtitle: 认识 · 设计 · SQL · 查询 · 关系 · 可靠
+    systemImage: chart.bar.xaxis
+    accent: amber
+    cta: 开始学习
+    interactive: true
+    tracks:
+      - id: db-intro-track
+        title: 认识数据库
+        lessons:
+          - lessons/db-intro-files/lesson.yml
+          - lessons/db-intro-dbms/lesson.yml
+          - lessons/db-intro-relational/lesson.yml
+          - lessons/db-intro-table/lesson.yml
+      - id: db-design-track
+        title: 设计数据表
+        lessons:
+          - lessons/db-design-objects/lesson.yml
+          - lessons/db-design-types/lesson.yml
+          - lessons/db-design-pk/lesson.yml
+          - lessons/db-design-null/lesson.yml
+          - lessons/db-design-dup/lesson.yml
+      - id: db-sql-track
+        title: SQL 基础操作
+        lessons:
+          - lessons/db-sql-create/lesson.yml
+          - lessons/db-sql-insert/lesson.yml
+          - lessons/db-sql-select/lesson.yml
+          - lessons/db-sql-update/lesson.yml
+          - lessons/db-sql-delete/lesson.yml
+      - id: db-query-track
+        title: 查询与统计
+        lessons:
+          - lessons/db-query-where/lesson.yml
+          - lessons/db-query-order/lesson.yml
+          - lessons/db-query-group/lesson.yml
+          - lessons/db-query-agg/lesson.yml
+          - lessons/db-query-sub/lesson.yml
+      - id: db-relations-track
+        title: 多表关系
+        lessons:
+          - lessons/db-rel-split/lesson.yml
+          - lessons/db-rel-fk/lesson.yml
+          - lessons/db-rel-cardinality/lesson.yml
+          - lessons/db-rel-join/lesson.yml
+          - lessons/db-rel-dup/lesson.yml
+      - id: db-reliability-track
+        title: 数据库的可靠性
+        lessons:
+          - lessons/db-reli-index/lesson.yml
+          - lessons/db-reli-cost/lesson.yml
+          - lessons/db-reli-tx/lesson.yml
+          - lessons/db-reli-atomic/lesson.yml
+          - lessons/db-reli-backup/lesson.yml
+
+  # —— 课程四：Web 基础（6 单元 / 30 课）——
+  - id: web-basics
+    title: Web 基础
+    subtitle: 互联网 · HTML · CSS · JS · 服务端 · 数据库
+    systemImage: paintpalette
     accent: mint
-    cta: 即将开放
-    interactive: false
-    tracks: []
+    cta: 开始学习
+    interactive: true
+    tracks:
+      - id: web-internet-track
+        title: 认识互联网和 Web
+        lessons:
+          - lessons/web-internet-same/lesson.yml
+          - lessons/web-internet-roles/lesson.yml
+          - lessons/web-internet-url-flow/lesson.yml
+          - lessons/web-internet-dns/lesson.yml
+          - lessons/web-internet-http/lesson.yml
+      - id: web-html-track
+        title: HTML
+        lessons:
+          - lessons/web-html-content/lesson.yml
+          - lessons/web-html-tags/lesson.yml
+          - lessons/web-html-structure/lesson.yml
+          - lessons/web-html-links/lesson.yml
+          - lessons/web-html-forms/lesson.yml
+      - id: web-css-track
+        title: CSS
+        lessons:
+          - lessons/web-css-style/lesson.yml
+          - lessons/web-css-selectors/lesson.yml
+          - lessons/web-css-box/lesson.yml
+          - lessons/web-css-layout/lesson.yml
+          - lessons/web-css-responsive/lesson.yml
+      - id: web-js-track
+        title: JavaScript
+        lessons:
+          - lessons/web-js-change/lesson.yml
+          - lessons/web-js-vars/lesson.yml
+          - lessons/web-js-dom/lesson.yml
+          - lessons/web-js-events/lesson.yml
+          - lessons/web-js-validate/lesson.yml
+      - id: web-server-track
+        title: 服务器端程序
+        lessons:
+          - lessons/web-server-why/lesson.yml
+          - lessons/web-server-routing/lesson.yml
+          - lessons/web-server-get-post/lesson.yml
+          - lessons/web-server-templates/lesson.yml
+          - lessons/web-server-session/lesson.yml
+      - id: web-db-track
+        title: Web 与数据库
+        lessons:
+          - lessons/web-db-connect/lesson.yml
+          - lessons/web-db-write/lesson.yml
+          - lessons/web-db-read/lesson.yml
+          - lessons/web-db-auth/lesson.yml
+          - lessons/web-db-security/lesson.yml

@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-rel-cardinality
+title: 一对一、一对多和多对多有什么区别
+prerequisites:
+  - db-rel-fk
+completion:
+  xp: 20
+  message: 三种基数与中间表，已加入复习池。
+
+pages:
+  - id: db-rel-cardinality-page-om
+    title: 一对多与一对一
+    source: pages/om.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.card.contrast-one-to-many
+  - id: db-rel-cardinality-page-mm
+    title: 多对多与中间表
+    source: pages/mm.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.card.use-bridge-for-many-to-many
+
+cards:
+  - cards.md
+tips:
+  - tips.md

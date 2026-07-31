@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-js-vars
+title: 怎样在网页中使用变量和函数？
+prerequisites:
+  - web-js-change
+completion:
+  xp: 15
+  message: 变量与函数入门已加入复习池。
+
+pages:
+  - id: web-js-vars-page-var
+    title: 用变量记住状态
+    source: pages/var.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.vars.store-state
+  - id: web-js-vars-page-fn
+    title: 用函数打包步骤
+    source: pages/fn.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.vars.pack-steps-in-function
+
+cards:
+  - cards.md
+tips:
+  - tips.md

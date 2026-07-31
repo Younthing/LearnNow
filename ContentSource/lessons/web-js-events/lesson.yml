@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-js-events
+title: 事件怎样响应用户操作？
+prerequisites:
+  - web-js-dom
+completion:
+  xp: 15
+  message: 事件与绑定已加入复习池。
+
+pages:
+  - id: web-js-events-page-react
+    title: 操作用事件来通知
+    source: pages/react.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.events.event-as-signal
+  - id: web-js-events-page-bind
+    title: 把处理函数绑上去
+    source: pages/bind.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.events.bind-element-event-fn
+
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-args-ret
+title: 参数和返回值分别有什么作用？
+prerequisites: []
+completion:
+  xp: 15
+  message: 参数送进、返回值送出，已经加入复习池。
+
+pages:
+  - id: py-args-ret-page-args
+    title: 参数：把数据送进函数
+    source: pages/args.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.args.input-slot
+      - py.args.per-call-value
+  - id: py-args-ret-page-ret
+    title: 返回值：把结果送回调用处
+    source: pages/ret.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.ret.send-back
+      - py.ret.not-print
+
+cards:
+  - cards.md
+tips:
+  - tips.md

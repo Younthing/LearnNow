@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-design-types
+title: 字段的数据类型为什么重要
+prerequisites:
+  - db-design-objects
+completion:
+  xp: 20
+  message: 数据类型决定比较与运算规则，已加入复习池。
+
+pages:
+  - id: db-design-types-page-rules
+    title: 类型决定怎么算怎么比
+    source: pages/rules.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.types.choose-type-by-operations
+  - id: db-design-types-page-pitfalls
+    title: 选错类型会怎样
+    source: pages/pitfalls.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.types.predict-type-pitfalls
+
+cards:
+  - cards.md
+tips:
+  - tips.md

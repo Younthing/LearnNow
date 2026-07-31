@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-html-structure
+title: 怎样组织网页的标题、段落和列表？
+prerequisites:
+  - web-html-tags
+completion:
+  xp: 15
+  message: 标题／段落／列表的组织方式已加入复习池。
+
+pages:
+  - id: web-html-structure-page-blocks
+    title: 标题和段落
+    source: pages/blocks.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.structure.use-heading-levels
+  - id: web-html-structure-page-list
+    title: 用列表表达多条
+    source: pages/list.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.structure.choose-list-type
+
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-query-agg
+title: 聚合函数解决什么问题
+prerequisites:
+  - db-query-group
+completion:
+  xp: 20
+  message: 聚合把多行收成概览值，已加入复习池。
+
+pages:
+  - id: db-query-agg-page-fns
+    title: 常见聚合在问什么
+    source: pages/fns.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.agg.match-question-to-function
+  - id: db-query-agg-page-null
+    title: 聚合怎样对待 NULL
+    source: pages/null.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.agg.contrast-count-star-vs-column
+
+cards:
+  - cards.md
+tips:
+  - tips.md

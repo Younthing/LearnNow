@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-sql-insert
+title: 怎样向表中添加数据
+prerequisites:
+  - db-sql-create
+completion:
+  xp: 20
+  message: INSERT 加行不改结构，已加入复习池。
+
+pages:
+  - id: db-sql-insert-page-add
+    title: INSERT 在做什么
+    source: pages/add.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.insert.add-row-not-column
+  - id: db-sql-insert-page-fail
+    title: 插入失败常见原因
+    source: pages/fail.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.insert.read-constraint-failures
+
+cards:
+  - cards.md
+tips:
+  - tips.md

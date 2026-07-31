@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-query-sub
+title: 子查询是什么
+prerequisites:
+  - db-query-agg
+completion:
+  xp: 20
+  message: 子查询＝嵌套的中间提问，已加入复习池。
+
+pages:
+  - id: db-query-sub-page-idea
+    title: 为什么需要嵌一套查询
+    source: pages/idea.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.sub.see-nested-question
+  - id: db-query-sub-page-bound
+    title: 子查询的边界
+    source: pages/bound.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.query.sub.keep-subquery-readable
+
+cards:
+  - cards.md
+tips:
+  - tips.md

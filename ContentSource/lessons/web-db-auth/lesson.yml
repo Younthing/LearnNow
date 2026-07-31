@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-db-auth
+title: 用户注册和登录怎样实现？
+prerequisites:
+  - web-db-read
+completion:
+  xp: 15
+  message: 注册写入与登录会话已加入复习池。
+
+pages:
+  - id: web-db-auth-page-register
+    title: 注册写入用户
+    source: pages/register.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.auth.register-inserts-user
+  - id: web-db-auth-page-login
+    title: 登录核验并开会话
+    source: pages/login.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.auth.login-opens-session
+
+cards:
+  - cards.md
+tips:
+  - tips.md

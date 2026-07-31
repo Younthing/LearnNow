@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-db-write
+title: 表单数据怎样写入数据库？
+prerequisites:
+  - web-db-connect
+completion:
+  xp: 15
+  message: 表单入库路径已加入复习池。
+
+pages:
+  - id: web-db-write-page-path
+    title: 从提交到写入
+    source: pages/path.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.write.post-to-insert
+  - id: web-db-write-page-check
+    title: 校验通过才写库
+    source: pages/check.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.write.validate-before-insert
+
+cards:
+  - cards.md
+tips:
+  - tips.md

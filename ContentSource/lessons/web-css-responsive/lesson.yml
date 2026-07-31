@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-css-responsive
+title: 怎样让网页适应不同屏幕？
+prerequisites:
+  - web-css-layout
+completion:
+  xp: 15
+  message: 响应式与媒体查询入门已加入复习池。
+
+pages:
+  - id: web-css-responsive-page-need
+    title: 同一页要适应宽度
+    source: pages/need.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.responsive.why-adapt
+  - id: web-css-responsive-page-query
+    title: 按宽度切换规则
+    source: pages/query.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.responsive.media-query-threshold
+
+cards:
+  - cards.md
+tips:
+  - tips.md

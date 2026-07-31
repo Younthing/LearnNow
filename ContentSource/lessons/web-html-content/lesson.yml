@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-html-content
+title: HTML 怎样描述网页内容？
+prerequisites:
+  - web-internet-http
+completion:
+  xp: 15
+  message: 「HTML 描述是什么」已加入复习池。
+
+pages:
+  - id: web-html-content-page-describe
+    title: 标记页面上有什么
+    source: pages/describe.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.content.mark-what-it-is
+  - id: web-html-content-page-not-style
+    title: 内容和外观先分开
+    source: pages/not-style.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.html.content.separate-from-style
+
+cards:
+  - cards.md
+tips:
+  - tips.md

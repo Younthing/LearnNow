@@ -1,0 +1,36 @@
+format: learnnow.lesson-bundle/v1
+id: web-db-security
+title: Web 应用需要注意哪些基础安全问题？
+prerequisites:
+  - web-db-auth
+completion:
+  xp: 15
+  message: 输入、授权与机密三条底线已加入复习池。
+
+pages:
+  - id: web-db-security-page-input
+    title: 永不信任用户输入
+    source: pages/input.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.security.distrust-input
+  - id: web-db-security-page-authz
+    title: 登录之后还要授权
+    source: pages/authz.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.security.authorize-actions
+  - id: web-db-security-page-secret
+    title: 保护密码与会话
+    source: pages/secret.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.db.security.protect-secrets
+
+cards:
+  - cards.md
+tips:
+  - tips.md

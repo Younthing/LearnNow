@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-server-get-post
+title: GET 和 POST 有什么区别？
+prerequisites:
+  - web-server-routing
+completion:
+  xp: 15
+  message: GET/POST 意图区分已加入复习池。
+
+pages:
+  - id: web-server-get-post-page-diff
+    title: 两种常见方法
+    source: pages/diff.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.get-post.tell-intent
+  - id: web-server-get-post-page-choose
+    title: 按意图选择
+    source: pages/choose.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.server.get-post.choose-by-intent
+
+cards:
+  - cards.md
+tips:
+  - tips.md

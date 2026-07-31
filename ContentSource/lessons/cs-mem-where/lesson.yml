@@ -1,0 +1,34 @@
+format: learnnow.lesson-bundle/v1
+id: cs-mem-where
+title: 程序运行时，数据放在哪里？
+prerequisites: []
+completion:
+  xp: 20
+  message: 内存作为工作台已进入复习池。
+
+pages:
+  - id: cs-mem-where-page-need
+    title: 运行需要可读写的工作区
+    source: pages/need.md
+    accent: purple
+    revision: 1
+    objectives:
+      - cs-mem-where.need.workspace
+  - id: cs-mem-where-page-mem
+    title: 内存是主要工作台
+    source: pages/mem.md
+    accent: mint
+    revision: 1
+    objectives:
+      - cs-mem-where.mem.main
+  - id: cs-mem-where-page-persist
+    title: 关机后工作台会清空
+    source: pages/persist.md
+    accent: amber
+    revision: 1
+    objectives:
+      - cs-mem-where.persist.volatile
+cards:
+  - cards.md
+tips:
+  - tips.md

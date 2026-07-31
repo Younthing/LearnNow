@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-js-change
+title: JavaScript 为什么能让网页发生变化？
+prerequisites:
+  - web-css-responsive
+completion:
+  xp: 15
+  message: JS 负责端上变化的认知已加入复习池。
+
+pages:
+  - id: web-js-change-page-why
+    title: 变化发生在浏览器
+    source: pages/why.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.change.runs-in-browser
+  - id: web-js-change-page-where
+    title: 行为单独成一层
+    source: pages/where.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.js.change.separate-behavior
+
+cards:
+  - cards.md
+tips:
+  - tips.md

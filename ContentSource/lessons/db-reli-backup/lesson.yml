@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-reli-backup
+title: 为什么需要备份数据
+prerequisites:
+  - db-reli-atomic
+completion:
+  xp: 20
+  message: 备份互补事务，课程收口已加入复习池。
+
+pages:
+  - id: db-reli-backup-page-risk
+    title: 备份对抗哪类风险
+    source: pages/risk.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.backup.separate-from-transactions
+  - id: db-reli-backup-page-restore
+    title: 能恢复才算有备份
+    source: pages/restore.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.relib.backup.require-restore-drill
+
+cards:
+  - cards.md
+tips:
+  - tips.md

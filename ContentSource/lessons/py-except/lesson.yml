@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-except
+title: 异常处理解决什么问题？
+prerequisites: []
+completion:
+  xp: 15
+  message: 接住可预期失败并给出路，已经加入复习池。
+
+pages:
+  - id: py-except-page-purpose
+    title: 给可预期的失败一条出路
+    source: pages/purpose.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.except.catch-expected
+      - py.except.keep-running
+  - id: py-except-page-careful
+    title: 接住要有针对性
+    source: pages/careful.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.except.specific-type
+      - py.except.dont-swallow-all
+
+cards:
+  - cards.md
+tips:
+  - tips.md

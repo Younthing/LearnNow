@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-internet-url-flow
+title: 输入网址后发生了什么？
+prerequisites:
+  - web-internet-roles
+completion:
+  xp: 15
+  message: 打开网址的五步顺序已经加入复习池。
+
+pages:
+  - id: web-internet-url-flow-page-steps
+    title: 回车之后的五步
+    source: pages/steps.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.internet.url-flow.list-five-steps
+  - id: web-internet-url-flow-page-wait
+    title: 失败时卡在哪一步
+    source: pages/wait.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.internet.url-flow.locate-failure
+
+cards:
+  - cards.md
+tips:
+  - tips.md

@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-design-null
+title: 空值表示什么
+prerequisites:
+  - db-design-pk
+completion:
+  xp: 20
+  message: NULL≠0≠空串，已加入复习池。
+
+pages:
+  - id: db-design-null-page-meaning
+    title: NULL 不是零也不是空串
+    source: pages/meaning.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.null.distinguish-null-zero-empty
+  - id: db-design-null-page-design
+    title: 哪些列允许为空
+    source: pages/design.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.null.decide-nullability
+
+cards:
+  - cards.md
+tips:
+  - tips.md

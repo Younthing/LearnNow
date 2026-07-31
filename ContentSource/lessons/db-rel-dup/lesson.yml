@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-rel-dup
+title: 连接查询为什么可能产生重复记录
+prerequisites:
+  - db-rel-join
+completion:
+  xp: 20
+  message: 一对多复制≠脏数据，已加入复习池。
+
+pages:
+  - id: db-rel-dup-page-grain
+    title: 一对多怎样复制字段
+    source: pages/grain.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.dup.explain-one-to-many-duplication
+  - id: db-rel-dup-page-boom
+    title: 条件过松会真爆炸
+    source: pages/boom.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.dup.distinguish-grain-vs-cartesian
+
+cards:
+  - cards.md
+tips:
+  - tips.md

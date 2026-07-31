@@ -1,0 +1,34 @@
+format: learnnow.lesson-bundle/v1
+id: cs-data-string
+title: 字符串怎样表示文字？
+prerequisites: [cs-data-array]
+completion:
+  xp: 20
+  message: 字符串作为字符序列已进入复习池。
+
+pages:
+  - id: cs-data-string-page-seq
+    title: 文字是字符排成的序列
+    source: pages/seq.md
+    accent: purple
+    revision: 1
+    objectives:
+      - cs-data-string.seq.chars
+  - id: cs-data-string-page-index
+    title: 也能按下标取字符
+    source: pages/index.md
+    accent: mint
+    revision: 1
+    objectives:
+      - cs-data-string.index.char-at
+  - id: cs-data-string-page-op
+    title: 拼接与截取是常见操作
+    source: pages/ops.md
+    accent: amber
+    revision: 1
+    objectives:
+      - cs-data-string.ops.concat-slice
+cards:
+  - cards.md
+tips:
+  - tips.md

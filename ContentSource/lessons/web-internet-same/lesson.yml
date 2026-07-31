@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-internet-same
+title: 互联网和 Web 是一回事吗？
+prerequisites: []
+completion:
+  xp: 15
+  message: 网与 Web 的分界已经加入复习池。
+
+pages:
+  - id: web-internet-same-page-split
+    title: 网是通路，Web 是用法
+    source: pages/split.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.internet.same.tell-net-from-web
+      - web.internet.same.place-web-on-net
+  - id: web-internet-same-page-use
+    title: 日常怎样快速归类
+    source: pages/use.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.internet.same.classify-daily-use
+
+cards:
+  - cards.md
+tips:
+  - tips.md

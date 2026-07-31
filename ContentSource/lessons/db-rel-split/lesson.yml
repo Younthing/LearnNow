@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-rel-split
+title: 为什么需要把数据拆成多张表
+prerequisites:
+  - db-query-sub
+completion:
+  xp: 20
+  message: 拆表为一致性，已加入复习池。
+
+pages:
+  - id: db-rel-split-page-pain
+    title: 宽表哪里疼
+    source: pages/pain.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.split.see-wide-table-pain
+  - id: db-rel-split-page-trade
+    title: 拆的代价与回报
+    source: pages/trade.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.rel.split.accept-join-tradeoff
+
+cards:
+  - cards.md
+tips:
+  - tips.md

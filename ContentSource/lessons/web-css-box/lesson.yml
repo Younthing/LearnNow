@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: web-css-box
+title: 盒模型是什么？
+prerequisites:
+  - web-css-selectors
+completion:
+  xp: 15
+  message: 盒模型四层已加入复习池。
+
+pages:
+  - id: web-css-box-page-layers
+    title: 元素是一只盒子
+    source: pages/layers.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.box.name-four-layers
+  - id: web-css-box-page-space
+    title: 空白在内还是在外
+    source: pages/space.md
+    accent: mint
+    revision: 1
+    objectives:
+      - web.css.box.padding-vs-margin
+
+cards:
+  - cards.md
+tips:
+  - tips.md

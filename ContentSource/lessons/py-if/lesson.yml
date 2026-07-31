@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-if
+title: 条件语句怎样让程序作出选择？
+prerequisites: []
+completion:
+  xp: 15
+  message: 先判断再分支，这条路径已经加入复习池。
+
+pages:
+  - id: py-if-page-branch
+    title: 先判断，再走不同的路
+    source: pages/branch.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.if.condition-then-branch
+      - py.if.bool-gate
+  - id: py-if-page-exclusive
+    title: 同一轮只走其中一条
+    source: pages/exclusive.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.if.one-path
+      - py.if.elif-chain
+
+cards:
+  - cards.md
+tips:
+  - tips.md

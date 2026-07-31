@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-var
+title: 变量怎样保存数据？
+prerequisites: []
+completion:
+  xp: 15
+  message: 名字贴在值上，这条规则已经加入复习池。
+
+pages:
+  - id: py-var-page-label
+    title: 赋值就是把名字贴到值上
+    source: pages/label.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.var.name-labels-value
+      - py.var.save-then-use
+  - id: py-var-page-update
+    title: 再赋值会改标签指向
+    source: pages/update.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.var.reassign-moves-label
+      - py.var.latest-wins
+
+cards:
+  - cards.md
+tips:
+  - tips.md

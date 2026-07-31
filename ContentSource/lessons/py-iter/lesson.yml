@@ -1,0 +1,30 @@
+format: learnnow.lesson-bundle/v1
+id: py-iter
+title: 怎样遍历和处理一组数据？
+prerequisites: []
+completion:
+  xp: 15
+  message: 遍历中做转换与汇总，已经加入复习池。
+
+pages:
+  - id: py-iter-page-agg
+    title: 遍历时把结果汇总起来
+    source: pages/agg.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.iter.accumulator
+      - py.iter.each-round-update
+  - id: py-iter-page-filter
+    title: 过滤不符合的，转换需要的
+    source: pages/filter_map.md
+    accent: mint
+    revision: 1
+    objectives:
+      - py.iter.filter-items
+      - py.iter.transform-items
+
+cards:
+  - cards.md
+tips:
+  - tips.md

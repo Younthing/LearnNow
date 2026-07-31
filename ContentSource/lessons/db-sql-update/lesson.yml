@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-sql-update
+title: 怎样修改已有数据
+prerequisites:
+  - db-sql-select
+completion:
+  xp: 20
+  message: UPDATE 靠 WHERE 锁定行，已加入复习池。
+
+pages:
+  - id: db-sql-update-page-set
+    title: UPDATE 改的是已有行
+    source: pages/set.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.update.require-where-discipline
+  - id: db-sql-update-page-check
+    title: 先确认影响面再改
+    source: pages/check.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.sql.update.verify-affected-rows
+
+cards:
+  - cards.md
+tips:
+  - tips.md

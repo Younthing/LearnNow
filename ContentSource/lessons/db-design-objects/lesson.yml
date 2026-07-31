@@ -1,0 +1,29 @@
+format: learnnow.lesson-bundle/v1
+id: db-design-objects
+title: 怎样把现实对象转换成数据表
+prerequisites:
+  - db-intro-table
+completion:
+  xp: 20
+  message: 从对象到表的转换已加入复习池。
+
+pages:
+  - id: db-design-objects-page-find
+    title: 先找对象再列表
+    source: pages/find.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.objects.identify-entity-classes
+  - id: db-design-objects-page-attrs
+    title: 属性怎样进表
+    source: pages/attrs.md
+    accent: mint
+    revision: 1
+    objectives:
+      - db.design.objects.choose-stable-attributes
+
+cards:
+  - cards.md
+tips:
+  - tips.md
