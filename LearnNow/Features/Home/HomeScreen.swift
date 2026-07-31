@@ -224,7 +224,6 @@ private struct StreakIconBadge: View {
             Image(systemName: isActive ? "flame.fill" : "flame")
                 .font(.largeTitle.weight(.semibold))
                 .symbolRenderingMode(.hierarchical)
-                .symbolColorRenderingMode(.gradient)
                 .foregroundStyle(
                     LearnNowPalette.color(for: accent).opacity(isActive ? 1 : 0.62)
                 )
@@ -335,7 +334,6 @@ private struct StatusIconBadge: View {
                 Image(systemName: systemImage)
                     .font(.headline.weight(.semibold))
                     .symbolRenderingMode(.hierarchical)
-                    .symbolColorRenderingMode(.gradient)
                     .foregroundStyle(LearnNowSemanticRole.neutral.foreground)
             }
         }

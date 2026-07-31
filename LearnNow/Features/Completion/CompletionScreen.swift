@@ -243,7 +243,7 @@ private struct CompletionHero: View {
         if usesDrawOn {
             if isSymbolPresented {
                 completionSymbol
-                    .transition(.symbolEffect(.drawOn.byLayer))
+                    .transition(.opacity.combined(with: .scale(scale: 0.86)))
             }
         } else {
             completionSymbol
@@ -255,7 +255,6 @@ private struct CompletionHero: View {
         Image(systemName: "checkmark.seal.fill")
             .font(.largeTitle.weight(.semibold))
             .symbolRenderingMode(.hierarchical)
-            .symbolColorRenderingMode(.gradient)
             .foregroundStyle(LearnNowSemanticRole.brand.foreground)
     }
 }
