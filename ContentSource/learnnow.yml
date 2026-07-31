@@ -1,6 +1,6 @@
 format: learnnow.project/v1
 schemaVersion: 2
-releaseVersion: "2026.08.01.1"
+releaseVersion: "2026.08.01.2"
 locale: zh-Hans
 primaryRouteID: datascience
 minAppBuild: 1

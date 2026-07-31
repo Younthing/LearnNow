@@ -3,14 +3,14 @@
   "files" : [
     {
       "path" : "CatalogV2.json",
-      "sha256" : "f0bb1434fdca8009ae0b114c0ec7776906a223ba8ccc97359293260a28914296",
-      "size" : 143274
+      "sha256" : "5424706b236317289fb7b54c9bf427c9d1614a3fb6ba686b3f6594803b17ebd3",
+      "size" : 143193
     }
   ],
   "locale" : "zh-Hans",
   "minAppBuild" : 1,
   "publishedAt" : "2026-07-28T00:00:00Z",
-  "releaseVersion" : "2026.08.01.1",
+  "releaseVersion" : "2026.08.01.2",
   "requiredCapabilities" : [
     "callout",
     "code",

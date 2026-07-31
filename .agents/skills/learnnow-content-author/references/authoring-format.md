@@ -139,7 +139,7 @@ this list throws `block.unsupported` and fails the build:
 | heading | `#`–`######` | levels 1–6 compile; authoring convention is `##`/`###` only |
 | list | `-` or `1.` | **single level, one paragraph per item** |
 | table | GFM pipe table | required header + separator; cell inline only; soft guide ≤4 columns |
-| code | ` ```text ` fence | language is a free string; `text` for diagrams |
+| code | ` ```text ` fence | diagrams: short lines only; see pedagogy § `text` 图示约束 |
 | callout | `@Callout(...) { }` | blocks inside, no `@Quiz` |
 | image | `@Image(...)` | no body, `alt` mandatory |
 | quiz | `@Quiz(...) { }` | `singleChoice` only |
@@ -194,7 +194,10 @@ unbroken prose. The rubric does not:
 - **2～4 `##` sections** and at least one fenced `text` block per page;
 - roughly **250–450 汉字 of prose per page** — about three phone screens;
 - paragraphs of **2～4 sentences / ~60–90 汉字**, never 3+ consecutive paragraphs
-  without a structural break.
+  without a structural break;
+- ` ```text ` diagrams must be **wrap-safe**: tree (`├─`) or vertical `↓` chains;
+  never space-padded multi-column slabs (narrow phones soft-wrap and shatter them).
+  Multi-column comparisons belong in a GFM table.
 
 A page that is mostly unbroken prose (密密麻麻) is a 否决项. When the material does
 not fit, add a **Lesson in the same Track**, never a longer page.

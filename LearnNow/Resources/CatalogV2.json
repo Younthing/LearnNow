@@ -2127,7 +2127,7 @@
           "type" : "paragraph"
         },
         {
-          "code" : "输入          处理                 输出\n按下 12   →   26 ＋ 12 = 38   →   屏幕显示 38\n",
+          "code" : "输入   按下 12\n  ↓\n处理   26 ＋ 12 = 38\n  ↓\n输出   屏幕显示 38\n",
           "language" : "text",
           "type" : "code"
         },
@@ -2671,7 +2671,7 @@
           "type" : "heading"
         },
         {
-          "code" : "存储里                点一下图标            内存里\n记账的步骤清单    ──────────────→    这份清单 ＋ 26、12\n（一直躺着不动）                      （接下来马上要用的）\n",
+          "code" : "存储里：记账的步骤清单\n        （一直躺着不动）\n            │ 点一下图标\n            ↓\n内存里：这份清单 ＋ 26、12\n        （接下来马上要用）\n",
           "language" : "text",
           "type" : "code"
         },
@@ -2804,7 +2804,7 @@
           "type" : "heading"
         },
         {
-          "code" : "取第 1 步 → 执行 → 取第 2 步 → 执行 → 取第 3 步 → 执行\n 取旧合计    26      取新数字    12       相加      38\n",
+          "code" : "取第 1 步（取旧合计） → 执行 → 26\n取第 2 步（取新数字） → 执行 → 12\n取第 3 步（相加）     → 执行 → 38\n",
           "language" : "text",
           "type" : "code"
         },
@@ -3213,7 +3213,7 @@
           "type" : "paragraph"
         },
         {
-          "code" : "时间 →\n记账  ██      ██      ██\n音乐    ██      ██      ██\n      轮换快到你察觉不到\n",
+          "code" : "时间 →\n记账  ██    ██    ██\n音乐    ██    ██    ██\n      （轮换很快）\n",
           "language" : "text",
           "type" : "code"
         },
@@ -3481,7 +3481,7 @@
           "type" : "heading"
         },
         {
-          "code" : "记账 app  ──请求──→  操作系统  ──操作──→  屏幕 / 麦克风 / 存储\n                        ↑\n                    音乐 app 的请求也走这里\n",
+          "code" : "记账 app\n   │ 请求\n   ↓\n操作系统\n   │ 操作\n   ↓\n屏幕 / 麦克风 / 存储\n\n（音乐 app 的请求也走这里）\n",
           "language" : "text",
           "type" : "code"
         },
@@ -3628,7 +3628,7 @@
           "type" : "paragraph"
         },
         {
-          "code" : "断电前                        断电后\n台面（内存）：半句备注   →    空了\n柜子（存储）：合计 38    →    还在\n",
+          "code" : "断电前\n├─ 台面（内存）：半句备注\n└─ 柜子（存储）：合计 38\n\n断电后\n├─ 台面（内存）：空了\n└─ 柜子（存储）：合计 38 还在\n",
           "language" : "text",
           "type" : "code"
         },
@@ -4238,7 +4238,7 @@
     }
   ],
   "primaryRouteID" : "datascience",
-  "releaseVersion" : "2026.08.01.1",
+  "releaseVersion" : "2026.08.01.2",
   "retiredIDs" : [
     "representation",
     "representation-bits-q1-content",

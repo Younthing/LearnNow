@@ -461,11 +461,18 @@ private struct CodeSampleCard: View {
                 if let language, !language.isEmpty {
                     MetadataChip(text: language, accent: .purple)
                 }
-                Text(code)
-                    .font(LearnNowTypography.body.monospaced())
-                    .foregroundStyle(LearnNowPalette.textPrimary)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                // Diagrams rely on monospace column alignment. Soft-wrapping a line
+                // mid-Chinese-word (or mid-arrow row) destroys the drawing — same as
+                // the broken "输入 / 处理 / 输出" slab. Keep each source line intact
+                // and scroll horizontally when the phone is narrower than the drawing.
+                ScrollView(.horizontal, showsIndicators: true) {
+                    Text(code)
+                        .font(LearnNowTypography.body.monospaced())
+                        .foregroundStyle(LearnNowPalette.textPrimary)
+                        .textSelection(.enabled)
+                        .fixedSize(horizontal: true, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
     }
