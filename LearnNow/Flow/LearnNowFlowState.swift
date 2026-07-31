@@ -295,7 +295,7 @@ private extension LessonContentBlock {
             [exerciseID]
         case let .callout(_, _, _, body):
             body.flatMap(\.referencedExerciseIDs)
-        case .paragraph, .heading, .list, .code, .image:
+        case .paragraph, .heading, .list, .code, .image, .table:
             []
         }
     }

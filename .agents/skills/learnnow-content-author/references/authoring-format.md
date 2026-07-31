@@ -138,6 +138,7 @@ this list throws `block.unsupported` and fails the build:
 | paragraph | plain text | blank line between paragraphs |
 | heading | `#`–`######` | levels 1–6 compile; authoring convention is `##`/`###` only |
 | list | `-` or `1.` | **single level, one paragraph per item** |
+| table | GFM pipe table | required header + separator; cell inline only; soft guide ≤4 columns |
 | code | ` ```text ` fence | language is a free string; `text` for diagrams |
 | callout | `@Callout(...) { }` | blocks inside, no `@Quiz` |
 | image | `@Image(...)` | no body, `alt` mandatory |
@@ -159,14 +160,17 @@ ordinary Chinese prose ("backtick soup"). Missing emphasis (uniform grey prose w
 zero anchors) and over-emphasis are both rubric defects — see
 `references/quality-rubric.md` § C10 / C11 and `references/pedagogy.md` § 行内强调.
 
-**There is no table IR and no nested-list IR.** Concretely:
+**There is no nested-list IR.** Concretely:
 
-- A GFM pipe table (`| a | b |`) is parsed as an unsupported block →
-  `block.unsupported`. Express a comparison as: one sentence establishing each object,
-  then a single-level list or a ` ```text ` alignment block.
 - A nested list (a list item containing a list, or two paragraphs in one item) →
   `list.unsupportedNesting`. Use `###` subsections or draw the hierarchy inside a
   fenced block.
+- GFM pipe tables **are supported** in page Markdown. Prefer them for short
+  comparisons once each object is established in a sentence (soft guide: ≤4
+  columns; 3–5 judgment rows). Header row + separator are required. Alignment
+  markers (`:---`, `:---:`, `---:`) and empty cells are allowed. Cell content may
+  only use the inline allowlist above — no nested blocks, lists, or links inside
+  cells. Do not put tables in Card / Tip / Feedback sources.
 
 Also forbidden, all hard errors: raw HTML, links (including bare autolinks), inline
 images, block quotes (`>`), thematic breaks, scripts, remote components.
@@ -174,9 +178,6 @@ images, block quotes (`>`), thematic breaks, scripts, remote components.
 ```text
 写不了                        改成
 --------------------------    --------------------------
-| 维度 | A | B |              先各一句建立 A 和 B，
-| ...  |   |   |              再用单层列表给 3～5 个判断维度
-
 - 外层                        ### 小节标题 ＋ 单层列表，
   - 内层                      或把层级画进 fenced text 块
 

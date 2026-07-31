@@ -826,7 +826,7 @@ actor ContentUpdateCatalogRepository: CatalogRepository {
                 return [path]
             case let .callout(_, _, _, body):
                 return collectImagePaths(in: body)
-            case .paragraph, .heading, .list, .code, .singleChoice:
+            case .paragraph, .heading, .list, .code, .singleChoice, .table:
                 return []
             }
         }
@@ -878,6 +878,16 @@ actor ContentUpdateCatalogRepository: CatalogRepository {
                 capabilities.insert("list")
                 for item in items {
                     collectInlineCapabilities(in: item.content, into: &capabilities)
+                }
+            case let .table(header, rows, _):
+                capabilities.insert("table")
+                for cell in header {
+                    collectInlineCapabilities(in: cell.content, into: &capabilities)
+                }
+                for row in rows {
+                    for cell in row {
+                        collectInlineCapabilities(in: cell.content, into: &capabilities)
+                    }
                 }
             case let .callout(_, _, _, body):
                 capabilities.insert("callout")

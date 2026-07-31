@@ -119,9 +119,21 @@ tips:
 页面始终一页一个 Markdown 文件，且不允许 YAML front matter。页面文件只保存正文、
 `@Quiz`、`@Callout` 等内容块。
 
-正文基于 CommonMark，允许段落、1–6 级标题、单层列表、fenced code，以及有限的
+正文基于 CommonMark，允许段落、1–6 级标题、单层列表、GFM 管道表格、fenced code，以及有限的
 inline `**strong**`、`*emphasis*` 和 `` `code` ``。不允许 raw HTML、链接、脚本、
 远程组件或 inline 图片。
+
+GFM 表格示例（必须有表头行与分隔行；单元格仅允许上述 inline；建议 ≤4 列）：
+
+```markdown
+| 维度 | 固定步骤 | 可换步骤 |
+| --- | --- | --- |
+| 想多做一件事 | 换整台机器 | 多一份清单 |
+| 步骤写错了 | 只能召回 | 改清单（更新） |
+```
+
+对齐可用 `:---` / `:---:` / `---:` 声明左/中/右；空单元格允许。表格只出现在页面正文，
+不要写进 Card、Tip 或 Feedback。
 
 可用 directive：
 

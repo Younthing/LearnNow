@@ -3,14 +3,14 @@
   "files" : [
     {
       "path" : "CatalogV2.json",
-      "sha256" : "d768586acd285654bbcde88dd94c3a0331c71324c84667bd2df8cc6fc4018ffe",
-      "size" : 138069
+      "sha256" : "f0bb1434fdca8009ae0b114c0ec7776906a223ba8ccc97359293260a28914296",
+      "size" : 143274
     }
   ],
   "locale" : "zh-Hans",
   "minAppBuild" : 1,
   "publishedAt" : "2026-07-28T00:00:00Z",
-  "releaseVersion" : "2026.07.31.4",
+  "releaseVersion" : "2026.08.01.1",
   "requiredCapabilities" : [
     "callout",
     "code",
@@ -18,7 +18,8 @@
     "inlineCode",
     "list",
     "paragraph",
-    "singleChoice"
+    "singleChoice",
+    "table"
   ],
   "retiredIDs" : [
     "representation",

@@ -73,6 +73,52 @@ final class ValidationTests: XCTestCase {
         )
     }
 
+    func testTableShapeAndAlignmentCountAreValidated() throws {
+        let base = try compiledCatalog()
+        let lesson = base.lessons[0]
+        let mismatched = replacing(
+            lesson,
+            blocks: [
+                .table(
+                    header: [
+                        TableCell(content: [.text("A")]),
+                        TableCell(content: [.text("B")]),
+                    ],
+                    rows: [
+                        [
+                            TableCell(content: [.text("1")]),
+                        ],
+                    ],
+                    columnAlignments: [.left, .center, .right]
+                ),
+            ]
+        )
+        let catalog = replacing(base, lessons: [mismatched] + base.lessons.dropFirst())
+        let diagnostics = CatalogSemanticValidator.validate(catalog)
+        XCTAssertTrue(diagnostics.contains { $0.code == "table.columnMismatch" })
+        XCTAssertTrue(diagnostics.contains { $0.code == "table.alignmentCount" })
+    }
+
+    func testEmptyTableHeaderIsRejected() throws {
+        let base = try compiledCatalog()
+        let lesson = base.lessons[0]
+        let emptyHeader = replacing(
+            lesson,
+            blocks: [
+                .table(header: [], rows: [], columnAlignments: nil),
+            ]
+        )
+        let catalog = replacing(base, lessons: [emptyHeader] + base.lessons.dropFirst())
+        XCTAssertTrue(
+            CatalogSemanticValidator.validate(catalog)
+                .contains { $0.code == "table.empty" }
+        )
+    }
+
+    func testContentPolicySupportsTableCapability() {
+        XCTAssertTrue(ContentPolicy.supportedCapabilities.contains("table"))
+    }
+
     func testDiffFlagsCorrectAnswerAndMissingRetiredIDs() throws {
         let old = try compiledCatalog()
         let removedLessonID = old.lessons[0].id

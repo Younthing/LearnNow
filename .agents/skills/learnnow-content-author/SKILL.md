@@ -139,7 +139,7 @@ intentionally card-less lesson, a draft bundle not yet mounted). Format is not
 negotiable: `references/authoring-format.md` lists every hard constraint, including
 the allowlists that are easy to trip over (`systemImage` is a five-value allowlist;
 accents and tones are closed enums) and the blocks the IR simply does not have
-(**GFM 表格与嵌套列表都是 hard error**).
+(**嵌套列表是 hard error**；GFM 表格已支持，建议 ≤4 列)。
 
 ### 6. Pedagogy review
 

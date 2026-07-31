@@ -250,6 +250,13 @@ private struct LessonContentBlockView: View {
         case let .code(language, code):
             CodeSampleCard(language: language, code: code)
 
+        case let .table(header, rows, columnAlignments):
+            LessonTableCard(
+                header: header,
+                rows: rows,
+                columnAlignments: columnAlignments
+            )
+
         case let .image(path, alt, caption):
             ContentImageCard(
                 path: path,
@@ -461,6 +468,119 @@ private struct CodeSampleCard: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+    }
+}
+
+private struct LessonTableCard: View {
+    let header: [TableCell]
+    let rows: [[TableCell]]
+    let columnAlignments: [LearnNowContentKit.TableColumnAlignment?]?
+
+    @ScaledMetric(relativeTo: .body) private var minimumColumnWidth: CGFloat = 96
+
+    var body: some View {
+        InsetCard(contentPadding: 12) {
+            ScrollView(.horizontal, showsIndicators: true) {
+                Grid(alignment: .topLeading, horizontalSpacing: 12, verticalSpacing: 0) {
+                    GridRow {
+                        ForEach(Array(header.enumerated()), id: \.offset) { column, cell in
+                            cellView(
+                                cell,
+                                column: column,
+                                rowLabel: nil,
+                                isHeader: true
+                            )
+                        }
+                    }
+
+                    ForEach(Array(rows.enumerated()), id: \.offset) { rowIndex, row in
+                        Divider()
+                            .gridCellColumns(max(header.count, 1))
+
+                        GridRow {
+                            ForEach(Array(row.enumerated()), id: \.offset) { column, cell in
+                                cellView(
+                                    cell,
+                                    column: column,
+                                    rowLabel: rowIndex + 1,
+                                    isHeader: false
+                                )
+                            }
+                        }
+                    }
+                }
+                .frame(minWidth: minimumTableWidth, alignment: .leading)
+            }
+            .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private var minimumTableWidth: CGFloat {
+        CGFloat(max(header.count, 1)) * minimumColumnWidth
+    }
+
+    private func alignment(for column: Int) -> TextAlignment {
+        guard let columnAlignments, column < columnAlignments.count else {
+            return .leading
+        }
+        switch columnAlignments[column] {
+        case .center?:
+            return .center
+        case .right?:
+            return .trailing
+        case .left?, nil:
+            return .leading
+        }
+    }
+
+    private func frameAlignment(for column: Int) -> Alignment {
+        switch alignment(for: column) {
+        case .center:
+            .center
+        case .trailing:
+            .trailing
+        default:
+            .leading
+        }
+    }
+
+    @ViewBuilder
+    private func cellView(
+        _ cell: TableCell,
+        column: Int,
+        rowLabel: Int?,
+        isHeader: Bool
+    ) -> some View {
+        let plain = cell.content.map(\.plainText).joined()
+        let headerPlain = column < header.count
+            ? header[column].content.map(\.plainText).joined()
+            : ""
+        let label: String = {
+            if isHeader {
+                return "表头，第 \(column + 1) 列，\(plain)"
+            }
+            let row = rowLabel ?? 1
+            if headerPlain.isEmpty {
+                return "第 \(row) 行，第 \(column + 1) 列，\(plain)"
+            }
+            return "第 \(row) 行，第 \(column + 1) 列，表头 \(headerPlain)，\(plain)"
+        }()
+
+        InlineContentText(content: cell.content)
+            .font(isHeader ? LearnNowTypography.label : LearnNowTypography.body)
+            .foregroundStyle(
+                isHeader ? LearnNowPalette.textPrimary : LearnNowPalette.textSecondary
+            )
+            .multilineTextAlignment(alignment(for: column))
+            .frame(
+                minWidth: minimumColumnWidth,
+                maxWidth: .infinity,
+                alignment: frameAlignment(for: column)
+            )
+            .padding(.vertical, 10)
+            .accessibilityLabel(label)
+            .accessibilityAddTraits(isHeader ? .isHeader : [])
     }
 }
 

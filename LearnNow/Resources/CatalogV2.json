@@ -2471,11 +2471,11 @@
           "type" : "paragraph"
         },
         {
-          "items" : [
+          "header" : [
             {
               "content" : [
                 {
-                  "text" : "想多做一件事：前者要换整台机器，后者只要多一份清单。",
+                  "text" : "维度",
                   "type" : "text"
                 }
               ]
@@ -2483,7 +2483,7 @@
             {
               "content" : [
                 {
-                  "text" : "发现步骤写错了：前者只能召回，后者改一份清单就行，这就是你常看到的「更新」。",
+                  "text" : "固定步骤",
                   "type" : "text"
                 }
               ]
@@ -2491,14 +2491,93 @@
             {
               "content" : [
                 {
-                  "text" : "用途会不会变：前者出厂时就定死了，后者一辈子都在变。",
+                  "text" : "可换步骤",
                   "type" : "text"
                 }
               ]
             }
           ],
-          "ordered" : false,
-          "type" : "list"
+          "rows" : [
+            [
+              {
+                "content" : [
+                  {
+                    "text" : "想多做一件事",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "换整台机器",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "多一份清单",
+                    "type" : "text"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "content" : [
+                  {
+                    "text" : "步骤写错了",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "只能召回",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "改清单（更新）",
+                    "type" : "text"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "content" : [
+                  {
+                    "text" : "用途会不会变",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "出厂定死",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "一辈子都在变",
+                    "type" : "text"
+                  }
+                ]
+              }
+            ]
+          ],
+          "type" : "table"
         },
         {
           "content" : [
@@ -2896,11 +2975,11 @@
           "type" : "paragraph"
         },
         {
-          "items" : [
+          "header" : [
             {
               "content" : [
                 {
-                  "text" : "谁在改数据：CPU 动手改，内存只是让数据待着。",
+                  "text" : "维度",
                   "type" : "text"
                 }
               ]
@@ -2908,7 +2987,7 @@
             {
               "content" : [
                 {
-                  "text" : "谁在留住数据：数一直待在内存里，CPU 做完一步就不替你留着。",
+                  "text" : "CPU",
                   "type" : "text"
                 }
               ]
@@ -2916,14 +2995,93 @@
             {
               "content" : [
                 {
-                  "text" : "数量的意义：内存大，同时摊得开的东西多；CPU 快，每一步花的时间短。",
+                  "text" : "内存",
                   "type" : "text"
                 }
               ]
             }
           ],
-          "ordered" : false,
-          "type" : "list"
+          "rows" : [
+            [
+              {
+                "content" : [
+                  {
+                    "text" : "谁在改数据",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "动手改",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "只让数据待着",
+                    "type" : "text"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "content" : [
+                  {
+                    "text" : "谁在留住数据",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "做完一步就不替你留",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "数一直待在这里",
+                    "type" : "text"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "content" : [
+                  {
+                    "text" : "数量的意义",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "快＝每一步更短",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "大＝同时摊得开更多",
+                    "type" : "text"
+                  }
+                ]
+              }
+            ]
+          ],
+          "type" : "table"
         },
         {
           "content" : [
@@ -3503,11 +3661,11 @@
           "type" : "paragraph"
         },
         {
-          "items" : [
+          "header" : [
             {
               "content" : [
                 {
-                  "text" : "拿东西的快慢：台面上随手就拿，柜子里要翻一会儿。",
+                  "text" : "维度",
                   "type" : "text"
                 }
               ]
@@ -3515,7 +3673,7 @@
             {
               "content" : [
                 {
-                  "text" : "装得下多少：台面小，柜子大得多。",
+                  "text" : "台面（内存）",
                   "type" : "text"
                 }
               ]
@@ -3523,14 +3681,93 @@
             {
               "content" : [
                 {
-                  "text" : "断电以后：台面清空，柜子里的东西还在。",
+                  "text" : "柜子（存储）",
                   "type" : "text"
                 }
               ]
             }
           ],
-          "ordered" : false,
-          "type" : "list"
+          "rows" : [
+            [
+              {
+                "content" : [
+                  {
+                    "text" : "拿东西的快慢",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "随手就拿",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "要翻一会儿",
+                    "type" : "text"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "content" : [
+                  {
+                    "text" : "装得下多少",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "小",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "大得多",
+                    "type" : "text"
+                  }
+                ]
+              }
+            ],
+            [
+              {
+                "content" : [
+                  {
+                    "text" : "断电以后",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "清空",
+                    "type" : "text"
+                  }
+                ]
+              },
+              {
+                "content" : [
+                  {
+                    "text" : "还在",
+                    "type" : "text"
+                  }
+                ]
+              }
+            ]
+          ],
+          "type" : "table"
         },
         {
           "content" : [
@@ -4001,7 +4238,7 @@
     }
   ],
   "primaryRouteID" : "datascience",
-  "releaseVersion" : "2026.07.31.4",
+  "releaseVersion" : "2026.08.01.1",
   "retiredIDs" : [
     "representation",
     "representation-bits-q1-content",

@@ -52,6 +52,14 @@
         }
       ]
     },
+    "tableCell": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {"items": {"$ref": "#/$defs/inline"}, "type": "array"}
+      },
+      "required": ["content"],
+      "type": "object"
+    },
     "block": {
       "oneOf": [
         {
@@ -91,6 +99,35 @@
             "type": {"const": "list"}
           },
           "required": ["items", "ordered", "type"],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "columnAlignments": {
+              "items": {
+                "oneOf": [
+                  {"type": "null"},
+                  {"enum": ["left", "center", "right"], "type": "string"}
+                ]
+              },
+              "type": "array"
+            },
+            "header": {
+              "items": {"$ref": "#/$defs/tableCell"},
+              "minItems": 1,
+              "type": "array"
+            },
+            "rows": {
+              "items": {
+                "items": {"$ref": "#/$defs/tableCell"},
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "type": {"const": "table"}
+          },
+          "required": ["header", "rows", "type"],
           "type": "object"
         },
         {

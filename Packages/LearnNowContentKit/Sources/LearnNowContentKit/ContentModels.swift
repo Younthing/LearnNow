@@ -93,10 +93,29 @@ public struct ListItem: Codable, Equatable, Sendable {
     }
 }
 
+public enum TableColumnAlignment: String, Codable, Equatable, Sendable {
+    case left
+    case center
+    case right
+}
+
+public struct TableCell: Codable, Equatable, Sendable {
+    public let content: [InlineContent]
+
+    public init(content: [InlineContent]) {
+        self.content = content
+    }
+}
+
 public enum LessonContentBlock: Equatable, Sendable {
     case paragraph([InlineContent])
     case heading(level: Int, content: [InlineContent])
     case list(ordered: Bool, items: [ListItem])
+    case table(
+        header: [TableCell],
+        rows: [[TableCell]],
+        columnAlignments: [TableColumnAlignment?]?
+    )
     case callout(title: String, tone: ContentTone, accent: ContentAccent, body: [LessonContentBlock])
     case code(language: String?, code: String)
     case image(path: String, alt: String, caption: [InlineContent]?)
@@ -110,6 +129,9 @@ extension LessonContentBlock: Codable {
         case level
         case ordered
         case items
+        case header
+        case rows
+        case columnAlignments
         case title
         case tone
         case accent
@@ -126,6 +148,7 @@ extension LessonContentBlock: Codable {
         case paragraph
         case heading
         case list
+        case table
         case callout
         case code
         case image
@@ -146,6 +169,15 @@ extension LessonContentBlock: Codable {
             self = .list(
                 ordered: try container.decode(Bool.self, forKey: .ordered),
                 items: try container.decode([ListItem].self, forKey: .items)
+            )
+        case .table:
+            self = .table(
+                header: try container.decode([TableCell].self, forKey: .header),
+                rows: try container.decode([[TableCell]].self, forKey: .rows),
+                columnAlignments: try container.decodeIfPresent(
+                    [TableColumnAlignment?].self,
+                    forKey: .columnAlignments
+                )
             )
         case .callout:
             self = .callout(
@@ -184,6 +216,15 @@ extension LessonContentBlock: Codable {
             try container.encode(Kind.list, forKey: .type)
             try container.encode(ordered, forKey: .ordered)
             try container.encode(items, forKey: .items)
+        case let .table(header, rows, columnAlignments):
+            try container.encode(Kind.table, forKey: .type)
+            try container.encode(header, forKey: .header)
+            try container.encode(rows, forKey: .rows)
+            if let columnAlignments,
+               columnAlignments.contains(where: { $0 != nil })
+            {
+                try container.encode(columnAlignments, forKey: .columnAlignments)
+            }
         case let .callout(title, tone, accent, body):
             try container.encode(Kind.callout, forKey: .type)
             try container.encode(title, forKey: .title)

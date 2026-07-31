@@ -1966,6 +1966,8 @@ private func parseBlocks<C: Sequence>(
                     items: try parseList(list, url: url, sourceRoot: sourceRoot)
                 )
             )
+        } else if let table = child as? Markdown.Table {
+            blocks.append(try parseTable(table, url: url, sourceRoot: sourceRoot))
         } else if let codeBlock = child as? CodeBlock {
             blocks.append(.code(language: codeBlock.language, code: codeBlock.code))
         } else if let directive = child as? BlockDirective {
@@ -2088,6 +2090,79 @@ private func parseList(
             content: try parseInline(paragraph, url: url, sourceRoot: sourceRoot)
         )
     }
+}
+
+private func parseTable(
+    _ table: Markdown.Table,
+    url: URL,
+    sourceRoot: URL
+) throws -> LessonContentBlock {
+    if table.isEmpty || table.head.childCount == 0 {
+        throw markupDiagnostic(
+            code: "table.empty",
+            message: "Tables require a non-empty header row.",
+            markup: table,
+            url: url,
+            sourceRoot: sourceRoot
+        )
+    }
+
+    let header = try table.head.cells.map { cell in
+        TableCell(content: try parseInline(cell, url: url, sourceRoot: sourceRoot))
+    }
+    let columnCount = header.count
+    guard columnCount > 0 else {
+        throw markupDiagnostic(
+            code: "table.empty",
+            message: "Tables require a non-empty header row.",
+            markup: table,
+            url: url,
+            sourceRoot: sourceRoot
+        )
+    }
+
+    let rows = try table.body.rows.map { row -> [TableCell] in
+        let cells = try row.cells.map { cell in
+            TableCell(content: try parseInline(cell, url: url, sourceRoot: sourceRoot))
+        }
+        guard cells.count == columnCount else {
+            throw markupDiagnostic(
+                code: "table.columnMismatch",
+                message: "Table row has \(cells.count) columns; expected \(columnCount).",
+                markup: row,
+                url: url,
+                sourceRoot: sourceRoot
+            )
+        }
+        return cells
+    }
+
+    let mappedAlignments: [TableColumnAlignment?] = table.columnAlignments.map { alignment in
+        switch alignment {
+        case .left?:
+            .left
+        case .center?:
+            .center
+        case .right?:
+            .right
+        case nil:
+            nil
+        }
+    }
+    var normalizedAlignments = Array(mappedAlignments.prefix(columnCount))
+    if normalizedAlignments.count < columnCount {
+        normalizedAlignments.append(
+            contentsOf: Array(repeating: nil, count: columnCount - normalizedAlignments.count)
+        )
+    }
+    let columnAlignments: [TableColumnAlignment?]? =
+        normalizedAlignments.contains(where: { $0 != nil }) ? normalizedAlignments : nil
+
+    return .table(
+        header: header,
+        rows: rows,
+        columnAlignments: columnAlignments
+    )
 }
 
 private func parseQuiz(
@@ -2647,6 +2722,16 @@ private enum ContentCapabilityAnalyzer {
                     result.insert("list")
                     for item in items {
                         collectInline(item.content)
+                    }
+                case let .table(header, rows, _):
+                    result.insert("table")
+                    for cell in header {
+                        collectInline(cell.content)
+                    }
+                    for row in rows {
+                        for cell in row {
+                            collectInline(cell.content)
+                        }
                     }
                 case let .callout(_, _, _, body):
                     result.insert("callout")

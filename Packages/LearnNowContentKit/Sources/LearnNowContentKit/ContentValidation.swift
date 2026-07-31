@@ -71,6 +71,7 @@ public enum ContentPolicy {
         "paragraph",
         "heading",
         "list",
+        "table",
         "callout",
         "code",
         "image",
@@ -587,6 +588,39 @@ public enum CatalogSemanticValidator {
                             file: "CatalogV2.json"
                         )
                     )
+                }
+            case let .table(header, rows, columnAlignments):
+                if header.isEmpty {
+                    diagnostics.append(
+                        ContentDiagnostic(
+                            severity: .error,
+                            code: "table.empty",
+                            message: "Lesson '\(lessonID)' contains a table without a header.",
+                            file: "CatalogV2.json"
+                        )
+                    )
+                } else {
+                    let columnCount = header.count
+                    for row in rows where row.count != columnCount {
+                        diagnostics.append(
+                            ContentDiagnostic(
+                                severity: .error,
+                                code: "table.columnMismatch",
+                                message: "Lesson '\(lessonID)' table row has \(row.count) columns; expected \(columnCount).",
+                                file: "CatalogV2.json"
+                            )
+                        )
+                    }
+                    if let columnAlignments, columnAlignments.count != columnCount {
+                        diagnostics.append(
+                            ContentDiagnostic(
+                                severity: .error,
+                                code: "table.alignmentCount",
+                                message: "Lesson '\(lessonID)' table columnAlignments has \(columnAlignments.count) entries; expected \(columnCount).",
+                                file: "CatalogV2.json"
+                            )
+                        )
+                    }
                 }
             case let .callout(_, _, _, body):
                 validateBlocks(

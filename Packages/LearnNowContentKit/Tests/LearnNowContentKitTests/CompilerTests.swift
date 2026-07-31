@@ -120,6 +120,7 @@ final class CompilerTests: XCTestCase {
         XCTAssertTrue(lesson.blocks.contains { if case .heading = $0 { true } else { false } })
         XCTAssertTrue(lesson.blocks.contains { if case .paragraph = $0 { true } else { false } })
         XCTAssertTrue(lesson.blocks.contains { if case .list = $0 { true } else { false } })
+        XCTAssertTrue(lesson.blocks.contains { if case .table = $0 { true } else { false } })
         XCTAssertTrue(lesson.blocks.contains { if case .callout = $0 { true } else { false } })
         XCTAssertTrue(lesson.blocks.contains { if case .code = $0 { true } else { false } })
         XCTAssertTrue(lesson.blocks.contains { if case .image = $0 { true } else { false } })
@@ -137,7 +138,93 @@ final class CompilerTests: XCTestCase {
                 "list",
                 "paragraph",
                 "singleChoice",
+                "table",
             ]
+        )
+    }
+
+    func testGFMTableCompilesAlignmentsEmptyCellsAndInlineStyles() throws {
+        let source = try copiedContentSource()
+        defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
+        let lessonURL = source.appending(path: "lessons/stats/pages/mean.md")
+        try Data(
+            """
+            # 对照
+
+            | 维度 | 左列 | 中列 | 右列 |
+            | --- | :--- | :---: | ---: |
+            | 想多做一件事 | **换整台** |  | `清单` |
+            | 写错了 | *召回* | 改清单 |  |
+
+            """.utf8
+        ).write(to: lessonURL, options: .atomic)
+
+        let result = try ContentCompiler().compile(sourceDirectory: source)
+        let lesson = try XCTUnwrap(result.catalog.lessons.first { $0.id == "stats-page-1" })
+        guard case let .table(header, rows, alignments) = lesson.blocks.first(where: {
+            if case .table = $0 { return true }
+            return false
+        }) else {
+            return XCTFail("Expected a compiled table block")
+        }
+
+        XCTAssertEqual(header.count, 4)
+        XCTAssertEqual(rows.count, 2)
+        XCTAssertEqual(alignments?.count, 4)
+        XCTAssertNil(alignments?[0])
+        XCTAssertEqual(alignments?[1], TableColumnAlignment.left)
+        XCTAssertEqual(alignments?[2], TableColumnAlignment.center)
+        XCTAssertEqual(alignments?[3], TableColumnAlignment.right)
+
+        XCTAssertEqual(rows[0][2].content, [])
+        XCTAssertTrue(rows[0][1].content.contains { if case .strong = $0 { true } else { false } })
+        XCTAssertTrue(rows[0][3].content.contains { if case .code = $0 { true } else { false } })
+        XCTAssertTrue(rows[1][1].content.contains { if case .emphasis = $0 { true } else { false } })
+        XCTAssertTrue(result.requiredCapabilities.contains("table"))
+        XCTAssertTrue(result.requiredCapabilities.contains("inlineStrong"))
+        XCTAssertTrue(result.requiredCapabilities.contains("inlineEmphasis"))
+        XCTAssertTrue(result.requiredCapabilities.contains("inlineCode"))
+    }
+
+    func testGFMTableRejectsLinksAndReportsUnsupportedInline() throws {
+        let source = try copiedContentSource()
+        defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
+        let lessonURL = source.appending(path: "lessons/stats/pages/mean.md")
+        try Data(
+            """
+            # 对照
+
+            | 维度 | 值 |
+            | --- | --- |
+            | 链接 | [bad](https://example.com) |
+
+            """.utf8
+        ).write(to: lessonURL, options: .atomic)
+
+        let diagnostics = ContentCompiler().lint(sourceDirectory: source)
+        XCTAssertTrue(
+            diagnostics.contains { $0.code == "inline.unsupported" },
+            diagnostics.map(\.description).joined(separator: "\n")
+        )
+    }
+
+    func testCardSourceRejectsTopLevelTable() throws {
+        let source = try copiedContentSource()
+        defer { try? FileManager.default.removeItem(at: source.deletingLastPathComponent()) }
+        let cardsURL = source.appending(path: "lessons/stats/cards.md")
+        try Data(
+            """
+            | 维度 | 值 |
+            | --- | --- |
+            | a | b |
+
+            """.utf8
+        ).write(to: cardsURL, options: .atomic)
+
+        let diagnostics = ContentCompiler().lint(sourceDirectory: source)
+        XCTAssertTrue(
+            diagnostics.contains { $0.code == "block.unsupported" },
+            diagnostics.map(\.description).joined(separator: "\n")
         )
     }
 
@@ -452,6 +539,10 @@ final class CompilerTests: XCTestCase {
 
     - 第一项
     - 第二项
+
+    | 维度 | A | B |
+    | --- | --- | --- |
+    | 对比 | 左 | 右 |
 
     @Callout(title: "核心认知", tone: "warning", accent: "amber") {
     Callout 正文。
